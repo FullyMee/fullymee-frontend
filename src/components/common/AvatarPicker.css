@@ -1,0 +1,48 @@
+.shared-avatar-picker {
+    width: 100%;
+}
+
+.shared-avatar-picker__list {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    scrollbar-width: none; /* Firefox */
+}
+
+.shared-avatar-picker__list::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+}
+
+.shared-avatar-picker__btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.shared-avatar-picker__btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.shared-avatar-picker__btn:active {
+    transform: scale(0.95);
+}
+
+.shared-avatar-picker__btn.is-selected {
+    border: 2px solid #a855f7;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+}

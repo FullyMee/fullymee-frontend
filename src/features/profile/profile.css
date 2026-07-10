@@ -1,0 +1,733 @@
+/* ═══════════════════════════════════════════════════════
+   PROFILE PAGE — features/profile/profile.css
+   Figma-accurate desktop implementation
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Stage content scroll shell ── */
+.desktop-profile-shell {
+    overflow-y: auto;
+    height: calc(100vh - 4.5rem); /* full height minus stage header */
+    background: #f7efe5;
+}
+
+/* ── Desktop Content Wrapper ── */
+.desktop-profile-container {
+    padding: 1.6rem 2rem 2rem;
+    max-width: 1280px;
+    overflow-y: auto;
+}
+
+.desktop-profile-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+/* ══════════════════════════════
+   BANNER CARD (hero gradient)
+   ══════════════════════════════ */
+.desktop-profile-banner-card {
+    border-radius: 1.35rem;
+    background: #ffffff;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 10px 28px rgba(58, 34, 52, 0.06);
+    overflow: hidden;
+}
+
+.desktop-profile-banner-card__gradient {
+    height: 128px;
+    background: linear-gradient(180deg, #f8f1ea 0%, #f5ece3 100%);
+    border-bottom: 1px solid rgba(58, 34, 52, 0.08);
+}
+
+.desktop-profile-banner-card__bottom {
+    display: flex;
+    align-items: center;
+    gap: 1.3rem;
+    padding: 0 2rem 1.45rem;
+    margin-top: -2.65rem; /* pull avatar up into gradient */
+}
+
+.desktop-profile-banner-card__avatar-shell {
+    flex-shrink: 0;
+    width: 5.3rem;
+    height: 5.3rem;
+    border-radius: 999px;
+    background: #ffffff;
+    padding: 4px;
+    box-shadow: 0 8px 20px rgba(58, 34, 52, 0.14);
+}
+
+.desktop-profile-banner-card__avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #402037 0%, #4d2e42 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #ffffff;
+}
+
+.desktop-profile-banner-card__avatar svg {
+    width: 2.1rem;
+    height: 2.1rem;
+}
+
+.desktop-profile-banner-card__info {
+    flex: 1;
+    padding-top: 2.5rem;
+}
+
+.desktop-profile-banner-card__info h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 400;
+    color: #402037;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-transform: lowercase;
+}
+
+.desktop-profile-banner-card__info p {
+    margin: 0.2rem 0 0;
+    font-size: 0.9rem;
+    color: #9a7d74;
+    font-weight: 500;
+}
+
+.desktop-profile-banner-card__actions {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.desktop-profile-edit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.62rem 1.15rem;
+    border: 1px solid rgba(58, 34, 52, 0.12);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #402037;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    white-space: nowrap;
+}
+
+.desktop-profile-edit-button:hover {
+    background: #fcf8f3;
+    box-shadow: 0 6px 16px rgba(58, 34, 52, 0.08);
+    transform: translateY(-1px);
+}
+
+.desktop-profile-edit-button svg {
+    width: 1rem;
+    height: 1rem;
+    color: currentColor;
+}
+
+.desktop-profile-edit-button--logout {
+    border-color: rgba(233, 123, 74, 0.26);
+    color: #e37b4f;
+}
+
+.desktop-profile-edit-button--logout svg {
+    color: #e37b4f;
+}
+
+.desktop-profile-edit-button--logout:hover {
+    background: #fff8f3;
+    box-shadow: 0 6px 16px rgba(227, 123, 79, 0.12);
+}
+
+/* ══════════════════════════════
+   STATS ROW (3 boxes)
+   ══════════════════════════════ */
+.desktop-profile-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.desktop-profile-stat-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.35rem 1.35rem;
+    border-radius: 1.1rem;
+    background: #ffffff;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 8px 22px rgba(58, 34, 52, 0.05);
+}
+
+.desktop-profile-stat-box__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.desktop-profile-stat-box__icon svg {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.desktop-profile-stat-box__icon--blue {
+    background: #f0e9e8;
+    color: #402037;
+}
+
+.desktop-profile-stat-box__icon--magenta {
+    background: #f9eadf;
+    color: #e37b4f;
+}
+
+.desktop-profile-stat-box__icon--red {
+    background: #f9eadf;
+    color: #e37b4f;
+}
+
+.desktop-profile-stat-box__info {
+    display: flex;
+    flex-direction: column;
+}
+
+.desktop-profile-stat-box__info strong {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 400;
+    color: #402037;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.desktop-profile-stat-box__info span {
+    margin-top: 0.3rem;
+    font-size: 0.88rem;
+    color: #7f6a67;
+    font-weight: 500;
+}
+
+/* ══════════════════════════════
+   JOINED ROOMS CARD
+   ══════════════════════════════ */
+.desktop-profile-section-card {
+    padding: 1.8rem 1.8rem 1.9rem;
+    border-radius: 1.35rem;
+    background: #ffffff;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 10px 26px rgba(58, 34, 52, 0.05);
+}
+
+.desktop-profile-section-card__head {
+    margin-bottom: 1.4rem;
+}
+
+.desktop-profile-section-card__head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: #402037;
+    letter-spacing: -0.02em;
+}
+
+.desktop-profile-room-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding-top: 0.4rem;
+}
+
+.desktop-profile-room-card-v2 {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid rgba(233, 123, 74, 0.16);
+    border-radius: 1.15rem;
+    padding: 1.2rem 1.25rem 1.15rem;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(58, 34, 52, 0.04);
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    overflow: hidden;
+    min-height: 9.75rem;
+}
+
+.desktop-profile-room-card-v2:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(58, 34, 52, 0.08);
+    border-color: rgba(233, 123, 74, 0.28);
+}
+
+.desktop-profile-room-card-v2__avatar {
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7e2d6;
+    color: #e37b4f;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    box-shadow: inset 0 0 0 1px rgba(227, 123, 79, 0.08);
+}
+
+.desktop-profile-room-card-v2__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+    min-width: 0;
+}
+
+.desktop-profile-room-card-v2__main h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: 400;
+    color: #402037;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.desktop-profile-room-card-v2__main p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #7f6a67;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.desktop-profile-room-card-v2__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #7f6a67;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.desktop-profile-room-card-v2__meta svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.desktop-profile-room-card-v2__dot {
+    width: 0.34rem;
+    height: 0.34rem;
+    border-radius: 999px;
+    background: #e37b4f;
+    display: inline-block;
+    margin: 0 0.05rem;
+}
+
+.desktop-profile-room-card-v2__status {
+    color: #e37b4f;
+    font-weight: 600;
+}
+
+/* View all button */
+.desktop-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #e37b4f;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 160ms ease;
+}
+
+.desktop-link-button:hover {
+    color: #cf653a;
+}
+
+/* Empty state inside card */
+.desktop-empty-card {
+    padding: 1.5rem;
+    text-align: center;
+    color: #7f6a67;
+}
+
+.desktop-empty-card--compact h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+    color: #402037;
+}
+
+.desktop-empty-card--compact p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #7f6a67;
+}
+
+/* ══════════════════════════════
+   PRIVACY BANNER (gradient card)
+   ══════════════════════════════ */
+.desktop-privacy-banner {
+    padding: 2rem 2.2rem;
+    border-radius: 1.4rem;
+    background: linear-gradient(135deg, #402037 0%, #4e2d43 100%);
+    color: #ffffff;
+    box-shadow: 0 10px 28px rgba(58, 34, 52, 0.16);
+}
+
+.desktop-privacy-banner h3 {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+.desktop-privacy-banner p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+/* ── Mobile Profile Page ── */
+.profile-mobile-page {
+    min-height: 100vh;
+    background: #f7efe5;
+    color: #402037;
+    padding-bottom: 6.5rem;
+}
+
+.profile-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.profile-header h1 {
+    font-size: 2rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: #402037;
+    letter-spacing: -0.04em;
+    margin-bottom: 0.4rem;
+}
+
+.profile-header p {
+    font-size: 1rem;
+    color: #9a7d74;
+    font-weight: 500;
+}
+
+.profile-content {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+/* ── Profile Hero Card ── */
+.profile-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 8px 22px rgba(58, 34, 52, 0.05);
+}
+
+.profile-hero__avatar {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #402037 0%, #4d2e42 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.profile-hero__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-hero__info h2 {
+    font-size: 1.25rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: #402037;
+    margin-bottom: 0.2rem;
+}
+
+.profile-hero__info p {
+    font-size: 0.85rem;
+    color: #9a7d74;
+    font-weight: 500;
+}
+
+.profile-hero__edit {
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #ffffff;
+    color: #402037;
+    border: 1px solid rgba(58, 34, 52, 0.12);
+    cursor: pointer;
+    transition: all 150ms ease;
+    white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+    .profile-hero {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .profile-hero__info h2 {
+        font-size: 1.12rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-hero__edit {
+        grid-column: 1 / -1;
+        justify-self: start;
+        min-height: 2.5rem;
+        padding: 0.55rem 0.95rem;
+        font-size: 0.82rem;
+    }
+}
+
+/* ── Stats Grid ── */
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+}
+
+.profile-stat-box {
+    background: #ffffff;
+    padding: 1.2rem 0.8rem;
+    border-radius: 1.2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 8px 18px rgba(58, 34, 52, 0.04);
+}
+
+.profile-stat-box strong {
+    font-size: 1.4rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: #402037;
+}
+
+.profile-stat-box span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #9a7d74;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Menu List ── */
+.profile-menu {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(58, 34, 52, 0.05);
+}
+
+.profile-menu__item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    border-bottom: 1px solid rgba(58, 34, 52, 0.06);
+    transition: background 150ms ease;
+}
+
+.profile-menu__item:last-child {
+    border-bottom: none;
+}
+
+.profile-menu__item:active {
+    background: #fbf7f2;
+}
+
+.profile-menu__icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.8rem;
+    background: #f5ece3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    margin-right: 1.1rem;
+    flex-shrink: 0;
+}
+
+.profile-menu__item--logout .profile-menu__icon {
+    background: #f8eadf;
+    color: #e37b4f;
+}
+
+.profile-menu__item--logout span {
+    color: #e37b4f !important;
+}
+
+.profile-menu__label {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #402037;
+}
+
+.profile-menu__chevron {
+    color: #c7b2aa;
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+@media (min-width: 900px) {
+    .profile-mobile-page {
+        display: none;
+    }
+}
+
+/* Global primary-page background normalization.
+   profile.css loads after the other feature styles, so these shell-level
+   rules intentionally win without changing cards or controls. */
+body,
+#root,
+.home-mobile-shell,
+.home-mobile-page,
+.confide-confessions-mobile,
+.my-confessions-page,
+.chat-mobile-page,
+.search-mobile-page,
+.profile-mobile-page,
+.home-desktop-page,
+.profile-page-v2,
+.desktop-app-shell,
+.desktop-app-shell__stage,
+.desktop-stage__content,
+.desktop-stage__main,
+.desktop-search-content,
+.desktop-profile-shell,
+.desktop-chat-shell,
+.desktop-chat-shell .desktop-stage__main,
+.desktop-chat-board,
+.desktop-chat-column--list,
+.desktop-chat-column--thread,
+.desktop-chat-column__header--thread,
+.desktop-chat-thread__messages,
+.desktop-chat-thread__composer,
+.my-confessions-page--desktop .desktop-app-shell__stage,
+.my-confessions-page--desktop .desktop-stage__content {
+    background: #f7efe5 !important;
+    background-image: none !important;
+}
+
+@media (max-width: 899px) {
+    .home-mobile-header {
+        background: rgba(247, 239, 229, 0.94) !important;
+    }
+
+    .chat-mobile-page--thread .chat-thread-header,
+    .chat-mobile-page--thread .chat-thread-content,
+    .chat-mobile-page--thread .chat-thread-empty,
+    .chat-mobile-page--thread .chat-thread-messages,
+    .chat-mobile-page--thread .chat-thread-composer {
+        background: #f7efe5 !important;
+        background-image: none !important;
+    }
+}
+
+/* Typography normalization */
+.desktop-profile-banner-card__info h2,
+.desktop-profile-section-card__head h2,
+.desktop-profile-room-card-v2__main h4,
+.profile-header h1,
+.profile-hero__info h2 {
+    letter-spacing: 0;
+    line-height: var(--line-tight);
+}
+
+.desktop-profile-banner-card__info h2,
+.profile-header h1 {
+    font-size: var(--type-display-sm);
+}
+
+.desktop-profile-section-card__head h2 {
+    font-size: var(--type-title-xl);
+}
+
+.desktop-profile-room-card-v2__main h4,
+.profile-hero__info h2 {
+    font-size: var(--type-title-md);
+}
+
+.desktop-profile-banner-card__info p,
+.desktop-profile-room-card-v2__main p,
+.profile-header p,
+.profile-menu__label {
+    font-size: var(--type-body-sm);
+    line-height: var(--line-copy);
+}
+
+@media (max-width: 899px) {
+    .profile-header h1 {
+        font-size: var(--type-title-xl);
+    }
+
+    .profile-hero__info h2 {
+        font-size: var(--type-title-md);
+    }
+}

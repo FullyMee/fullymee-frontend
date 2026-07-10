@@ -1,0 +1,20 @@
+.shared-surface-card {
+    border: 1px solid #e8ebf2;
+    border-radius: 1.4rem;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(12, 34, 88, 0.07);
+}
+
+.shared-surface-card--interactive {
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.shared-surface-card--interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(12, 34, 88, 0.1);
+}
+
+.shared-surface-card--interactive:focus-within {
+    border-color: rgba(95, 118, 255, 0.24);
+    box-shadow: 0 0 0 3px rgba(95, 118, 255, 0.1), 0 10px 24px rgba(12, 34, 88, 0.1);
+}

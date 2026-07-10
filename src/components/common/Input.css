@@ -1,0 +1,88 @@
+.shared-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.shared-input-group__label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.shared-input-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.shared-input-shell__icon {
+    position: absolute;
+    left: 0.85rem;
+    color: #8c8c9a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shared-input-shell__icon svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.shared-input-shell__element {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid #d4d4dc;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1a1a2e;
+    font-size: 0.95rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Allow padding if there's an icon string or generic icon (assuming fixed width) */
+.shared-input-shell:has(.shared-input-shell__icon) .shared-input-shell__element {
+    padding-left: 2.6rem;
+}
+
+.shared-input-shell__element::placeholder {
+    color: #a0a0b0;
+}
+
+.shared-input-shell__element:focus {
+    border-color: #6c4df6;
+    box-shadow: 0 0 0 3px rgba(108, 77, 246, 0.1);
+}
+
+.shared-input--error .shared-input-shell__element {
+    border-color: #e53e3e;
+}
+
+.shared-input--error .shared-input-shell__element:focus {
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.shared-input-group__message {
+    margin: -0.1rem 0 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.shared-input-group__message--error {
+    color: #e53e3e;
+}
+
+.shared-input-group__message--success {
+    color: #16a34a;
+}
+
+.shared-input-group__helper {
+    margin: -0.1rem 0 0 0;
+    font-size: 0.82rem;
+    color: #8c8c9a;
+    font-weight: 500;
+}

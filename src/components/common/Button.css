@@ -1,0 +1,118 @@
+.shared-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    text-decoration: none;
+}
+
+.shared-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.shared-btn--full-width {
+    width: 100%;
+}
+
+.shared-btn--sm {
+    min-height: 2.4rem;
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+}
+
+.shared-btn--md {
+    min-height: 2.8rem;
+    padding: 0.85rem 1.4rem;
+}
+
+.shared-btn--lg {
+    min-height: 3.1rem;
+    padding: 0.95rem 1.65rem;
+    font-size: 1rem;
+}
+
+.shared-btn__loader {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentcolor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.75s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* VARIANTS */
+
+.shared-btn--primary {
+    background: linear-gradient(135deg, #6c4df6 0%, #5f76ff 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(108, 77, 246, 0.22);
+}
+
+.shared-btn--primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(108, 77, 246, 0.32);
+}
+
+.shared-btn--secondary {
+    background: #ffffff;
+    color: #102a43;
+    border: 1px solid rgba(16, 42, 67, 0.16);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.shared-btn--secondary:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: rgba(16, 42, 67, 0.25);
+    transform: translateY(-1px);
+}
+
+.shared-btn--danger {
+    background: #c0392b;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(192, 57, 43, 0.2);
+}
+
+.shared-btn--danger:hover:not(:disabled) {
+    background: #a93226;
+    transform: translateY(-1px);
+}
+
+.shared-btn--ghost {
+    background: transparent;
+    color: #486581;
+}
+
+.shared-btn--ghost:hover:not(:disabled) {
+    background: rgba(16, 42, 67, 0.05);
+    color: #102a43;
+}
+
+.shared-btn--text {
+    min-height: auto;
+    padding: 0;
+    background: transparent;
+    color: #6c4df6;
+    border-radius: 0;
+}
+
+.shared-btn--text:hover:not(:disabled) {
+    color: #5338d0;
+    text-decoration: underline;
+}
