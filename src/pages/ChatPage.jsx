@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, Heart, MessageCircle, MoreVertical, Search, Send, Smile, Users, X } from "lucide-react";
+import { ArrowLeft, Check, MessageCircle, MoreVertical, Search, Send, Smile, UserRoundPlus, Users, X } from "lucide-react";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import { getChatAvatarGlyph } from "../components/common/MobileRoomVisuals.jsx";
 import { ChatListSkeleton, ChatThreadSkeleton, InfiniteScrollLoader, InlineSpinner } from "../components/common/LoadingStates.jsx";
@@ -34,7 +34,7 @@ function SendIcon() { return <Send size={18} strokeWidth={2} />; }
 function SearchIcon() { return <Search size={18} strokeWidth={2} />; }
 function SmileIcon() { return <Smile size={18} strokeWidth={2} />; }
 function RequestsIcon() { return <Users size={18} strokeWidth={2} />; }
-function HeartIcon() { return <Heart size={18} strokeWidth={2} />; }
+function MessageRequestIcon() { return <UserRoundPlus size={18} strokeWidth={2} />; }
 function CheckIcon() { return <Check size={18} strokeWidth={2} />; }
 function CloseIcon() { return <X size={18} strokeWidth={2} />; }
 function ChatBubbleIcon() { return <MessageCircle size={18} strokeWidth={2} />; }
@@ -768,7 +768,7 @@ export default function ChatPage({ user }) {
                                         onClick={openRequestsView}
                                         aria-label="Open chat requests"
                                     >
-                                        <HeartIcon />
+                                        <MessageRequestIcon />
                                         {pendingRequestCount > 0 && (
                                             <strong>{pendingRequestCount > 9 ? "9+" : pendingRequestCount}</strong>
                                         )}
@@ -1030,7 +1030,7 @@ export default function ChatPage({ user }) {
                                 onClick={openRequestsView}
                                 aria-label="Open chat requests"
                             >
-                                <HeartIcon />
+                                <MessageRequestIcon />
                                 {pendingRequestCount > 0 && (
                                     <strong>{pendingRequestCount > 9 ? "9+" : pendingRequestCount}</strong>
                                 )}
