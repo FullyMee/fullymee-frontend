@@ -95,7 +95,7 @@ export default function LoginPage() {
         const clientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
         if (!clientId) return;
         if (!window.google || !window.google.accounts || !window.google.accounts.id) return;
-        if (mode !== "signin" || step !== "email") return;
+        if (step !== "email") return;
         if (!googleButtonHostRef.current) return;
 
         const onCredential = async (response) => {
@@ -112,7 +112,13 @@ export default function LoginPage() {
                 window.dispatchEvent(new Event("auth-changed"));
                 navigate("/", { replace: true });
             } catch (err) {
-                showError(err && err.message ? err.message : "Unable to sign in with Google right now.");
+                const payloadCode = err && err.payload && err.payload.code ? String(err.payload.code) : "";
+                if ((err && err.status === 404) || payloadCode === "GOOGLE_SIGNIN_NO_ACCOUNT") {
+                    setMode("signup");
+                    showError("No account was found for that Google email. Continue with signup to create one.");
+                } else {
+                    showError(err && err.message ? err.message : "Unable to continue with Google right now.");
+                }
             } finally {
                 setGoogleLoading(false);
             }
@@ -129,10 +135,10 @@ export default function LoginPage() {
             theme: "outline",
             size: "large",
             shape: "pill",
-            text: "signin_with",
+            text: mode === "signup" ? "signup_with" : "signin_with",
             width
         });
-    }, [mode, step, navigate, showError]);
+    }, [mode, step, navigate, setMode, showError]);
 
     const activeSlide = ONBOARDING_SLIDES[slideIndex];
     const authIntro = useMemo(() => {
@@ -349,21 +355,17 @@ export default function LoginPage() {
                                 <ArrowRightIcon />
                             </Button>
 
-                            {mode === "signin" && (
-                                <>
-                                    <div className="auth-divider" role="separator" aria-label="or">
-                                        <span>or</span>
-                                    </div>
-                                    <div className="auth-google-wrap">
-                                        <div ref={googleButtonHostRef} className="auth-google-button-host" />
-                                        {googleLoading && (
-                                            <p className="auth-hint auth-hint--checking" style={{ textAlign: "center" }}>
-                                                <InlineSpinner /> Signing in with Google...
-                                            </p>
-                                        )}
-                                    </div>
-                                </>
-                            )}
+                            <div className="auth-divider" role="separator" aria-label="or">
+                                <span>or</span>
+                            </div>
+                            <div className="auth-google-wrap">
+                                <div ref={googleButtonHostRef} className="auth-google-button-host" />
+                                {googleLoading && (
+                                    <p className="auth-hint auth-hint--checking" style={{ textAlign: "center" }}>
+                                        <InlineSpinner /> Continuing with Google...
+                                    </p>
+                                )}
+                            </div>
 
                             <div className="auth-trust-note">
                                 <span aria-hidden="true">🔒</span>
