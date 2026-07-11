@@ -5,6 +5,7 @@ import { formatRelativeTime } from "../../../utils/time.js";
 import { getConfessionParts } from "../utils/confessionView.js";
 import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
+import AudioPlayer from "./AudioPlayer.jsx";
 import { ArrowLeftIcon, CommentIcon, HeartIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
 
 export default function ConfessionDetailView({
@@ -51,10 +52,17 @@ export default function ConfessionDetailView({
             </div>
 
             <div className="confession-detail-card__body">
-                <h1>{getConfessionParts(selectedConfession.content).title}</h1>
+                {selectedConfession.content ? <h1>{getConfessionParts(selectedConfession.content).title}</h1> : null}
                 {getConfessionParts(selectedConfession.content).body && (
                     <p>{getConfessionParts(selectedConfession.content).body}</p>
                 )}
+                {selectedConfession.audio ? (
+                    <AudioPlayer
+                        roomId={selectedConfession.roomId}
+                        confessionId={selectedConfession.confessionId}
+                        audio={selectedConfession.audio}
+                    />
+                ) : null}
             </div>
 
             <div className="confession-detail-card__actions">

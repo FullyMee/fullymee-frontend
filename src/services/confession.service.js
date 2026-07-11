@@ -76,9 +76,38 @@ export function listConfessions(roomId, { limit = 50, sortBy = "ranked" } = {}) 
     });
 }
 
-export function postConfession(roomId, content, scheduledAt = null) {
+export function getAudioUploadToken(roomId) {
+    return apiRequest(`/confessions/rooms/${roomId}/audio-token`, {
+        method: "GET",
+        skipCache: true,
+        skipErrorLog: true,
+        retryOptions: { retries: 0 }
+    });
+}
+
+export function getConfessionAudioUrl(roomId, confessionId) {
+    return apiRequest(`/confessions/rooms/${roomId}/confessions/${confessionId}/audio-url`, {
+        method: "GET",
+        skipCache: true,
+        skipErrorLog: true,
+        retryOptions: { retries: 0 }
+    });
+}
+
+export function postConfession(roomId, content, options = null) {
+    const scheduledAt = options && typeof options === "object" && !Array.isArray(options)
+        ? options.scheduledAt
+        : options;
+    const audioPublicId = options && typeof options === "object" && !Array.isArray(options)
+        ? options.audioPublicId
+        : null;
+    const audioDuration = options && typeof options === "object" && !Array.isArray(options)
+        ? options.audioDuration
+        : null;
     const body = { content };
     if (scheduledAt) body.scheduledAt = new Date(scheduledAt).toISOString();
+    if (audioPublicId) body.audioPublicId = audioPublicId;
+    if (audioDuration) body.audioDuration = Math.max(1, Math.min(30, Math.round(Number(audioDuration) || 0)));
     return apiRequest(`/confessions/rooms/${roomId}/confessions`, {
         method: "POST",
         body: JSON.stringify(body)
@@ -226,4 +255,3 @@ export function cancelScheduledConfession(roomId, confessionId) {
         method: "DELETE"
     });
 }
-

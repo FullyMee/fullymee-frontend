@@ -3,6 +3,7 @@ import { InlineSpinner } from './LoadingStates.jsx';
 import { getAliasTone, getInitial } from '../../utils/presentation.js';
 import { formatRelativeTime } from '../../utils/time.js';
 import { Heart, MessageSquare, Send } from "lucide-react";
+import AudioPlayer from "../../features/confessions/components/AudioPlayer.jsx";
 
 const MemoizedConfessionCard = memo(({ 
     confession, 
@@ -33,8 +34,16 @@ const MemoizedConfessionCard = memo(({
                         <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
                     </div>
                 </div>
-                <p>{confession.content}</p>
+                {confession.content ? <p>{confession.content}</p> : null}
             </button>
+
+            {confession.audio ? (
+                <AudioPlayer
+                    roomId={confession.roomId}
+                    confessionId={confession.confessionId}
+                    audio={confession.audio}
+                />
+            ) : null}
 
             <div className="room-confession-card__actions">
                 <button
