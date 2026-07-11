@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { FeedSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import MemoizedConfessionCard from "../../../components/common/ConfessionCard.jsx";
+import AudioPlayer from "./AudioPlayer.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
 import {
@@ -95,6 +96,14 @@ export default function ActiveRoomFeed({
                             {parts.body ? <p>{parts.body}</p> : null}
                         </button>
 
+                        {confession.audio ? (
+                            <AudioPlayer
+                                roomId={confession.roomId}
+                                confessionId={confession.confessionId}
+                                audio={confession.audio}
+                            />
+                        ) : null}
+
                         <div className="desktop-social-post__actions">
                             <button
                                 type="button"
@@ -180,7 +189,7 @@ export default function ActiveRoomFeed({
                                         </div>
                                     </header>
                                     <div className="room-scheduled-card__copy">
-                                        <p>{String(item.content || "").slice(0, 90)}</p>
+                                        <p>{String(item.content || "").trim() ? String(item.content || "").slice(0, 90) : "Audio confession"}</p>
                                     </div>
                                     {typeof onCancelScheduled === "function" && (
                                         <footer className="room-scheduled-card__actions">
@@ -334,7 +343,7 @@ export default function ActiveRoomFeed({
                                         </div>
                                     </header>
                                     <div className="room-scheduled-card__copy">
-                                        <p>{String(item.content || "").slice(0, 90)}</p>
+                                        <p>{String(item.content || "").trim() ? String(item.content || "").slice(0, 90) : "Audio confession"}</p>
                                     </div>
                                     {typeof onCancelScheduled === "function" && (
                                         <footer className="room-scheduled-card__actions">

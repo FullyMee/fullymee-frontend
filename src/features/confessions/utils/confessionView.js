@@ -29,7 +29,7 @@ export function getRoomHeroBadge(room) {
 export function getConfessionParts(content) {
     const text = String(content || "").trim();
     if (!text) {
-        return { title: "Untitled confession", body: "" };
+        return { title: "Audio confession", body: "" };
     }
 
     const questionMarkIndex = text.indexOf("?");

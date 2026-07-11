@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, Clock, X } from "lucide-react";
+import { RefreshCw, Clock, Mic, Type, X } from "lucide-react";
 import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
+import AudioConfessionRecorder from "./AudioConfessionRecorder.jsx";
 import {
     formatCompactMemberCount,
     getRoomTone,
@@ -45,7 +46,14 @@ export default function ConfessionComposerModal({
     onShuffle,
     shufflingAlias,
     selectedScheduledAt,
-    onScheduleSelect
+    onScheduleSelect,
+    confessionMode = "text",
+    onConfessionModeChange,
+    audioToken,
+    audioTokenLoading,
+    onFetchAudioToken,
+    onAudioReady,
+    audioReady
 }) {
     const [now, setNow] = useState(() => Date.now());
     const isScheduled = !!selectedScheduledAt;
@@ -59,6 +67,9 @@ export default function ConfessionComposerModal({
     if (!room) return null;
 
     const alias = String(room.alias || "").trim();
+    const isAudioMode = confessionMode === "audio";
+    const hasDraft = !!String(draft || "").trim();
+    const canSubmit = isAudioMode ? audioReady && hasDraft : hasDraft;
 
     return (
         <div className="room-post-modal" role="dialog" aria-modal="true" aria-labelledby="room-post-title">
@@ -71,7 +82,7 @@ export default function ConfessionComposerModal({
                     <button
                         type="submit"
                         className="room-post-modal__submit"
-                        disabled={posting || !String(draft || "").trim()}
+                        disabled={posting || !canSubmit}
                     >
                         {posting ? (
                             <>
@@ -132,19 +143,67 @@ export default function ConfessionComposerModal({
 
                     <section className="room-post-modal__section">
                         <h2>Your confession</h2>
-                        <label className="room-post-modal__editor" htmlFor="confession-compose">
-                            <textarea
-                                id="confession-compose"
-                                value={draft}
-                                onChange={(event) => onDraftChange(event.target.value)}
-                                placeholder="Share what's on your mind... This is a safe space to express yourself anonymously."
-                                maxLength={200}
-                            />
-                        </label>
-                        <div className="room-post-modal__footer">
-                            <span>Be honest and respectful</span>
-                            <strong>{String(draft || "").length}/200</strong>
+                        <div className="room-post-modal__mode-toggle" role="tablist" aria-label="Confession type">
+                            <button
+                                type="button"
+                                className={confessionMode === "text" ? "is-active" : ""}
+                                onClick={() => onConfessionModeChange?.("text")}
+                            >
+                                <Type size={14} />
+                                <span>Text</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={isAudioMode ? "is-active" : ""}
+                                onClick={() => onConfessionModeChange?.("audio")}
+                            >
+                                <Mic size={14} />
+                                <span>Audio</span>
+                            </button>
                         </div>
+
+                        {isAudioMode ? (
+                            <>
+                                <label className="room-post-modal__audio-title" htmlFor="audio-confession-title">
+                                    <span>Audio title</span>
+                                    <input
+                                        id="audio-confession-title"
+                                        type="text"
+                                        value={draft}
+                                        onChange={(event) => onDraftChange(event.target.value)}
+                                        placeholder="Give your audio confession a title..."
+                                        maxLength={80}
+                                    />
+                                </label>
+                                <AudioConfessionRecorder
+                                    token={audioToken}
+                                    tokenLoading={audioTokenLoading}
+                                    onFetchToken={onFetchAudioToken}
+                                    onAudioReady={onAudioReady}
+                                    ready={audioReady}
+                                />
+                                <div className="room-post-modal__footer">
+                                    <span>Title helps others understand the audio</span>
+                                    <strong>{String(draft || "").length}/80</strong>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <label className="room-post-modal__editor" htmlFor="confession-compose">
+                                    <textarea
+                                        id="confession-compose"
+                                        value={draft}
+                                        onChange={(event) => onDraftChange(event.target.value)}
+                                        placeholder="Share what's on your mind... This is a safe space to express yourself anonymously."
+                                        maxLength={200}
+                                    />
+                                </label>
+                                <div className="room-post-modal__footer">
+                                    <span>Be honest and respectful</span>
+                                    <strong>{String(draft || "").length}/200</strong>
+                                </div>
+                            </>
+                        )}
                     </section>
 
                     {typeof onScheduleSelect === "function" && (

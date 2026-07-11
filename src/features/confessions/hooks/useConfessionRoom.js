@@ -525,14 +525,18 @@ export default function useConfessionRoom() {
         }
     }, [activeRoomId, dismissError, setNotice, setSearchParams, showError]);
 
-    const handlePostConfession = useCallback(async (event) => {
+    const handlePostConfession = useCallback(async (event, options = {}) => {
         event.preventDefault();
         const content = String(confessionDraft || "").trim();
-        if (!activeRoomId || !content) return;
+        const audioPublicId = String(options.audioPublicId || "").trim();
+        if (!activeRoomId || (!content && !audioPublicId)) return false;
 
         try {
             setPostingConfession(true);
-            const result = await postConfession(activeRoomId, content, selectedScheduledAt || undefined);
+            const result = await postConfession(activeRoomId, content, {
+                scheduledAt: selectedScheduledAt || undefined,
+                audioPublicId: audioPublicId || undefined
+            });
             setConfessionDraft("");
             setSelectedScheduledAt(null);
             dismissError();
@@ -547,6 +551,7 @@ export default function useConfessionRoom() {
                     {
                         confessionId: result.scheduled.confessionId,
                         content: result.scheduled.content,
+                        audio: result.scheduled.audio || null,
                         alias: result.scheduled.alias,
                         scheduledAt: result.scheduled.scheduledAt,
                         scheduleStatus: "pending",
@@ -561,8 +566,10 @@ export default function useConfessionRoom() {
             }
 
             setShowComposer(false);
+            return true;
         } catch (err) {
             showError(err && err.message ? err.message : "Unable to post confession.");
+            return false;
         } finally {
             setPostingConfession(false);
         }

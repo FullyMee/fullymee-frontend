@@ -33,10 +33,12 @@ export default function ConfessionScheduleConfirmModal({
     onConfirm,
     onCancel
 }) {
-    const { confessionId, content, confirmExpiresAt } = confession || {};
+    const { confessionId, content, confirmExpiresAt, audio } = confession || {};
     const { minutes, seconds, progress, msLeft } = useCountdown(confirmExpiresAt);
     const hasAutoPublished = useRef(false);
-    const contentPreview = String(content || "").slice(0, 140) + (String(content || "").length > 140 ? "…" : "");
+    const previewText = String(content || "").trim()
+        ? `${String(content || "").slice(0, 140)}${String(content || "").length > 140 ? "..." : ""}`
+        : audio ? "Audio confession" : "";
 
     // Auto-publish when countdown hits zero
     useEffect(() => {
@@ -88,7 +90,7 @@ export default function ConfessionScheduleConfirmModal({
                 </p>
 
                 <blockquote className="schedule-confirm-preview">
-                    &ldquo;{contentPreview}&rdquo;
+                    &ldquo;{previewText}&rdquo;
                 </blockquote>
 
                 <div className="schedule-confirm-actions">

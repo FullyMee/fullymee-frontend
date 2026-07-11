@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Bell, Menu, MessageSquareQuote, Search, Shield, Sparkles } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
@@ -19,9 +19,9 @@ import { getAliasTone, getInitial } from "../utils/presentation.js";
 import { formatRelativeTime } from "../utils/time.js";
 import {
     getRoomTone,
-    formatCompactMemberCount,
     RoomGlyphIcon
 } from "../components/common/MobileRoomVisuals.jsx";
+import { getAudioUploadToken } from "../services/confession.service.js";
 
 const MOBILE_ROOM_FILTERS = ["All", "Joined", "Public", "Private", "Late Night"];
 
@@ -100,6 +100,11 @@ export default function ConfessionRoomPage({ user }) {
     const [desktopRoomFilter, setDesktopRoomFilter] = useState("All");
     const [mobileSearch, setMobileSearch] = useState("");
     const [mobileRoomFilter, setMobileRoomFilter] = useState("All");
+    const [confessionMode, setConfessionMode] = useState("text");
+    const [audioToken, setAudioToken] = useState(null);
+    const [audioTokenLoading, setAudioTokenLoading] = useState(false);
+    const [audioReady, setAudioReady] = useState(false);
+    const [audioReadyData, setAudioReadyData] = useState(null);
     const {
         joinedRooms,
         confessions,
@@ -199,7 +204,7 @@ export default function ConfessionRoomPage({ user }) {
             confessionsToday,
             supportGiven
         };
-    }, [joinedRooms]);
+    }, [confessions, joinedRooms]);
 
     const homeSuggestionRooms = useMemo(() => {
         return Array.isArray(joinedRooms) ? joinedRooms.slice(0, 4) : [];
@@ -216,18 +221,68 @@ export default function ConfessionRoomPage({ user }) {
         return Array.isArray(joinedRooms) ? joinedRooms.slice(0, 4) : [];
     }, [joinedRooms]);
 
+    const resetComposerState = useCallback(() => {
+        setShowComposer(false);
+        setSelectedScheduledAt(null);
+        setConfessionMode("text");
+        setAudioToken(null);
+        setAudioReady(false);
+        setAudioReadyData(null);
+    }, [setSelectedScheduledAt, setShowComposer]);
+
+    const handleFetchAudioToken = useCallback(async () => {
+        if (!activeRoomId || audioToken || audioTokenLoading) return audioToken;
+        try {
+            setAudioTokenLoading(true);
+            const token = await getAudioUploadToken(activeRoomId);
+            setAudioToken(token);
+            return token;
+        } finally {
+            setAudioTokenLoading(false);
+        }
+    }, [activeRoomId, audioToken, audioTokenLoading]);
+
+    const handleAudioReady = useCallback((data) => {
+        setAudioReady(true);
+        setAudioReadyData(data || null);
+    }, []);
+
+    const resetAudioComposerState = useCallback(() => {
+        setConfessionMode("text");
+        setAudioToken(null);
+        setAudioReady(false);
+        setAudioReadyData(null);
+    }, []);
+
+    const handleComposerSubmit = useCallback(async (event) => {
+        const posted = await handlePostConfession(event, confessionMode === "audio" ? {
+            audioPublicId: audioReadyData && audioReadyData.audioPublicId,
+            audioDuration: audioReadyData && audioReadyData.audioDuration
+        } : {});
+        if (posted) {
+            resetAudioComposerState();
+        }
+    }, [audioReadyData, confessionMode, handlePostConfession, resetAudioComposerState]);
+
     const composerModal = showComposer && activeRoom ? (
         <ConfessionComposerModal
             room={activeRoom}
             draft={confessionDraft}
             posting={postingConfession}
             onDraftChange={setConfessionDraft}
-            onClose={() => { setShowComposer(false); setSelectedScheduledAt(null); }}
-            onSubmit={handlePostConfession}
+            onClose={resetComposerState}
+            onSubmit={handleComposerSubmit}
             onShuffle={handleShuffleAlias}
             shufflingAlias={shufflingAlias}
             selectedScheduledAt={selectedScheduledAt}
             onScheduleSelect={setSelectedScheduledAt}
+            confessionMode={confessionMode}
+            onConfessionModeChange={setConfessionMode}
+            audioToken={audioToken}
+            audioTokenLoading={audioTokenLoading}
+            onFetchAudioToken={handleFetchAudioToken}
+            onAudioReady={handleAudioReady}
+            audioReady={audioReady}
         />
     ) : null;
 
