@@ -327,11 +327,13 @@ export default function ConfessionRoomPage({ user }) {
                     onLoadMoreConfessions={loadMoreConfessions}
                     onReact={handleReact}
                     onChatRequest={openChatRequest}
-                    onReplyDraftChange={(value) => updateReplyDraft(selectedConfession.confessionId, value)}
+                    onReplyDraftChange={(value) => updateReplyDraft(selectedConfession?.confessionId, value)}
                     onPostReply={handlePostReply}
                     onShare={handleShare}
                     onShuffleAlias={handleShuffleAlias}
                     shufflingAlias={shufflingAlias}
+                    scheduledConfessions={scheduledConfessions}
+                    onCancelScheduled={handleCancelScheduled}
                 />
 
                 {composerModal}

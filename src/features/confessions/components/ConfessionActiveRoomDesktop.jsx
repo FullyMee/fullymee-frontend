@@ -109,7 +109,9 @@ export default function ConfessionActiveRoomDesktop({
     onPostReply,
     onShare,
     onShuffleAlias,
-    shufflingAlias
+    shufflingAlias,
+    scheduledConfessions = [],
+    onCancelScheduled
 }) {
     const roomRail = activeRoom ? (
         <RoomMembersRail
@@ -201,6 +203,8 @@ export default function ConfessionActiveRoomDesktop({
                             onLoadMoreConfessions={onLoadMoreConfessions}
                             onReact={onReact}
                             onChatRequest={onChatRequest}
+                            scheduledConfessions={scheduledConfessions}
+                            onCancelScheduled={onCancelScheduled}
                         />
                     )}
 
