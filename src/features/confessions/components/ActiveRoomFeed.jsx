@@ -161,6 +161,40 @@ export default function ActiveRoomFeed({
     if (isDesktop) {
         return (
             <div className="desktop-confession-workspace">
+                {scheduledConfessions.length > 0 && (
+                    <section className="room-scheduled-strip" aria-label="Scheduled confessions">
+                        <div className="room-scheduled-strip__head">
+                            <strong>Time-locked</strong>
+                            <span>{scheduledConfessions.length} pending</span>
+                        </div>
+                        <div className="room-scheduled-strip__list">
+                            {scheduledConfessions.map((item) => (
+                                <article key={item.confessionId} className="room-scheduled-card">
+                                    <header className="room-scheduled-card__author">
+                                        <div className="room-scheduled-card__avatar" aria-hidden="true">
+                                            <ClockBadgeIcon />
+                                        </div>
+                                        <div>
+                                            <strong>Time-locked confession</strong>
+                                            <span>Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)}</span>
+                                        </div>
+                                    </header>
+                                    <div className="room-scheduled-card__copy">
+                                        <p>{String(item.content || "").slice(0, 90)}</p>
+                                    </div>
+                                    {typeof onCancelScheduled === "function" && (
+                                        <footer className="room-scheduled-card__actions">
+                                            <button type="button" onClick={() => onCancelScheduled(item.confessionId)}>
+                                                Cancel
+                                            </button>
+                                        </footer>
+                                    )}
+                                </article>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <section className="desktop-profile-section">
                     <div className="desktop-profile-section__head">
                         <h2>Confessions</h2>
