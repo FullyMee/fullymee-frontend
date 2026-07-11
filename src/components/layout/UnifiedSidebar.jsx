@@ -3,6 +3,7 @@ import useAuth from "../../hooks/useAuth.js";
 import { RoomGlyphIcon, getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
 import { getInitial } from "../../utils/presentation.js";
 import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search } from "lucide-react";
+import fullymeLogo from "../../assets/fullyme-logo.png";
 
 const DEFAULT_NAV_ITEMS = [
     { key: "home", label: "Home", to: "/" },
@@ -46,7 +47,7 @@ export default function UnifiedSidebar({
         <aside className="home-desktop-sidebar desktop-app-shell__sidebar">
             <div className="home-brand">
                 <div className="home-brand__mark" aria-hidden="true">
-                    <MessageSquareQuote size={20} strokeWidth={2} />
+                    <img src={fullymeLogo} alt="FullyMe logo" className="home-brand__logo-img" />
                 </div>
                 <div className="home-brand__copy">
                     <strong>FullyMe</strong>
@@ -62,7 +63,7 @@ export default function UnifiedSidebar({
                     return (
                         <Link
                             key={item.key}
-                            to={item.key === "messages" ? "/chats?requests=1" : item.to}
+                            to={item.to}
                             className={`home-nav__item${active ? " is-active" : ""}`}
                             aria-current={active ? "page" : undefined}
                         >

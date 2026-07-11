@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Bell, MessageSquareQuote, Plus } from "lucide-react";
+import fullymeLogo from "../assets/fullyme-logo.png";
 import useAuth from "../hooks/useAuth.js";
 import ErrorBanner from "../components/common/ErrorBanner.jsx";
 import { InlineSpinner } from "../components/common/LoadingStates.jsx";
@@ -75,7 +76,7 @@ function MobileGlobalHeader() {
         <header className="home-mobile-header">
             <div className="home-mobile-brand">
                 <div className="home-mobile-brand__mark" aria-hidden="true">
-                    <MessageSquareQuote size={19} strokeWidth={2} />
+                    <img src={fullymeLogo} alt="FullyMe logo" className="home-brand__logo-img" />
                 </div>
                 <div className="home-mobile-brand__copy">
                     <strong>FullyMe</strong>
