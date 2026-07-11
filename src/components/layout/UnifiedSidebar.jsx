@@ -62,7 +62,7 @@ export default function UnifiedSidebar({
                     return (
                         <Link
                             key={item.key}
-                            to={item.key === "messages" ? "/chats?requests=1" : item.to}
+                            to={item.to}
                             className={`home-nav__item${active ? " is-active" : ""}`}
                             aria-current={active ? "page" : undefined}
                         >
