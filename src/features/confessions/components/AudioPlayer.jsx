@@ -11,7 +11,7 @@ function formatDuration(seconds) {
     return `${minutes}:${String(remaining).padStart(2, "0")}`;
 }
 
-export default function AudioPlayer({ roomId, confessionId, audio }) {
+export default function AudioPlayer({ roomId, confessionId, audio, variant = "default" }) {
     const audioRef = useRef(null);
     const playerId = useMemo(() => `confession-audio-${roomId}-${confessionId}`, [confessionId, roomId]);
     const [src, setSrc] = useState("");
@@ -100,6 +100,46 @@ export default function AudioPlayer({ roomId, confessionId, audio }) {
             setLoading(false);
         }
     };
+
+    if (variant === "mobile") {
+        return (
+            <div className="room-mobile-redesign-audio" onClick={(event) => event.stopPropagation()}>
+                <button type="button" className="room-mobile-redesign-audio__button" onClick={handleToggle} disabled={loading}>
+                    {loading ? <RotateCw className="audio-player__spin" size={16} /> : playing ? <Pause size={16} fill="currentColor" strokeWidth={0} /> : <Play size={16} fill="currentColor" strokeWidth={0} />}
+                </button>
+                <div className="room-mobile-redesign-audio__main">
+                    <div className="room-mobile-redesign-audio__head">
+                        <strong>Voice note</strong>
+                        <span>{formatDuration(currentTime)} / {formatDuration(resolvedDuration || audio.duration)}</span>
+                    </div>
+                    <div className="room-mobile-redesign-audio__waveform">
+                        {[4,8,5,10,14,18,12,8,15,20,16,10,6,12,18,14,8,4,6,10].map((h, i) => (
+                            <div key={i} className={`room-mobile-redesign-audio__bar ${playing ? 'is-playing' : ''}`} style={{ height: `${Math.max(4, h)}px`, animationDelay: `${i * 0.05}s` }} />
+                        ))}
+                    </div>
+                    {error && <span className="audio-player__error">{error}</span>}
+                </div>
+                <audio
+                    ref={audioRef}
+                    preload="none"
+                    controls={false}
+                    controlsList="nodownload"
+                    onLoadedMetadata={(event) => {
+                        const duration = Number(event.currentTarget.duration || 0);
+                        if (Number.isFinite(duration) && duration > 0) setResolvedDuration(duration);
+                        applyPitchShift();
+                    }}
+                    onPlay={applyPitchShift}
+                    onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
+                    onEnded={() => {
+                        setPlaying(false);
+                        setCurrentTime(0);
+                    }}
+                    onPause={() => setPlaying(false)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="audio-player" onClick={(event) => event.stopPropagation()}>

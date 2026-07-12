@@ -240,89 +240,62 @@ export default function ActiveRoomFeed({
 
     return (
         <>
-            <header className="room-feed-header room-feed-header--social">
-                <div className="room-feed-header__room-row">
-                    <button type="button" className="room-feed-header__title" onClick={onBack}>
-                        <span className="room-feed-header__back-icon" aria-hidden="true">
-                            <ArrowLeftIcon />
-                        </span>
-                        <span>
-                            <strong>{activeRoom.title}</strong>
-                            <small>{roomSubtitle}</small>
-                        </span>
-                    </button>
+            <header className="room-mobile-redesign-header">
+                <button type="button" className="room-mobile-redesign-header__back" onClick={onBack}>
+                    <ArrowLeftIcon />
+                    <span>Rooms</span>
+                </button>
 
-                    <div className="room-feed-header__actions">
-                        <button
-                            type="button"
-                            className={`room-feed-header__leave${leavingRoomId === Number(activeRoom.roomId) ? " is-loading" : ""}`}
-                            disabled={leavingRoomId === Number(activeRoom.roomId)}
-                            onClick={() => onLeaveRoom(activeRoom)}
-                        >
-                            <LeaveIcon />
-                            <span>{leavingRoomId === Number(activeRoom.roomId) ? "Leaving" : "Leave"}</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="room-feed-header__compose"
-                            onClick={onOpenComposer}
-                            aria-label="Create confession"
-                        >
-                            <PlusIcon />
-                        </button>
-                    </div>
+                <div className="room-mobile-redesign-header__actions">
+                    <button
+                        type="button"
+                        className="room-mobile-redesign-header__leave"
+                        disabled={leavingRoomId === Number(activeRoom.roomId)}
+                        onClick={() => onLeaveRoom(activeRoom)}
+                        aria-label="Leave room"
+                    >
+                        <LeaveIcon />
+                    </button>
+                    <button
+                        type="button"
+                        className="room-mobile-redesign-header__compose"
+                        onClick={onOpenComposer}
+                        aria-label="Create confession"
+                    >
+                        <PlusIcon />
+                    </button>
                 </div>
             </header>
 
-            <main className="room-feed-content">
-                <section className={`room-hero-card room-hero-card--${getRoomTone(activeRoom)}`}>
-                    <div className="room-hero-card__top">
-                        <div className="room-hero-card__icon">
-                            <RoomGlyphIcon tone={getRoomTone(activeRoom)} />
+            <main className="room-mobile-redesign-content">
+                <section className="room-mobile-redesign-hero">
+                    <div className="room-mobile-redesign-hero__tone">
+                        {getRoomHeroBadge(activeRoom).toUpperCase()} &bull;
+                    </div>
+                    <h1 className="room-mobile-redesign-hero__title">{activeRoom.title}</h1>
+                    <div className="room-mobile-redesign-hero__subtitle-row">
+                        <p>{activeRoom.description || "Speak softly. We're listening."}</p>
+                        <div className="room-mobile-redesign-hero__members">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>{formatCompactMemberCount(activeRoom.currentUserCount)}</span>
                         </div>
-                        <div className="room-hero-card__copy">
-                            <div className="room-hero-card__meta-row">
-                                <span className="room-hero-card__badge">{getRoomHeroBadge(activeRoom)}</span>
-                                {activeRoom.roomType === "private" && (
-                                    <span className="room-hero-card__badge room-hero-card__badge--private">
-                                        <LockIcon />
-                                        <span>Private</span>
-                                    </span>
-                                )}
-                            </div>
-                            <p>{activeRoom.description || "Share what is on your mind and support others anonymously."}</p>
-                            <small>{formatCompactMemberCount(activeRoom.currentUserCount)}</small>
-                        </div>
-                        <button
-                            type="button"
-                            className={`room-hero-card__joined is-leave${leavingRoomId === Number(activeRoom.roomId) ? " is-loading" : ""}`}
-                            disabled={leavingRoomId === Number(activeRoom.roomId)}
-                            onClick={() => onLeaveRoom(activeRoom)}
-                        >
-                            <LeaveIcon />
-                            <span>{leavingRoomId === Number(activeRoom.roomId) ? "Leaving..." : "Leave"}</span>
-                        </button>
                     </div>
                     {activeRoom.roomType === "private" && activeRoom.joinCode && (
-                        <div className="room-hero-card__private-panel">
-                            <div className="room-hero-card__divider" aria-hidden="true" />
-                            <p className="room-hero-card__private-label">Share this code with others to join:</p>
-                            <div className="room-hero-card__private-code-row">
-                                <div className="room-hero-card__private-code-card">
-                                    <strong>{activeRoom.joinCode}</strong>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="room-hero-card__copy-button"
-                                    onClick={() => onCopyRoomCode(activeRoom)}
-                                >
-                                    <CopyIcon />
-                                    <span>{copiedRoomId === Number(activeRoom.roomId) ? "Copied!" : "Copy"}</span>
-                                </button>
-                            </div>
+                        <div className="room-mobile-redesign-hero__private">
+                            <p>Share this code to join:</p>
+                            <strong>{activeRoom.joinCode}</strong>
+                            <button type="button" onClick={() => onCopyRoomCode(activeRoom)}>
+                                {copiedRoomId === Number(activeRoom.roomId) ? "Copied!" : "Copy"}
+                            </button>
                         </div>
                     )}
                 </section>
+                <hr className="room-mobile-redesign-divider" />
+                <section className="room-mobile-redesign-voices-head">
+                    <h2>VOICES FROM THE ROOM</h2>
+                    <p>Listen with kindness. Leave space for every story.</p>
+                </section>
+                <hr className="room-mobile-redesign-divider" />
 
                 {scheduledConfessions.length > 0 && (
                     <section className="room-scheduled-strip" aria-label="Scheduled confessions">
@@ -358,12 +331,7 @@ export default function ActiveRoomFeed({
                     </section>
                 )}
 
-                <section className="room-feed-section">
-                    <div className="room-feed-section__head">
-                        <h2>Confessions</h2>
-                        <span>{loadingConfessions ? "Loading..." : `${confessions.length} posts`}</span>
-                    </div>
-
+                <section className="room-mobile-redesign-feed">
                     {loadingConfessions && confessions.length === 0 && <FeedSkeletonList count={3} />}
 
                     {!loadingConfessions && confessions.length === 0 && (
