@@ -266,6 +266,7 @@ export default function ConfessionRoomPage({ user }) {
 
     const composerModal = showComposer && activeRoom ? (
         <ConfessionComposerModal
+            isDesktop={isDesktop}
             room={activeRoom}
             draft={confessionDraft}
             posting={postingConfession}

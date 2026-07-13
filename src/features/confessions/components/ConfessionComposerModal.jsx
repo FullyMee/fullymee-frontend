@@ -37,6 +37,7 @@ function formatCountdown(date, now = Date.now()) {
 }
 
 export default function ConfessionComposerModal({
+    isDesktop,
     room,
     draft,
     posting,
@@ -70,6 +71,182 @@ export default function ConfessionComposerModal({
     const isAudioMode = confessionMode === "audio";
     const hasDraft = !!String(draft || "").trim();
     const canSubmit = isAudioMode ? audioReady && hasDraft : hasDraft;
+
+    if (!isDesktop) {
+        return (
+            <div className="room-mobile-redesign-composer" role="dialog" aria-modal="true" aria-labelledby="room-post-title">
+                <form className="room-mobile-redesign-composer__sheet" onSubmit={onSubmit}>
+                    <header className="room-mobile-redesign-composer__header">
+                        <button type="button" className="room-mobile-redesign-composer__cancel" onClick={onClose}>
+                            <ArrowLeftIcon />
+                            <span>Cancel</span>
+                        </button>
+                        <button
+                            type="submit"
+                            className="room-mobile-redesign-composer__post"
+                            disabled={posting || !canSubmit}
+                        >
+                            {posting ? (
+                                <>
+                                    <InlineSpinner size="sm" tone="dark" label="Posting confession" />
+                                </>
+                            ) : isScheduled ? `Schedule` : "Post"}
+                        </button>
+                    </header>
+
+                    <div className="room-mobile-redesign-composer__body">
+                        <section className="room-mobile-redesign-composer__safety">
+                            <ShieldIcon />
+                            <div className="room-mobile-redesign-composer__safety-text">
+                                <strong>Share freely. Your identity stays anonymous.</strong>
+                                <span>No one can trace this confession back to you.</span>
+                            </div>
+                        </section>
+
+                        {alias && (
+                            <section className="room-mobile-redesign-composer__identity">
+                                <div className="room-mobile-redesign-composer__identity-info">
+                                    <span>Posting as</span>
+                                    <strong>{alias}</strong>
+                                </div>
+                                {typeof onShuffle === "function" && (
+                                    <button
+                                        type="button"
+                                        className="room-mobile-redesign-composer__shuffle"
+                                        onClick={onShuffle}
+                                        disabled={shufflingAlias}
+                                        aria-label="Shuffle identity"
+                                    >
+                                        <RefreshCw
+                                            size={14}
+                                            strokeWidth={2.2}
+                                            style={shufflingAlias ? { animation: "room-shuffle-spin 0.7s linear infinite" } : undefined}
+                                            aria-hidden="true"
+                                        />
+                                        <span>Shuffle</span>
+                                    </button>
+                                )}
+                            </section>
+                        )}
+
+                        <section className="room-mobile-redesign-composer__section">
+                            <h2>Post in room</h2>
+                            <article className="room-mobile-redesign-composer__room-card">
+                                <div className={`room-mobile-redesign-composer__room-icon room-mobile-redesign-composer__room-icon--${getRoomTone(room)}`}>
+                                    <RoomGlyphIcon tone={getRoomTone(room)} />
+                                </div>
+                                <div className="room-mobile-redesign-composer__room-copy">
+                                    <strong>{room.title}</strong>
+                                    <span>{formatCompactMemberCount(room.currentUserCount)} members</span>
+                                </div>
+                            </article>
+                        </section>
+
+                        <section className="room-mobile-redesign-composer__section">
+                            <h2>Your confession</h2>
+                            <div className="room-mobile-redesign-composer__mode-toggle" role="tablist">
+                                <button
+                                    type="button"
+                                    className={`room-mobile-redesign-composer__mode-btn ${confessionMode === "text" ? "is-active" : ""}`}
+                                    onClick={() => onConfessionModeChange?.("text")}
+                                >
+                                    <Type size={15} />
+                                    <span>Text</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`room-mobile-redesign-composer__mode-btn ${isAudioMode ? "is-active" : ""}`}
+                                    onClick={() => onConfessionModeChange?.("audio")}
+                                >
+                                    <Mic size={15} />
+                                    <span>Audio</span>
+                                </button>
+                            </div>
+
+                            <div className="room-mobile-redesign-composer__input-container">
+                                {isAudioMode ? (
+                                    <>
+                                        <label className="room-mobile-redesign-composer__audio-title" htmlFor="audio-confession-title-mobile">
+                                            <span>Audio title</span>
+                                            <input
+                                                id="audio-confession-title-mobile"
+                                                type="text"
+                                                value={draft}
+                                                onChange={(event) => onDraftChange(event.target.value)}
+                                                placeholder="Give your audio confession a title..."
+                                                maxLength={80}
+                                            />
+                                        </label>
+                                        <AudioConfessionRecorder
+                                            token={audioToken}
+                                            tokenLoading={audioTokenLoading}
+                                            onFetchToken={onFetchAudioToken}
+                                            onAudioReady={onAudioReady}
+                                            ready={audioReady}
+                                        />
+                                        <div className="room-mobile-redesign-composer__footer">
+                                            <span>Title helps others understand the audio</span>
+                                            <strong>{String(draft || "").length}/80</strong>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <label className="room-mobile-redesign-composer__editor" htmlFor="confession-compose-mobile">
+                                            <textarea
+                                                id="confession-compose-mobile"
+                                                value={draft}
+                                                onChange={(event) => onDraftChange(event.target.value)}
+                                                placeholder="Share what's on your mind... This is a safe space to express yourself anonymously."
+                                                maxLength={200}
+                                            />
+                                        </label>
+                                        <div className="room-mobile-redesign-composer__footer">
+                                            <span>Be honest and respectful</span>
+                                            <strong>{String(draft || "").length}/200</strong>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </section>
+
+                        {typeof onScheduleSelect === "function" && (
+                            <section className="room-mobile-redesign-composer__schedule">
+                                <div className="room-mobile-redesign-composer__schedule-header">
+                                    <Clock size={18} strokeWidth={2} aria-hidden="true" />
+                                    <strong>Time-lock this confession</strong>
+                                </div>
+                                <p className="room-mobile-redesign-composer__schedule-desc">
+                                    It will become visible to the room after the time you choose.
+                                </p>
+                                <div className="room-mobile-redesign-composer__schedule-options">
+                                    {SCHEDULE_OPTIONS.map((opt) => {
+                                        const targetDate = opt.getDate();
+                                        const isActive = isScheduled &&
+                                            Math.abs(new Date(selectedScheduledAt).getTime() - targetDate.getTime()) < 60000;
+                                        return (
+                                            <button
+                                                key={opt.label}
+                                                type="button"
+                                                className={`room-mobile-redesign-composer__schedule-btn ${isActive ? "is-active" : ""}`}
+                                                onClick={() => onScheduleSelect(isActive ? null : targetDate)}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {isScheduled && (
+                                    <p className="room-mobile-redesign-composer__schedule-hint">
+                                        Posts {formatCountdown(selectedScheduledAt, now)} — you can cancel before it goes live
+                                    </p>
+                                )}
+                            </section>
+                        )}
+                    </div>
+                </form>
+            </div>
+        );
+    }
 
     return (
         <div className="room-post-modal" role="dialog" aria-modal="true" aria-labelledby="room-post-title">

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Bell, MessageSquareQuote, Plus } from "lucide-react";
+import { MessageSquareQuote, Plus, UserRoundPlus } from "lucide-react";
 import fullymeLogo from "../assets/fullyme-logo.png";
 import useAuth from "../hooks/useAuth.js";
 import ErrorBanner from "../components/common/ErrorBanner.jsx";
@@ -99,7 +99,7 @@ function MobileGlobalHeader() {
                     onClick={() => navigate("/chats?requests=1")}
                     aria-label="Open notifications"
                 >
-                    <Bell size={19} strokeWidth={2} />
+                    <UserRoundPlus size={19} strokeWidth={2} />
                     <span className="home-mobile-header__dot" aria-hidden="true" />
                 </button>
             </div>
