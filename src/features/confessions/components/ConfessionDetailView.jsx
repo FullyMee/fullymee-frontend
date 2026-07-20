@@ -2,7 +2,7 @@ import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx"
 import { CommentSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
-import { getConfessionParts } from "../utils/confessionView.js";
+
 import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
@@ -52,10 +52,7 @@ export default function ConfessionDetailView({
             </div>
 
             <div className="confession-detail-card__body">
-                {selectedConfession.content ? <h1>{getConfessionParts(selectedConfession.content).title}</h1> : null}
-                {getConfessionParts(selectedConfession.content).body && (
-                    <p>{getConfessionParts(selectedConfession.content).body}</p>
-                )}
+                {selectedConfession.content ? <h1>{selectedConfession.content}</h1> : null}
                 {selectedConfession.audio ? (
                     <AudioPlayer
                         roomId={selectedConfession.roomId}

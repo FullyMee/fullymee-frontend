@@ -202,6 +202,37 @@ function isCsrfProtectedMethod(method) {
     return !['GET', 'HEAD', 'OPTIONS'].includes(String(method || 'GET').toUpperCase());
 }
 
+let inMemoryCsrfToken = null;
+let csrfTokenPromise = null;
+
+async function getCsrfTokenSafe() {
+    if (inMemoryCsrfToken) return inMemoryCsrfToken;
+    
+    let token = getDocumentCookieValue('csrf_token');
+    if (token) {
+        inMemoryCsrfToken = token;
+        return token;
+    }
+
+    if (!csrfTokenPromise) {
+        csrfTokenPromise = fetch(`${API_URL}/auth/csrf`, {
+            method: 'GET',
+            credentials: 'include'
+        }).then(res => res.ok ? res.json() : null)
+          .then(data => {
+              if (data && data.csrfToken) {
+                  inMemoryCsrfToken = data.csrfToken;
+                  return inMemoryCsrfToken;
+              }
+              return null;
+          }).catch(() => null)
+          .finally(() => {
+              csrfTokenPromise = null;
+          });
+    }
+    return csrfTokenPromise;
+}
+
 /**
  * Main API request function
  * @param {string} endpoint - API endpoint
@@ -226,12 +257,6 @@ export async function apiRequest(endpoint, options = {}) {
     const method = String(fetchOptions.method || "GET").toUpperCase();
     const headerKeys = Object.keys(headers || {});
     const hasCsrfHeader = headerKeys.some((key) => ['x-csrf-token', 'x-xsrf-token'].includes(String(key).toLowerCase()));
-    if (isCsrfProtectedMethod(method) && !hasCsrfHeader) {
-        const csrfToken = getDocumentCookieValue('csrf_token');
-        if (csrfToken) {
-            headers['X-CSRF-Token'] = csrfToken;
-        }
-    }
     const shouldUseGetCache = method === "GET" && !skipCache;
     const cacheKey = shouldUseGetCache ? getRequestCacheKey(endpoint, fetchOptions, headers) : "";
 
@@ -279,12 +304,20 @@ export async function apiRequest(endpoint, options = {}) {
     };
 
     const performRequest = async () => {
+        const requestHeaders = { ...headers };
+        if (isCsrfProtectedMethod(method) && !hasCsrfHeader) {
+            const csrfToken = await getCsrfTokenSafe();
+            if (csrfToken) {
+                requestHeaders['X-CSRF-Token'] = csrfToken;
+            }
+        }
+
         let response;
         try {
             response = await fetch(`${API_URL}${endpoint}`, {
                 ...fetchOptions,
                 credentials: "include",
-                headers
+                headers: requestHeaders
             });
         } catch {
             const error = new Error("Unable to connect to the server. Please check your internet connection.");
@@ -331,6 +364,7 @@ export async function apiRequest(endpoint, options = {}) {
 
     let attempt = 0;
     let lastError = null;
+    let csrfRetried = false;
 
     while (true) {
         if (shouldUseGetCache) {
@@ -366,6 +400,12 @@ export async function apiRequest(endpoint, options = {}) {
                 if (refreshed) {
                     continue;
                 }
+            }
+
+            if (status === 403 && error.payload && error.payload.error === "Invalid CSRF token" && !csrfRetried) {
+                inMemoryCsrfToken = null;
+                csrfRetried = true;
+                continue;
             }
 
             const canRetry = shouldRetry && mergedRetryOptions.retryStatusCodes.includes(status);

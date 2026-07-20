@@ -11,7 +11,7 @@ import {
     RoomGlyphIcon
 } from "../../../components/common/MobileRoomVisuals.jsx";
 import { Virtuoso } from "react-virtuoso";
-import { getConfessionParts, getRoomHeroBadge } from "../utils/confessionView.js";
+import { getRoomHeroBadge } from "../utils/confessionView.js";
 import { ArrowLeftIcon, CommentIcon, CopyIcon, HeartIcon, LeaveIcon, LockIcon, PlusIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
 
 function formatScheduleCountdown(date, now = Date.now()) {
@@ -73,7 +73,6 @@ export default function ActiveRoomFeed({
                 const isLiked = likedConfessionIds.has(confessionId);
                 const isReacting = reactingConfessionIds.has(confessionId);
                 const isSentRequest = sentChatRequestIds.has(confessionId);
-                const parts = getConfessionParts(confession.content);
 
                 return (
                     <article key={confession.confessionId} className="desktop-social-post">
@@ -92,8 +91,7 @@ export default function ActiveRoomFeed({
                             className="desktop-social-post__content"
                             onClick={() => onOpenConfession(confession.confessionId)}
                         >
-                            <h3>{parts.title}</h3>
-                            {parts.body ? <p>{parts.body}</p> : null}
+                            <h3>{String(confession.content || "").trim() ? confession.content : "Audio confession"}</h3>
                         </button>
 
                         {confession.audio ? (
@@ -298,32 +296,41 @@ export default function ActiveRoomFeed({
                 <hr className="room-mobile-redesign-divider" />
 
                 {scheduledConfessions.length > 0 && (
-                    <section className="room-scheduled-strip" aria-label="Scheduled confessions">
+                    <section className="room-scheduled-strip" aria-label="Scheduled confessions" style={{ marginTop: "1.25rem" }}>
                         <div className="room-scheduled-strip__head">
                             <strong>Time-locked</strong>
                             <span>{scheduledConfessions.length} pending</span>
                         </div>
                         <div className="room-scheduled-strip__list">
                             {scheduledConfessions.map((item) => (
-                                <article key={item.confessionId} className="room-scheduled-card">
-                                    <header className="room-scheduled-card__author">
-                                        <div className="room-scheduled-card__avatar" aria-hidden="true">
-                                            <ClockBadgeIcon />
+                                <article key={item.confessionId} className="room-mobile-redesign-card">
+                                    <div className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left" }}>
+                                        <div className="room-mobile-redesign-card__author-row">
+                                            <div className="room-mobile-redesign-card__author-info">
+                                                <div className="room-mobile-redesign-card__avatar" style={{ background: "#e17b53", color: "white" }}>
+                                                    <ClockBadgeIcon />
+                                                </div>
+                                                <strong className="room-mobile-redesign-card__alias">Time-locked confession</strong>
+                                                <span className="room-mobile-redesign-card__meta">
+                                                    Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <strong>Time-locked confession</strong>
-                                            <span>Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)}</span>
+
+                                        <div className={`room-mobile-redesign-card__body ${item.audio ? "is-quoted" : "is-written"}`}>
+                                            {item.audio && !String(item.content || "").trim() ? "Audio confession" : (item.audio ? `“${item.content}”` : item.content)}
                                         </div>
-                                    </header>
-                                    <div className="room-scheduled-card__copy">
-                                        <p>{String(item.content || "").trim() ? String(item.content || "").slice(0, 90) : "Audio confession"}</p>
                                     </div>
                                     {typeof onCancelScheduled === "function" && (
-                                        <footer className="room-scheduled-card__actions">
-                                            <button type="button" onClick={() => onCancelScheduled(item.confessionId)}>
+                                        <div className="room-mobile-redesign-card__actions" style={{ justifyContent: "flex-end", borderTop: "1px solid #f3ebe3", padding: "0.8rem 1rem" }}>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => onCancelScheduled(item.confessionId)}
+                                                style={{ padding: "0.5rem 1.25rem", borderRadius: "999px", border: "none", background: "#fdf2ed", color: "#e17b53", fontWeight: "600", fontSize: "0.9rem" }}
+                                            >
                                                 Cancel
                                             </button>
-                                        </footer>
+                                        </div>
                                     )}
                                 </article>
                             ))}

@@ -2247,10 +2247,10 @@
 
 .confession-detail-content .confession-detail-card__body h1 {
     margin-top: 1rem;
-    color: #39203c;
+    color: #1a2244;
     font-family: var(--font-display);
-    font-size: 0.98rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 400;
     line-height: 1.45;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -4162,6 +4162,43 @@
     border: 1px solid rgba(43, 35, 49, 0.08);
     border-radius: 1rem;
     padding: 1.15rem;
+}
+
+.room-mobile-redesign-composer__audio-title {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+}
+
+.room-mobile-redesign-composer__audio-title span {
+    color: #7d6874;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.room-mobile-redesign-composer__audio-title input {
+    width: 100%;
+    min-height: 2.85rem;
+    border: 1px solid #e0d9cd;
+    border-radius: 1rem;
+    background: #ffffff;
+    color: #39203c;
+    font-family: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+    outline: none;
+    padding: 0 0.95rem;
+    box-sizing: border-box;
+}
+
+.room-mobile-redesign-composer__audio-title input::placeholder {
+    color: #a5969f;
+    font-weight: 600;
+}
+
+.room-mobile-redesign-composer__audio-title input:focus {
+    border-color: rgba(230, 111, 63, 0.55);
+    box-shadow: 0 0 0 3px rgba(230, 111, 63, 0.1);
 }
 
 .room-mobile-redesign-composer__editor textarea {
