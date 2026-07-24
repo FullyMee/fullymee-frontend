@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Activity, ArrowRight, Bell, CircleUser, Flame, Home, MessageCircle, MessageSquare, MessageSquareQuote, Menu, MoreVertical, Search, Shield, Sparkles, Users, Heart } from "lucide-react";
 import CreateRoomModal from "../components/common/CreateRoomModal.jsx";
 import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
 import { InfiniteScrollLoader, InlineSpinner, RoomCardSkeletonList } from "../components/common/LoadingStates.jsx";
@@ -32,6 +31,35 @@ import useTimedNotice from "../hooks/useTimedNotice.js";
 import { formatRelativeTime } from "../utils/time.js";
 import { getAliasTone } from "../utils/presentation.js";
 import { subscribeConfessionRoom, unsubscribeConfessionRoom } from "../services/confession.service";
+import {
+    JoinRoomsIcon,
+    TrendingIcon,
+    ArrowRightIcon,
+    MobileSearchIcon,
+    MobileBellIcon,
+    MobileMenuIcon,
+    ConfideMarkIcon,
+    PulseIcon,
+    GroupIcon,
+    HomeIcon,
+    ConfessionIcon,
+    MessagesIcon,
+    ProfileIcon,
+    HeartIcon,
+    CommentIcon,
+    ShieldIcon,
+    SparkIcon,
+    MoreIcon
+} from "../components/common/Icons.jsx";
+import {
+    uniqueByRoomId,
+    getHomeFilterLabel,
+    matchesHomeSearch,
+    matchesHomeConfessionSearch,
+    formatRoomAccess,
+    formatCompactPulseCount,
+    getLatestConfessionScore
+} from "../features/confessions/utils/feedSorting.js";
 
 const CREATE_MODAL = "create";
 const DISCOVER_PAGE_SIZE = 8;
@@ -86,89 +114,6 @@ const SECTION_META = {
     }
 };
 
-function JoinRoomsIcon() { return <Users size={18} strokeWidth={2} />; }
-
-function TrendingIcon() { return <Flame size={18} strokeWidth={2} />; }
-
-function ArrowRightIcon() { return <ArrowRight size={18} strokeWidth={2} />; }
-
-function MobileSearchIcon() { return <Search size={18} strokeWidth={2} />; }
-
-function MobileBellIcon() { return <Bell size={18} strokeWidth={2} />; }
-
-function MobileMenuIcon() { return <Menu size={18} strokeWidth={2} />; }
-
-function ConfideMarkIcon() { return <MessageSquareQuote size={18} strokeWidth={2} />; }
-
-function PulseIcon() { return <Activity size={18} strokeWidth={2} />; }
-
-function GroupIcon() { return <Users size={18} strokeWidth={2} />; }
-
-function formatRoomAccess(room) {
-    return room && room.roomType === "private" ? "Private" : "Public";
-}
-
-function HomeIcon() { return <Home size={18} strokeWidth={2} />; }
-
-function ConfessionIcon() { return <MessageSquareQuote size={18} strokeWidth={2} />; }
-
-function MessagesIcon() { return <MessageCircle size={18} strokeWidth={2} />; }
-
-function ProfileIcon() { return <CircleUser size={18} strokeWidth={2} />; }
-
-function HeartIcon({ filled = false }) { return <Heart size={18} fill={filled ? "currentColor" : "none"} strokeWidth={filled ? 0 : 2} />; }
-
-function CommentIcon() { return <MessageSquare size={18} strokeWidth={2} />; }
-
-function ShieldIcon() { return <Shield size={18} strokeWidth={2} />; }
-
-function SparkIcon() { return <Sparkles size={18} strokeWidth={2} />; }
-
-function MoreIcon() { return <MoreVertical size={18} strokeWidth={2} />; }
-
-function formatCompactPulseCount(value) {
-    return new Intl.NumberFormat("en-US", {
-        notation: "compact",
-        maximumFractionDigits: 1
-    }).format(Number(value) || 0);
-}
-
-function uniqueByRoomId(rooms) {
-    const seen = new Set();
-    const next = [];
-    for (const room of Array.isArray(rooms) ? rooms : []) {
-        const roomId = Number(room && room.roomId);
-        if (!roomId || seen.has(roomId)) continue;
-        seen.add(roomId);
-        next.push(room);
-    }
-    return next;
-}
-
-function getHomeFilterLabel(key) {
-    const value = String(key || "").toLowerCase();
-    if (value === "daily") return "Late Night";
-    if (value === "advice") return "Heartbreak";
-    if (value === "chill") return "Anxiety";
-    if (value === "general") return "Random";
-    return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function matchesHomeSearch(room, term) {
-    const value = String(term || "").trim().toLowerCase();
-    if (!value) return true;
-
-    const haystack = `${room && room.title ? room.title : ""} ${room && room.description ? room.description : ""} ${room && room.category ? room.category : ""} ${room && room.roomType ? room.roomType : ""}`.toLowerCase();
-    return haystack.includes(value);
-}
-
-function matchesHomeConfessionSearch(card, term) {
-    const value = String(term || "").trim().toLowerCase();
-    if (!value) return true;
-
-    const haystack = `${card && card.alias ? card.alias : ""} ${card && card.roomTitle ? card.roomTitle : ""} ${card && card.roomDescription ? card.roomDescription : ""} ${card && card.content ? card.content : ""}`.toLowerCase();
-    return haystack.includes(value);
-}
 
 export default function HomeDiscoverPage() {
     const isDesktop = useIsDesktop();

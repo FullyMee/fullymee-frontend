@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, MessageCircle, MoreVertical, Search, Send, Smile, UserRoundPlus, Users, X } from "lucide-react";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import { getChatAvatarGlyph } from "../components/common/MobileRoomVisuals.jsx";
 import { ChatListSkeleton, ChatThreadSkeleton, InfiniteScrollLoader, InlineSpinner } from "../components/common/LoadingStates.jsx";
@@ -13,6 +12,9 @@ import useSocket from "../hooks/useSocket";
 import useBodyClass from "../hooks/useBodyClass.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
+import useMobileViewport from "../features/chats/hooks/useMobileViewport.js";
+import ChatRequestsView from "../features/chats/components/ChatRequestsView.jsx";
+import { PendingRequestCard, AcceptedRequestCard } from "../features/chats/components/ChatRequestCard.jsx";
 import { waitForSocketConnection } from "../services/socket.js";
 import { getJoinedRooms } from "../services/confession.service";
 import { getInitial } from "../utils/presentation.js";
@@ -24,174 +26,39 @@ import {
     listUsers,
     respondToChatRequest
 } from "../services/chat.service";
+import {
+    ArrowLeftIcon,
+    MoreIcon,
+    SendIcon,
+    SearchIcon,
+    SmileIcon,
+    RequestsIcon,
+    MessageRequestIcon,
+    CheckIcon,
+    CloseIcon,
+    ChatBubbleIcon
+} from "../components/common/Icons.jsx";
+import {
+    getHashValue,
+    getAvatarTone,
+    formatListTime,
+    formatMessageTime,
+    formatDesktopDateLabel,
+    truncateText,
+    formatRequestSummary,
+    getRequestSubtitle,
+    getRequestInfoLine
+} from "../features/chats/utils/chatHelpers.js";
+import {
+    normalizeDisplayNames,
+    dedupeMessages,
+    buildOptimisticMessage,
+    replaceOptimisticMessage,
+    createClientMessageId
+} from "../features/chats/utils/messageHelpers.js";
 
-const AVATAR_TONES = ["indigo", "ocean", "violet", "teal", "royal"];
 const MESSAGE_PAGE_SIZE = 30;
 
-function ArrowLeftIcon() { return <ArrowLeft size={18} strokeWidth={2} />; }
-function MoreIcon() { return <MoreVertical size={18} strokeWidth={2} />; }
-function SendIcon() { return <Send size={18} strokeWidth={2} />; }
-function SearchIcon() { return <Search size={18} strokeWidth={2} />; }
-function SmileIcon() { return <Smile size={18} strokeWidth={2} />; }
-function RequestsIcon() { return <Users size={18} strokeWidth={2} />; }
-function MessageRequestIcon() { return <UserRoundPlus size={18} strokeWidth={2} />; }
-function CheckIcon() { return <Check size={18} strokeWidth={2} />; }
-function CloseIcon() { return <X size={18} strokeWidth={2} />; }
-function ChatBubbleIcon() { return <MessageCircle size={18} strokeWidth={2} />; }
-
-function getHashValue(value) {
-    const source = String(value || "");
-    let total = 0;
-    for (let index = 0; index < source.length; index += 1) {
-        total = (total + source.charCodeAt(index) * (index + 1)) % 9973;
-    }
-    return total;
-}
-
-function getAvatarTone(value) {
-    return AVATAR_TONES[getHashValue(value) % AVATAR_TONES.length];
-}
-
-function formatListTime(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-
-    const diffMs = Date.now() - date.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-
-    if (diffMinutes < 1) return "now";
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-}
-
-function formatMessageTime(value) {
-    if (!value) return "now";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "now";
-    return new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit"
-    }).format(date);
-}
-
-function formatDesktopDateLabel(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-}
-
-function truncateText(value, limit = 46) {
-    const text = String(value || "").trim();
-    if (!text) return "Start a private conversation";
-    if (text.length <= limit) return text;
-    return `${text.slice(0, limit - 1).trim()}...`;
-}
-
-function formatRequestSummary(count) {
-    if (count <= 0) return "View chat requests";
-    return `${count} pending request${count === 1 ? "" : "s"}`;
-}
-
-function getRequestSubtitle(request) {
-    const contextType = String(request && request.contextType ? request.contextType : "confession");
-    if (contextType === "profile") return "Wants to connect with you";
-    if (contextType === "reply") return "Wants to connect based on their reply";
-    return "Wants to connect based on their post";
-}
-
-function getRequestInfoLine(request) {
-    const contextType = String(request && request.contextType ? request.contextType : "confession");
-    if (contextType === "profile") return "Accept this request to start a private conversation";
-    return "You can now chat with this user";
-}
-
-function normalizeDisplayNames(value) {
-    if (!value || typeof value !== "object") return {};
-    if (value instanceof Map) {
-        return Object.fromEntries(value.entries());
-    }
-    return value;
-}
-
-function dedupeMessages(items) {
-    const seenIds = new Set();
-    const seenClientIds = new Set();
-    const next = [];
-
-    for (const item of Array.isArray(items) ? items : []) {
-        const id = Number(item && item.id);
-        const clientMessageId = String(item && item.clientMessageId ? item.clientMessageId : "").trim();
-
-        if (id && !Number.isNaN(id)) {
-            if (seenIds.has(id)) continue;
-            seenIds.add(id);
-            if (clientMessageId) seenClientIds.add(clientMessageId);
-            next.push(item);
-            continue;
-        }
-
-        if (clientMessageId) {
-            if (seenClientIds.has(clientMessageId)) continue;
-            seenClientIds.add(clientMessageId);
-            next.push(item);
-        }
-    }
-
-    return next.sort((a, b) => {
-        const aId = Number(a && a.id);
-        const bId = Number(b && b.id);
-        if (aId && bId) return aId - bId;
-
-        const aTime = new Date((a && a.createdAt) || 0).getTime();
-        const bTime = new Date((b && b.createdAt) || 0).getTime();
-        return aTime - bTime;
-    });
-}
-
-function buildOptimisticMessage({ clientMessageId, conversationId, content, senderId }) {
-    return {
-        id: `temp-${clientMessageId}`,
-        clientMessageId,
-        conversationId,
-        senderId,
-        content,
-        createdAt: new Date().toISOString()
-    };
-}
-
-function replaceOptimisticMessage(items, incomingMessage) {
-    const clientMessageId = String(incomingMessage && incomingMessage.clientMessageId ? incomingMessage.clientMessageId : "").trim();
-    if (!clientMessageId) {
-        return dedupeMessages([...(Array.isArray(items) ? items : []), incomingMessage]);
-    }
-
-    const withoutOptimistic = (Array.isArray(items) ? items : []).filter((item) => {
-        const itemClientId = String(item && item.clientMessageId ? item.clientMessageId : "").trim();
-        const itemId = Number(item && item.id);
-        if (!itemClientId || itemClientId !== clientMessageId) return true;
-        return itemId && !Number.isNaN(itemId);
-    });
-
-    return dedupeMessages([...withoutOptimistic, incomingMessage]);
-}
-
-function createClientMessageId() {
-    const secureCrypto = typeof globalThis !== "undefined" ? globalThis.crypto : null;
-    if (secureCrypto && typeof secureCrypto.randomUUID === "function") {
-        return secureCrypto.randomUUID();
-    }
-
-    return `msg-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
-}
 
 export default function ChatPage({ user }) {
     const isDesktop = useIsDesktop();
@@ -225,7 +92,7 @@ export default function ChatPage({ user }) {
     const isRequestsView = searchParams.get("requests") === "1";
     const activeConversationId = Number(searchParams.get("conversationId") || 0);
     const isMobileThreadView = !isDesktop && !!activeConversationId;
-    const [mobileViewportFrame, setMobileViewportFrame] = useState(null);
+    const mobileViewportFrame = useMobileViewport(isMobileThreadView);
     const swipeNavigationHandlers = usePrimaryTabSwipeNavigation({
         enabled: !isDesktop && !activeConversationId && !isRequestsView
     });
@@ -459,44 +326,6 @@ export default function ChatPage({ user }) {
         setSearchParams({ conversationId: String(conversationItems[0].id) });
     }, [activeConversationId, conversationItems, isDesktop, isRequestsView, setSearchParams]);
 
-    useEffect(() => {
-        if (!isMobileThreadView) {
-            setMobileViewportFrame(null);
-            return undefined;
-        }
-
-        const viewport = window.visualViewport;
-        if (!viewport) {
-            setMobileViewportFrame({
-                height: window.innerHeight,
-                offsetTop: 0,
-                bottomInset: 0
-            });
-            return undefined;
-        }
-
-        const updateViewportFrame = () => {
-            const layoutHeight = Math.round(window.innerHeight || viewport.height || 0);
-            const offsetTop = Math.round(viewport.offsetTop || 0);
-            const visibleHeight = Math.round(viewport.height || 0);
-            const bottomInset = Math.max(0, layoutHeight - visibleHeight - offsetTop);
-
-            setMobileViewportFrame({
-                height: visibleHeight,
-                offsetTop,
-                bottomInset
-            });
-        };
-
-        updateViewportFrame();
-        viewport.addEventListener("resize", updateViewportFrame);
-        viewport.addEventListener("scroll", updateViewportFrame);
-
-        return () => {
-            viewport.removeEventListener("resize", updateViewportFrame);
-            viewport.removeEventListener("scroll", updateViewportFrame);
-        };
-    }, [isMobileThreadView]);
 
     useEffect(() => {
         if (isDesktop || !activeConversationId || !threadContentRef.current) return;
@@ -790,98 +619,13 @@ export default function ChatPage({ user }) {
                                 {loadingIndex && <ChatListSkeleton count={5} />}
 
                                 {!loadingIndex && isRequestsView && (
-                                    <div className="desktop-chat-requests-view">
-                                        {pendingRequests.length > 0 && (
-                                            <section className="chat-requests-section">
-                                                <span className="chat-requests-section__label">Pending</span>
-                                                <div className="chat-requests-list">
-                                                    {pendingRequests.map((request) => (
-                                                        <article key={request.requestId} className="chat-request-card">
-                                                            <div className="chat-request-card__head">
-                                                                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                                                                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                                                                </div>
-                                                                <div className="chat-request-card__copy">
-                                                                    <strong>{request.displayAlias}</strong>
-                                                                    <p>{getRequestSubtitle(request)}</p>
-                                                                </div>
-                                                            </div>
-                                                            {String(request.contextPreview || "").trim() && (
-                                                                <blockquote className="chat-request-card__quote">
-                                                                    "{request.contextPreview}"
-                                                                </blockquote>
-                                                            )}
-                                                            <small className="chat-request-card__time">{formatListTime(request.createdAt)}</small>
-                                                            <div className="chat-request-card__actions">
-                                                                <button
-                                                                    type="button"
-                                                                    className="chat-request-card__accept"
-                                                                    onClick={() => handleRespondToRequest(request.requestId, "accept")}
-                                                                    disabled={handlingRequestId === request.requestId}
-                                                                >
-                                                                    <CheckIcon />
-                                                                    {handlingRequestId === request.requestId ? (
-                                                                        <>
-                                                                            <InlineSpinner size="sm" tone="light" label="Updating request" />
-                                                                            <span>Working...</span>
-                                                                        </>
-                                                                    ) : <span>Accept</span>}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    className="chat-request-card__decline"
-                                                                    onClick={() => handleRespondToRequest(request.requestId, "decline")}
-                                                                    disabled={handlingRequestId === request.requestId}
-                                                                >
-                                                                    <CloseIcon />
-                                                                    <span>{handlingRequestId === request.requestId ? "Please wait" : "Decline"}</span>
-                                                                </button>
-                                                            </div>
-                                                        </article>
-                                                    ))}
-                                                </div>
-                                            </section>
-                                        )}
-
-                                        {acceptedRequests.length > 0 && (
-                                            <section className="chat-requests-section">
-                                                <span className="chat-requests-section__label">Accepted</span>
-                                                <div className="chat-requests-list">
-                                                    {acceptedRequests.map((request) => (
-                                                        <article key={request.requestId} className="chat-request-card chat-request-card--accepted">
-                                                            <div className="chat-request-card__head">
-                                                                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                                                                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                                                                </div>
-                                                                <div className="chat-request-card__copy">
-                                                                    <strong>{request.displayAlias}</strong>
-                                                                    <p>{getRequestInfoLine(request)}</p>
-                                                                    <small className="chat-request-card__time">{formatListTime(request.respondedAt || request.createdAt)}</small>
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    className="chat-request-card__open"
-                                                                    onClick={() => openAcceptedConversation(request.conversationId)}
-                                                                    disabled={!request.conversationId}
-                                                                    aria-label={`Open chat with ${request.displayAlias}`}
-                                                                >
-                                                                    <ChatBubbleIcon />
-                                                                </button>
-                                                            </div>
-                                                        </article>
-                                                    ))}
-                                                </div>
-                                            </section>
-                                        )}
-
-                                        {pendingRequests.length === 0 && acceptedRequests.length === 0 && (
-                                            <DesktopEmptyState
-                                                compact
-                                                title="No chat requests yet"
-                                                description="When someone sends you a request, it will appear here."
-                                            />
-                                        )}
-                                    </div>
+                                    <ChatRequestsView
+                                        pendingRequests={pendingRequests}
+                                        acceptedRequests={acceptedRequests}
+                                        handlingRequestId={handlingRequestId}
+                                        onRespondToRequest={handleRespondToRequest}
+                                        onOpenAcceptedConversation={openAcceptedConversation}
+                                    />
                                 )}
 
                                 {!loadingIndex && !isRequestsView && filteredConversationItems.length === 0 && (
@@ -1111,48 +855,12 @@ export default function ChatPage({ user }) {
                                 <span className="chat-requests-section__label">Pending</span>
                                 <div className="chat-requests-list">
                                     {pendingRequests.map((request) => (
-                                        <article key={request.requestId} className="chat-request-card">
-                                            <div className="chat-request-card__head">
-                                                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                                                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                                                </div>
-                                                <div className="chat-request-card__copy">
-                                                    <strong>{request.displayAlias}</strong>
-                                                    <p>{getRequestSubtitle(request)}</p>
-                                                </div>
-                                            </div>
-                                            {String(request.contextPreview || "").trim() && (
-                                                <blockquote className="chat-request-card__quote">
-                                                    "{request.contextPreview}"
-                                                </blockquote>
-                                            )}
-                                            <small className="chat-request-card__time">{formatListTime(request.createdAt)}</small>
-                                            <div className="chat-request-card__actions">
-                                                <button
-                                                    type="button"
-                                                    className="chat-request-card__accept"
-                                                    onClick={() => handleRespondToRequest(request.requestId, "accept")}
-                                                    disabled={handlingRequestId === request.requestId}
-                                                >
-                                                    <CheckIcon />
-                                                    {handlingRequestId === request.requestId ? (
-                                                        <>
-                                                            <InlineSpinner size="sm" tone="light" label="Updating request" />
-                                                            <span>Working...</span>
-                                                        </>
-                                                    ) : <span>Accept</span>}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="chat-request-card__decline"
-                                                    onClick={() => handleRespondToRequest(request.requestId, "decline")}
-                                                    disabled={handlingRequestId === request.requestId}
-                                                >
-                                                    <CloseIcon />
-                                                    <span>{handlingRequestId === request.requestId ? "Please wait" : "Decline"}</span>
-                                                </button>
-                                            </div>
-                                        </article>
+                                        <PendingRequestCard
+                                            key={request.requestId}
+                                            request={request}
+                                            handlingRequestId={handlingRequestId}
+                                            onRespond={handleRespondToRequest}
+                                        />
                                     ))}
                                 </div>
                             </section>
@@ -1163,27 +871,11 @@ export default function ChatPage({ user }) {
                                 <span className="chat-requests-section__label">Accepted</span>
                                 <div className="chat-requests-list">
                                     {acceptedRequests.map((request) => (
-                                        <article key={request.requestId} className="chat-request-card chat-request-card--accepted">
-                                            <div className="chat-request-card__head">
-                                                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                                                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                                                </div>
-                                                <div className="chat-request-card__copy">
-                                                    <strong>{request.displayAlias}</strong>
-                                                    <p>{getRequestInfoLine(request)}</p>
-                                                    <small className="chat-request-card__time">{formatListTime(request.respondedAt || request.createdAt)}</small>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    className="chat-request-card__open"
-                                                    onClick={() => openAcceptedConversation(request.conversationId)}
-                                                    disabled={!request.conversationId}
-                                                    aria-label={`Open chat with ${request.displayAlias}`}
-                                                >
-                                                    <ChatBubbleIcon />
-                                                </button>
-                                            </div>
-                                        </article>
+                                        <AcceptedRequestCard
+                                            key={request.requestId}
+                                            request={request}
+                                            onOpenConversation={openAcceptedConversation}
+                                        />
                                     ))}
                                 </div>
                             </section>
