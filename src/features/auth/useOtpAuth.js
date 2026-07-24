@@ -5,51 +5,14 @@ import { useGlobalError } from "../../context/ErrorContext";
 import { disconnectSocket } from "../../services/socket";
 import useTimedNotice from "../../hooks/useTimedNotice";
 
-const USERNAME_REGEX = /^[a-z0-9._]{3,20}$/;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const USERNAME_ADJECTIVES = [
-    "gentle",
-    "bright",
-    "calm",
-    "kind",
-    "silent",
-    "steady",
-    "open",
-    "brave",
-    "honest",
-    "soft",
-    "clear",
-    "mellow"
-];
-const USERNAME_NOUNS = [
-    "tiger",
-    "river",
-    "ember",
-    "harbor",
-    "meadow",
-    "echo",
-    "lantern",
-    "summit",
-    "willow",
-    "comet",
-    "sparrow",
-    "horizon"
-];
+import {
+    USERNAME_REGEX,
+    EMAIL_REGEX,
+    normalizeEmail,
+    normalizeUsername,
+    buildUsernameCandidate
+} from "./utils/authHelpers.js";
 
-function normalizeEmail(value) {
-    return String(value || "").trim().toLowerCase();
-}
-
-function normalizeUsername(value) {
-    return String(value || "").trim().toLowerCase();
-}
-
-function buildUsernameCandidate() {
-    const adjective = USERNAME_ADJECTIVES[Math.floor(Math.random() * USERNAME_ADJECTIVES.length)];
-    const noun = USERNAME_NOUNS[Math.floor(Math.random() * USERNAME_NOUNS.length)];
-    const number = Math.floor(10 + Math.random() * 90);
-    return `${adjective}${noun}${number}`.slice(0, 20);
-}
 
 export default function useOtpAuth(initialMode = "signin") {
     const navigate = useNavigate();

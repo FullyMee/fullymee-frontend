@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Bell, Menu, MessageSquareQuote, Search, Shield, Sparkles } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
 import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
@@ -13,6 +12,7 @@ import ConfessionDetailView from "../features/confessions/components/ConfessionD
 import JoinedRoomsPanel from "../features/confessions/components/JoinedRoomsPanel.jsx";
 import ConfessionLobbyDesktop from "../features/confessions/components/ConfessionLobbyDesktop.jsx";
 import ConfessionActiveRoomDesktop from "../features/confessions/components/ConfessionActiveRoomDesktop.jsx";
+import RoomMembersRail from "../features/confessions/components/RoomMembersRail.jsx";
 import useConfessionRoom from "../features/confessions/hooks/useConfessionRoom.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
 import { getAliasTone, getInitial } from "../utils/presentation.js";
@@ -22,76 +22,22 @@ import {
     RoomGlyphIcon
 } from "../components/common/MobileRoomVisuals.jsx";
 import { getAudioUploadToken } from "../services/confession.service.js";
+import {
+    MobileConfideIcon,
+    MobileBellIcon,
+    MobileMenuIcon,
+    MobileSearchIcon,
+    MobileShieldIcon,
+    MobileSparkIcon,
+    MobileArrowRightIcon
+} from "../components/common/Icons.jsx";
+import {
+    matchesJoinedRoomSearch,
+    matchesJoinedRoomFilter
+} from "../features/confessions/utils/roomFilters.js";
 
 const MOBILE_ROOM_FILTERS = ["All", "Joined", "Public", "Private", "Late Night"];
 
-function MobileConfideIcon() { return <MessageSquareQuote size={18} strokeWidth={2} />; }
-function MobileBellIcon() { return <Bell size={18} strokeWidth={2} />; }
-function MobileMenuIcon() { return <Menu size={18} strokeWidth={2} />; }
-function MobileSearchIcon() { return <Search size={18} strokeWidth={2} />; }
-function MobileShieldIcon() { return <Shield size={18} strokeWidth={2} />; }
-function MobileSparkIcon() { return <Sparkles size={18} strokeWidth={2} />; }
-function MobileArrowRightIcon() { return <ArrowRight size={18} strokeWidth={2} />; }
-
-function matchesJoinedRoomSearch(room, term) {
-    const value = String(term || "").trim().toLowerCase();
-    if (!value) return true;
-
-    const haystack = `${room && room.title ? room.title : ""} ${room && room.description ? room.description : ""} ${room && room.category ? room.category : ""} ${room && room.roomType ? room.roomType : ""}`.toLowerCase();
-    return haystack.includes(value);
-}
-
-function matchesJoinedRoomFilter(room, filter) {
-    const value = String(filter || "All").trim().toLowerCase();
-    if (value === "all" || value === "joined" || !value) return true;
-    if (value === "public") return String(room && room.roomType || "").toLowerCase() === "public";
-    if (value === "private") return String(room && room.roomType || "").toLowerCase() === "private";
-
-    const category = String(room && room.category ? room.category : "").toLowerCase();
-    const title = String(room && room.title ? room.title : "").toLowerCase();
-    const description = String(room && room.description ? room.description : "").toLowerCase();
-    if (value === "late night") return category.includes("late") || title.includes("late") || description.includes("late night");
-    if (value === "heartbreak") return category.includes("heartbreak") || title.includes("heartbreak") || description.includes("heartbreak");
-    return true;
-}
-
-function RoomMembersRail({ activeRoom, roomMembers }) {
-    if (!activeRoom) return null;
-
-    const members = Array.isArray(roomMembers) ? roomMembers : [];
-
-    return (
-        <aside className="confession-room-rail" aria-label="Room details">
-            <section className="confession-room-rail__section confession-room-rail__section--list">
-                <div className="confession-room-rail__list-head">
-                    <h3>People here</h3>
-                    <span>{members.length} active</span>
-                </div>
-
-                <div className="confession-room-rail__list">
-                    {members.length > 0 ? members.map((member) => {
-                        const alias = String(member.alias || "").trim();
-                        const isSelf = alias && String(activeRoom.alias || "").trim() === alias;
-                        return (
-                            <div key={`${member.userId || alias}-${member.joinedAt || ""}`} className="confession-room-rail__member">
-                                <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
-                                    {getInitial(alias)}
-                                </div>
-                                <div className="confession-room-rail__member-copy">
-                                    <strong>{alias || "Anonymous"}</strong>
-                                    <span>{formatRelativeTime(member.joinedAt, { short: true, nowLabel: "now" })}</span>
-                                </div>
-                                {isSelf && <span className="confession-room-rail__badge">You</span>}
-                            </div>
-                        );
-                    }) : (
-                        <div className="confession-room-rail__empty">Loading active members...</div>
-                    )}
-                </div>
-            </section>
-        </aside>
-    );
-}
 
 export default function ConfessionRoomPage({ user }) {
     const isDesktop = useIsDesktop();
