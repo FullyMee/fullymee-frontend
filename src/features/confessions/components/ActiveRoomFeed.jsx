@@ -296,7 +296,8 @@ export default function ActiveRoomFeed({
                 <hr className="room-mobile-redesign-divider" />
 
                 {scheduledConfessions.length > 0 && (
-                    <section className="room-scheduled-strip" aria-label="Scheduled confessions" style={{ marginTop: "1.25rem" }}>
+                    <>
+                        <section className="room-scheduled-strip" aria-label="Scheduled confessions" style={{ marginTop: "1.25rem", padding: "0 1.25rem" }}>
                         <div className="room-scheduled-strip__head">
                             <strong>Time-locked</strong>
                             <span>{scheduledConfessions.length} pending</span>
@@ -304,25 +305,43 @@ export default function ActiveRoomFeed({
                         <div className="room-scheduled-strip__list">
                             {scheduledConfessions.map((item) => (
                                 <article key={item.confessionId} className="room-mobile-redesign-card">
-                                    <div className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left" }}>
+                                    <button type="button" className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left" }}>
                                         <div className="room-mobile-redesign-card__author-row">
                                             <div className="room-mobile-redesign-card__author-info">
-                                                <div className="room-mobile-redesign-card__avatar" style={{ background: "#e17b53", color: "white" }}>
-                                                    <ClockBadgeIcon />
+                                                <div className={`room-mobile-redesign-card__avatar room-mobile-redesign-card__avatar--${getAliasTone(item.alias || "Anonymous")}`}>
+                                                    {getInitial(item.alias || "Anonymous")}
                                                 </div>
-                                                <strong className="room-mobile-redesign-card__alias">Time-locked confession</strong>
+                                                <strong className="room-mobile-redesign-card__alias">{item.alias || "Anonymous"}</strong>
+                                                <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                                                 <span className="room-mobile-redesign-card__meta">
-                                                    Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)}
+                                                    Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)} &bull; anonymous {item.audio ? "" : "· written"}
                                                 </span>
+                                            </div>
+                                            <div className="room-mobile-redesign-card__more">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                                             </div>
                                         </div>
 
-                                        <div className={`room-mobile-redesign-card__body ${item.audio ? "is-quoted" : "is-written"}`}>
-                                            {item.audio && !String(item.content || "").trim() ? "Audio confession" : (item.audio ? `“${item.content}”` : item.content)}
+                                        {item.content ? (
+                                            <div className={`room-mobile-redesign-card__body ${item.audio ? "is-quoted" : "is-written"}`}>
+                                                {item.audio ? `“${item.content}”` : item.content}
+                                            </div>
+                                        ) : null}
+                                    </button>
+                                    
+                                    {item.audio ? (
+                                        <div className="room-mobile-redesign-card__audio-wrapper">
+                                            <AudioPlayer
+                                                roomId={activeRoom.roomId}
+                                                confessionId={item.confessionId}
+                                                audio={item.audio}
+                                                variant="mobile"
+                                            />
                                         </div>
-                                    </div>
+                                    ) : null}
+
                                     {typeof onCancelScheduled === "function" && (
-                                        <div className="room-mobile-redesign-card__actions" style={{ justifyContent: "flex-end", borderTop: "1px solid #f3ebe3", padding: "0.8rem 1rem" }}>
+                                        <div className="room-mobile-redesign-card__actions" style={{ justifyContent: "flex-end" }}>
                                             <button 
                                                 type="button" 
                                                 onClick={() => onCancelScheduled(item.confessionId)}
@@ -336,6 +355,8 @@ export default function ActiveRoomFeed({
                             ))}
                         </div>
                     </section>
+                    <hr className="room-mobile-redesign-divider" />
+                </>
                 )}
 
                 <section className="room-mobile-redesign-feed">

@@ -3838,6 +3838,8 @@
     font-size: 1.25rem;
     color: #1a2244; 
     line-height: 1.45;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 .room-mobile-redesign-card__body.is-quoted {
     color: #21356a;
