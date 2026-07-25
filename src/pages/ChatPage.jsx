@@ -334,7 +334,7 @@ export default function ChatPage({ user }) {
         requestAnimationFrame(() => {
             node.scrollTop = node.scrollHeight;
         });
-    }, [activeConversationId, isDesktop, messages.length]);
+    }, [activeConversationId, isDesktop, messages.length, mobileViewportFrame]);
 
     useEffect(() => {
         if (!socket || !connected || !activeConversationId) return;

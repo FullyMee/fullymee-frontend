@@ -4285,3 +4285,25 @@
     font-weight: 600;
 }
 
+/* ── Mobile: continuous white background in active room ── */
+@media (max-width: 899px) {
+    .room-mobile-redesign-content {
+        background: #ffffff !important;
+        min-height: auto;
+        padding-bottom: 0;
+    }
+
+    .room-mobile-redesign-feed {
+        padding-bottom: 0;
+        margin-bottom: -1rem;
+    }
+
+    /* Override the cream parent when inside an active room */
+    .confide-confessions-mobile:has(.room-mobile-redesign-header) {
+        background: #ffffff !important;
+    }
+
+    .confide-confessions-mobile__shell:has(.room-mobile-redesign-header) {
+        background: #ffffff !important;
+    }
+}
