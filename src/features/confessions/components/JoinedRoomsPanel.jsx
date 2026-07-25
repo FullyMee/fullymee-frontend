@@ -73,10 +73,10 @@ export default function JoinedRoomsPanel({
 
                                     <div className="desktop-room-card__meta">
                                         <span className="desktop-room-card__members">{memberCount}</span>
-                                            <span className="desktop-room-card__cta">
-                                                <span>Open room</span>
-                                                <ChevronRight size={18} strokeWidth={2} />
-                                            </span>
+                                        <span className="desktop-room-card__cta">
+                                            <span>Open room</span>
+                                            <ChevronRight size={18} strokeWidth={2} />
+                                        </span>
                                     </div>
                                 </button>
                             );
@@ -123,7 +123,7 @@ export default function JoinedRoomsPanel({
                                         </span>
                                     </div>
                                     <div className="discover-room-card__jump" aria-hidden="true">
-                                        <ArrowRightIcon />
+                                        <ChevronRight size={18} />
                                     </div>
                                 </div>
 
