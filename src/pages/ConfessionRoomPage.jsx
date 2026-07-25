@@ -525,9 +525,7 @@ export default function ConfessionRoomPage({ user }) {
             <div className="confide-confessions-mobile__shell">
                 {!activeRoom && !selectedConfession && (
                     <>
-                        {/* ── Main scrollable content ── */}
                         <main className="confide-confessions-mobile__content">
-                            {/* Search bar */}
                             <form className="confide-confessions-mobile__search" onSubmit={(event) => event.preventDefault()}>
                                 <span className="confide-confessions-mobile__search-icon" aria-hidden="true">
                                     <MobileSearchIcon />
@@ -540,13 +538,30 @@ export default function ConfessionRoomPage({ user }) {
                                 />
                             </form>
 
-                            {/* Title section */}
                             <section className="confide-confessions-mobile__hero">
-                                <h1>Your Confession Rooms</h1>
-                                <p>Rooms you have joined and communities where you can post anonymously.</p>
+                                <span className="confide-confessions-mobile__hero-label">✨ YOUR SAFE SPACE</span>
+                                <h1>Your confession rooms</h1>
+                                <p>The communities where your thoughts can arrive exactly as they are.</p>
                             </section>
 
-                            {/* Filter tabs */}
+                            <div className="confide-cta-banner">
+                                <div className="confide-cta-banner__icon" aria-hidden="true">
+                                    <MobileConfideIcon />
+                                </div>
+                                <div className="confide-cta-banner__copy">
+                                    <strong>Say it anonymously</strong>
+                                    <span>No name, no pressure — just your truth.</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="confide-cta-banner__add"
+                                    onClick={() => navigate("/create-room", { state: { openCreateRoom: true } })}
+                                    aria-label="Create a new room"
+                                >
+                                    +
+                                </button>
+                            </div>
+
                             <section className="confide-confessions-mobile__filters" aria-label="Room filters">
                                 {MOBILE_ROOM_FILTERS.map((label) => (
                                     <button
@@ -560,8 +575,14 @@ export default function ConfessionRoomPage({ user }) {
                                 ))}
                             </section>
 
-                            {/* Room cards */}
                             <section className="confide-confessions-mobile__rooms">
+                                <div className="confide-rooms-section-head">
+                                    <h2>Spaces for you</h2>
+                                    {mobileFilteredRooms.length > 0 && (
+                                        <span>{mobileFilteredRooms.length} room{mobileFilteredRooms.length !== 1 ? "s" : ""}</span>
+                                    )}
+                                </div>
+
                                 {loadingRooms && (
                                     <div className="confide-confessions-mobile__loading">
                                         <div className="confide-confessions-mobile__skeleton" />
@@ -580,7 +601,7 @@ export default function ConfessionRoomPage({ user }) {
                                     const tone = getRoomTone(room);
                                     const memberCount = Number(room.currentUserCount) || 0;
                                     const description = room.description || "A quiet space for honest conversations.";
-                                    const roomAccess = room.roomType === "private" ? "Private" : "Public";
+                                    const roomAccess = room.roomType === "private" ? "PRIVATE" : "PUBLIC";
 
                                     return (
                                         <button
@@ -595,7 +616,7 @@ export default function ConfessionRoomPage({ user }) {
                                                 </div>
                                                 <div className="confide-room-card__tags">
                                                     <span className="confide-room-card__tag">ROOM</span>
-                                                    <span className="confide-room-card__tag">{roomAccess.toUpperCase()}</span>
+                                                    <span className="confide-room-card__tag">{roomAccess}</span>
                                                 </div>
                                                 <span className="confide-room-card__joined-badge">JOINED</span>
                                             </div>
@@ -607,7 +628,10 @@ export default function ConfessionRoomPage({ user }) {
 
                                             <div className="confide-room-card__footer">
                                                 <span className="confide-room-card__dot" aria-hidden="true" />
-                                                <span className="confide-room-card__members">{`${memberCount} members`}</span>
+                                                <span className="confide-room-card__chatting">{memberCount} chatting now</span>
+                                                <span className="confide-room-card__sep" aria-hidden="true">·</span>
+                                                <svg className="confide-room-card__members-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                <span className="confide-room-card__members">{memberCount}</span>
                                                 <span className="confide-room-card__open">
                                                     <span>Open room</span>
                                                     <MobileArrowRightIcon />
@@ -617,39 +641,6 @@ export default function ConfessionRoomPage({ user }) {
                                     );
                                 })}
                             </section>
-
-                            {/* Active Joined Rooms */}
-                            {mobileActiveJoinedRooms.length > 0 && (
-                                <section className="confide-confessions-mobile__active-section">
-                                    <div className="confide-active-rooms-card">
-                                        <h2>Active Joined Rooms</h2>
-                                        <div className="confide-active-rooms-card__list">
-                                            {mobileActiveJoinedRooms.map((room) => {
-                                                const tone = getRoomTone(room);
-                                                const memberCount = Number(room.currentUserCount) || 0;
-                                                return (
-                                                    <div key={room.roomId} className="confide-active-room-item">
-                                                        <div className={`confide-active-room-item__icon confide-active-room-item__icon--${tone}`} aria-hidden="true">
-                                                            <MobileSparkIcon />
-                                                        </div>
-                                                        <div className="confide-active-room-item__copy">
-                                                            <strong>{room.title}</strong>
-                                                            <span>{`${memberCount} members`}</span>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="confide-active-room-item__join"
-                                                            onClick={() => openRoomView(room.roomId)}
-                                                        >
-                                                            Join
-                                                        </button>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </section>
-                            )}
 
                             {/* Safety First banner */}
                             <section className="confide-confessions-mobile__safety-section">

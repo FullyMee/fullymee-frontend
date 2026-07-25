@@ -2994,13 +2994,11 @@
     }
 
     /* ── MOBILE CONFESSIONS PAGE ── */
+    /* ── MOBILE CONFESSIONS PAGE ── */
     .confide-confessions-mobile {
         min-height: 100vh;
-        background:
-            radial-gradient(circle at 8% 0%, rgba(231, 131, 90, 0.08), transparent 22%),
-            radial-gradient(circle at 92% 10%, rgba(244, 193, 166, 0.12), transparent 18%),
-            linear-gradient(180deg, #fbf5ed 0%, #f8efe6 52%, #f3e7da 100%);
-        color: #3f2343;
+        background: #F7EFE9;
+        color: #3B1F43;
         padding: 0 0 calc(4.75rem + env(safe-area-inset-bottom, 0px));
     }
 
@@ -3016,25 +3014,25 @@
     .confide-confessions-mobile__content {
         display: flex;
         flex-direction: column;
-        gap: 1.15rem;
-        padding: 0.65rem 1rem 1.5rem;
+        gap: 1.25rem;
+        padding: 0.85rem 1.1rem 1.5rem;
     }
 
     .confide-confessions-mobile__search {
         width: 100%;
         min-height: 2.85rem;
-        padding: 0 0.85rem;
+        padding: 0 0.95rem;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(95, 64, 74, 0.08);
-        box-shadow: 0 6px 18px rgba(68, 45, 62, 0.06);
+        background: #FFFFFF;
+        border: 1px solid #EFE6E0;
+        box-shadow: 0 4px 14px rgba(60, 30, 50, 0.03);
         display: flex;
         align-items: center;
         gap: 0.55rem;
     }
 
     .confide-confessions-mobile__search-icon {
-        color: #4a2449;
+        color: #8C7A87;
         flex-shrink: 0;
         width: 1rem;
         height: 1rem;
@@ -3053,43 +3051,125 @@
         border: 0;
         outline: none;
         background: transparent;
-        font: inherit;
-        font-size: 0.86rem;
-        color: #5a4252;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.88rem;
+        color: #3B1F43;
     }
 
     .confide-confessions-mobile__search input::placeholder {
-        color: #a999a5;
+        color: #A08E9C;
     }
 
     .confide-confessions-mobile__hero {
         display: flex;
         flex-direction: column;
-        gap: 0.45rem;
+        gap: 0.35rem;
+        margin-top: 0.2rem;
+    }
+
+    .confide-confessions-mobile__hero-label {
+        font-family: 'Inter', system-ui, sans-serif;
+        color: #E07A5F;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
     }
 
     .confide-confessions-mobile__hero h1 {
-        font-family: var(--font-display);
-        font-size: 1.85rem;
-        line-height: 1.05;
-        letter-spacing: -0.04em;
-        color: #341b34;
-        font-weight: 600;
-        margin: 0;
+        font-family: 'Lora', Georgia, serif !important;
+        font-size: 2.2rem !important;
+        line-height: 1.15 !important;
+        letter-spacing: -0.02em !important;
+        color: #3B1F43 !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
     }
 
     .confide-confessions-mobile__hero p {
-        color: #7d6b76;
-        font-size: 0.84rem;
-        line-height: 1.5;
-        margin: 0;
+        font-family: 'Inter', system-ui, sans-serif !important;
+        color: #7D6B76 !important;
+        font-size: 0.88rem !important;
+        line-height: 1.45 !important;
+        margin: 0 !important;
     }
 
+    /* ── CTA Banner ── */
+    .confide-cta-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        background: #3B1F43;
+        border-radius: 1.35rem;
+        padding: 1.1rem 1.25rem;
+        color: #FFFFFF;
+        box-shadow: 0 10px 24px rgba(59, 31, 67, 0.14);
+    }
+
+    .confide-cta-banner__icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 999px;
+        background: #F2A488;
+        color: #3B1F43;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+    }
+
+    .confide-cta-banner__icon svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .confide-cta-banner__copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .confide-cta-banner__copy strong {
+        font-family: 'Lora', Georgia, serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #FFFFFF;
+        line-height: 1.2;
+    }
+
+    .confide-cta-banner__copy span {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.78rem;
+        color: rgba(255, 235, 230, 0.75);
+    }
+
+    .confide-cta-banner__add {
+        margin-left: auto;
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        font-size: 1.25rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 150ms ease, transform 150ms ease;
+    }
+
+    .confide-cta-banner__add:active {
+        transform: scale(0.92);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ── Filter Pills ── */
     .confide-confessions-mobile__filters {
         display: flex;
-        gap: 0.45rem;
+        gap: 0.5rem;
         overflow-x: auto;
-        padding: 0.08rem 0;
+        padding: 0.1rem 0;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
     }
@@ -3100,31 +3180,57 @@
 
     .confide-confessions-mobile__filter {
         flex: 0 0 auto;
-        min-height: 2.15rem;
-        padding: 0 0.95rem;
-        border: 0;
+        min-height: 2.25rem;
+        padding: 0 1.15rem;
+        border: 1px solid #EFE6E0;
         border-radius: 999px;
-        background: #ffffff;
-        color: #3a2436;
-        font-size: 0.76rem;
-        font-weight: 700;
-        box-shadow: inset 0 0 0 1px rgba(84, 53, 67, 0.08);
+        background: #FFFFFF;
+        color: #5A4556;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.82rem;
+        font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+        transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
         white-space: nowrap;
     }
 
     .confide-confessions-mobile__filter.is-active {
-        background: #e28156;
-        color: #ffffff;
-        box-shadow: 0 8px 16px rgba(226, 129, 86, 0.16);
+        background: #E07A5F !important;
+        color: #FFFFFF !important;
+        border-color: #E07A5F !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(224, 122, 95, 0.25);
     }
 
+    /* ── Spaces for you section ── */
     .confide-confessions-mobile__rooms {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.85rem;
+    }
+
+    .confide-rooms-section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-top: 0.2rem;
+    }
+
+    .confide-rooms-section-head h2 {
+        font-family: 'Lora', Georgia, serif !important;
+        font-size: 1.35rem !important;
+        font-weight: 600 !important;
+        color: #3B1F43 !important;
+        margin: 0 !important;
+    }
+
+    .confide-rooms-section-head span {
+        font-family: 'Inter', system-ui, sans-serif !important;
+        font-size: 0.85rem !important;
+        color: #A08E9C !important;
+        font-weight: 500 !important;
     }
 
     /* ── Room Card ── */
@@ -3134,60 +3240,62 @@
         -webkit-appearance: none;
         border: 0;
         text-align: left;
-        background: #ffffff;
-        border-radius: 1.2rem;
-        padding: 1.1rem;
-        box-shadow: 0 8px 24px rgba(69, 44, 57, 0.04);
-        border: 1px solid rgba(84, 53, 67, 0.05);
+        background: #FFFFFF;
+        border-radius: 1.35rem;
+        padding: 1.2rem;
+        box-shadow: 0 8px 24px rgba(60, 30, 50, 0.04);
+        border: 1px solid #F3EAE4;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 0.65rem;
+        gap: 0.75rem;
         -webkit-tap-highlight-color: transparent;
         transition: transform 150ms ease, box-shadow 150ms ease;
     }
 
     .confide-room-card:active {
-        transform: scale(0.98);
+        transform: scale(0.985);
     }
 
     .confide-room-card__hero {
         display: flex;
         align-items: center;
-        gap: 0.55rem;
+        gap: 0.65rem;
         width: 100%;
     }
 
     .confide-room-card__icon {
-        width: 1.85rem;
-        height: 1.85rem;
-        border-radius: 999px;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.85rem;
         display: grid;
         place-items: center;
         flex-shrink: 0;
+        background: #EEF4FE;
+        color: #4F80E2;
     }
 
     .confide-room-card__icon svg {
-        width: 0.95rem;
-        height: 0.95rem;
+        width: 1.2rem;
+        height: 1.2rem;
     }
 
     /* Toned icon variants */
     .confide-room-card__icon--daily {
-        background: #fdf2ed;
-        color: #e0835a;
+        background: #FDF2ED;
+        color: #E07A5F;
     }
     .confide-room-card__icon--advice {
-        background: #f3edf7;
-        color: #8a5cf6;
+        background: #F3EDF7;
+        color: #8A5CF6;
     }
     .confide-room-card__icon--chill {
-        background: #fff3ee;
-        color: #f28b65;
+        background: #FFF3EE;
+        color: #F28B65;
     }
     .confide-room-card__icon--general {
-        background: #e0ebff;
-        color: #3b82f6;
+        background: #EEF4FE;
+        color: #4F80E2;
     }
 
     .confide-room-card__tags {
@@ -3200,50 +3308,52 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 1.15rem;
-        padding: 0 0.45rem;
+        min-height: 1.2rem;
+        padding: 0 0.55rem;
         border-radius: 0.4rem;
-        background: #f6efeb;
-        border: 1px solid rgba(84, 53, 67, 0.06);
-        color: #9c8d95;
-        font-size: 0.58rem;
+        background: #F7EFE9;
+        border: none;
+        color: #9C8D95;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.62rem;
         font-weight: 700;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.03em;
     }
 
     .confide-room-card__joined-badge {
         margin-left: auto;
-        background: #fff0eb;
-        color: #e27d54;
-        font-size: 0.62rem;
-        font-weight: 800;
-        padding: 0.15rem 0.5rem;
+        background: #FDEEE9;
+        color: #E07A5F;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.25rem 0.65rem;
         border-radius: 999px;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.03em;
     }
 
     .confide-room-card__body {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
-        margin-top: 0.15rem;
+        gap: 0.3rem;
         min-width: 0;
     }
 
     .confide-room-card__body h3 {
-        font-family: var(--font-display);
-        font-size: 1.45rem;
-        font-weight: 600;
-        color: #361c36;
-        margin: 0;
-        letter-spacing: -0.02em;
+        font-family: 'Lora', Georgia, serif !important;
+        font-size: 1.45rem !important;
+        font-weight: 600 !important;
+        color: #3B1F43 !important;
+        margin: 0 !important;
+        letter-spacing: -0.01em;
     }
 
     .confide-room-card__body p {
-        color: #6e5f6b;
-        font-size: 0.84rem;
-        line-height: 1.45;
-        margin: 0;
+        font-family: 'Inter', system-ui, sans-serif !important;
+        color: #7D6B76 !important;
+        font-size: 0.86rem !important;
+        line-height: 1.45 !important;
+        margin: 0 !important;
         overflow-wrap: anywhere;
         word-break: break-word;
         display: -webkit-box;
@@ -3255,26 +3365,43 @@
     .confide-room-card__footer {
         display: flex;
         align-items: center;
-        gap: 0.45rem;
+        gap: 0.4rem;
         margin-top: 0.25rem;
         width: 100%;
-        border-top: 1px solid rgba(84, 53, 67, 0.05);
-        padding-top: 0.65rem;
-        color: #846f7d;
-        font-size: 0.72rem;
-        font-weight: 600;
+        border-top: 1px solid #F5ECE6;
+        padding-top: 0.75rem;
+        color: #8C7A87;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.78rem;
+        font-weight: 500;
     }
 
     .confide-room-card__dot {
-        width: 0.35rem;
-        height: 0.35rem;
+        width: 6px;
+        height: 6px;
         border-radius: 999px;
-        background: #b0a0b0;
+        background: #40B574;
+        flex-shrink: 0;
+    }
+
+    .confide-room-card__chatting {
+        color: #8C7A87;
+        font-weight: 500;
+    }
+
+    .confide-room-card__sep {
+        color: #C0B0BC;
+    }
+
+    .confide-room-card__members-icon {
+        color: #8C7A87;
+        display: inline-flex;
+        align-items: center;
     }
 
     .confide-room-card__members {
-        color: #8c7c88;
-        font-weight: 600;
+        color: #8C7A87;
+        font-weight: 500;
     }
 
     .confide-room-card__open {
@@ -3282,9 +3409,9 @@
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        color: #e27d54;
-        font-weight: 700;
-        font-size: 0.76rem;
+        color: #E07A5F;
+        font-weight: 600;
+        font-size: 0.82rem;
     }
 
     .confide-room-card__open svg {
