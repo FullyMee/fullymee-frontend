@@ -122,10 +122,14 @@ export function listReplies(roomId, confessionId, { limit = 50 } = {}) {
     );
 }
 
-export function postReply(roomId, confessionId, content) {
+export function postReply(roomId, confessionId, content, parentReplyId = null, parentAlias = null) {
     return apiRequest(`/confessions/rooms/${roomId}/confessions/${confessionId}/replies`, {
         method: "POST",
-        body: JSON.stringify({ content })
+        body: JSON.stringify({
+            content,
+            ...(parentReplyId ? { parentReplyId: Number(parentReplyId) } : {}),
+            ...(parentAlias ? { parentAlias: String(parentAlias) } : {})
+        })
     });
 }
 

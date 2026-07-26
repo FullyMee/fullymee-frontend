@@ -575,13 +575,13 @@ export default function useConfessionRoom() {
         }
     }, [activeRoomId, confessionDraft, dismissError, refreshConfessions, selectedScheduledAt, setNotice, showError]);
 
-    const handlePostReply = useCallback(async (confessionId) => {
+    const handlePostReply = useCallback(async (confessionId, parentReplyId = null, parentAlias = null) => {
         const content = String(replyDrafts[confessionId] || "").trim();
         if (!activeRoomId || !confessionId || !content) return;
 
         try {
             setPostingReplyId(Number(confessionId));
-            const result = await postReply(activeRoomId, confessionId, content);
+            const result = await postReply(activeRoomId, confessionId, content, parentReplyId, parentAlias);
             setReplyDrafts((prev) => ({ ...prev, [confessionId]: "" }));
             dismissError();
 

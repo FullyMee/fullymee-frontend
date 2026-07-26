@@ -1092,6 +1092,7 @@
     70% {
         box-shadow: 0 0 0 16px rgba(230, 111, 63, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(230, 111, 63, 0);
     }
@@ -3315,8 +3316,13 @@
 /* ===== Identity Shuffle ===== */
 
 @keyframes room-shuffle-spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .room-post-modal__identity {
@@ -3609,7 +3615,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.2rem 1.25rem 0.8rem;
-    background: #fdfaf7; 
+    background: #fdfaf7;
 }
 
 .room-mobile-redesign-header__back {
@@ -3650,6 +3656,7 @@
     background: #372a39;
     color: #ffffff;
 }
+
 .room-mobile-redesign-header__compose svg {
     width: 1.4rem;
     height: 1.4rem;
@@ -3716,11 +3723,13 @@
     color: #8c7670;
     font-size: 0.9rem;
 }
+
 .room-mobile-redesign-hero__private strong {
     font-size: 1.4rem;
     letter-spacing: 0.05em;
     color: #b0553e;
 }
+
 .room-mobile-redesign-hero__private button {
     border: 0;
     background: #cc6348;
@@ -3807,10 +3816,21 @@
     font-size: 1rem;
 }
 
-.room-mobile-redesign-card__avatar--violet { background: #d77651; }
-.room-mobile-redesign-card__avatar--iris { background: #c3845b; }
-.room-mobile-redesign-card__avatar--indigo { background: #ab8963; }
-.room-mobile-redesign-card__avatar--teal { background: #b07c64; }
+.room-mobile-redesign-card__avatar--violet {
+    background: #d77651;
+}
+
+.room-mobile-redesign-card__avatar--iris {
+    background: #c3845b;
+}
+
+.room-mobile-redesign-card__avatar--indigo {
+    background: #ab8963;
+}
+
+.room-mobile-redesign-card__avatar--teal {
+    background: #b07c64;
+}
 
 .room-mobile-redesign-card__alias {
     color: #221721;
@@ -3836,14 +3856,16 @@
 .room-mobile-redesign-card__body {
     font-family: var(--font-display);
     font-size: 1.25rem;
-    color: #1a2244; 
+    color: #1a2244;
     line-height: 1.45;
     word-break: break-word;
     overflow-wrap: break-word;
 }
+
 .room-mobile-redesign-card__body.is-quoted {
     color: #21356a;
 }
+
 .room-mobile-redesign-card__body.is-written {
     border-left: 2px solid #df684a;
     padding-left: 1rem;
@@ -3857,6 +3879,7 @@
     justify-content: space-between;
     margin-top: 0.25rem;
 }
+
 .room-mobile-redesign-card__actions-left {
     display: flex;
     align-items: center;
@@ -3875,6 +3898,7 @@
     font-weight: 600;
     padding: 0;
 }
+
 .room-mobile-redesign-card__stat.is-liked {
     color: #dd6447;
 }
@@ -3919,11 +3943,13 @@
     justify-content: space-between;
     align-items: center;
 }
+
 .room-mobile-redesign-audio__head strong {
     font-size: 0.85rem;
     font-weight: 800;
     color: #5c524f;
 }
+
 .room-mobile-redesign-audio__head span {
     font-size: 0.78rem;
     font-weight: 600;
@@ -3936,20 +3962,29 @@
     gap: 4px;
     height: 24px;
 }
+
 .room-mobile-redesign-audio__bar {
     flex: 1 1 0;
     background: #d4c1b2;
     border-radius: 4px;
     transition: height 0.1s ease;
 }
+
 .room-mobile-redesign-audio__bar.is-playing {
     animation: waveform-bounce 1.2s infinite alternate ease-in-out;
     background: #b69f8c;
 }
 
 @keyframes waveform-bounce {
-    0% { transform: scaleY(0.7); opacity: 0.8; }
-    100% { transform: scaleY(1.3); opacity: 1; }
+    0% {
+        transform: scaleY(0.7);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scaleY(1.3);
+        opacity: 1;
+    }
 }
 
 /* --- Mobile Composer Redesign UI --- */
@@ -3958,7 +3993,7 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: #fdfaf7; 
+    background: #fdfaf7;
     display: flex;
     flex-direction: column;
 }
@@ -3997,6 +4032,7 @@
     font-size: 0.95rem;
     font-weight: 700;
 }
+
 .room-mobile-redesign-composer__post:not(:disabled) {
     background: #cc6348;
     color: #fff;
@@ -4020,21 +4056,25 @@
     gap: 0.85rem;
     color: #4a3e3c;
 }
+
 .room-mobile-redesign-composer__safety svg {
     flex-shrink: 0;
     color: #8c766e;
     margin-top: 0.15rem;
 }
+
 .room-mobile-redesign-composer__safety-text {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
 }
+
 .room-mobile-redesign-composer__safety-text strong {
     font-size: 0.95rem;
     font-weight: 800;
     color: #2e2624;
 }
+
 .room-mobile-redesign-composer__safety-text span {
     font-size: 0.85rem;
     color: #7b6a65;
@@ -4050,20 +4090,23 @@
     padding: 0.9rem 1.15rem;
     background: #f8efe6;
 }
+
 .room-mobile-redesign-composer__identity-info {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
 }
+
 .room-mobile-redesign-composer__identity-info span {
     font-size: 0.75rem;
     font-weight: 600;
     color: #8f8580;
 }
+
 .room-mobile-redesign-composer__identity-info strong {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #3e334a; 
+    color: #3e334a;
 }
 
 .room-mobile-redesign-composer__shuffle {
@@ -4102,6 +4145,7 @@
     border: 1px solid rgba(43, 35, 49, 0.08);
     border-radius: 1rem;
 }
+
 .room-mobile-redesign-composer__room-icon {
     width: 3.2rem;
     height: 3.2rem;
@@ -4112,21 +4156,35 @@
     color: #fff;
     flex-shrink: 0;
 }
-.room-mobile-redesign-composer__room-icon--chill { background: #d77651; }
-.room-mobile-redesign-composer__room-icon--advice { background: #c3845b; }
-.room-mobile-redesign-composer__room-icon--general { background: #1d8376; }
-.room-mobile-redesign-composer__room-icon--daily { background: #1d8376; } 
+
+.room-mobile-redesign-composer__room-icon--chill {
+    background: #d77651;
+}
+
+.room-mobile-redesign-composer__room-icon--advice {
+    background: #c3845b;
+}
+
+.room-mobile-redesign-composer__room-icon--general {
+    background: #1d8376;
+}
+
+.room-mobile-redesign-composer__room-icon--daily {
+    background: #1d8376;
+}
 
 .room-mobile-redesign-composer__room-copy {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
 }
+
 .room-mobile-redesign-composer__room-copy strong {
     font-size: 0.95rem;
     font-weight: 700;
     color: #2b2331;
 }
+
 .room-mobile-redesign-composer__room-copy span {
     font-size: 0.85rem;
     color: #8c8287;
@@ -4153,6 +4211,7 @@
     font-weight: 700;
     color: #7b6f6b;
 }
+
 .room-mobile-redesign-composer__mode-btn.is-active {
     background: #ffffff;
     color: #c95c40;
@@ -4214,8 +4273,9 @@
     color: #2b2331;
     outline: none;
 }
+
 .room-mobile-redesign-composer__editor textarea::placeholder {
-    color: #8e9bb0; 
+    color: #8e9bb0;
 }
 
 .room-mobile-redesign-composer__footer {
@@ -4226,6 +4286,7 @@
     font-size: 0.85rem;
     color: #8c8287;
 }
+
 .room-mobile-redesign-composer__footer strong {
     font-weight: 700;
 }
@@ -4246,6 +4307,7 @@
     gap: 0.5rem;
     color: #af4732;
 }
+
 .room-mobile-redesign-composer__schedule-header strong {
     font-size: 0.95rem;
     font-weight: 700;
@@ -4272,6 +4334,7 @@
     font-size: 0.9rem;
     font-weight: 600;
 }
+
 .room-mobile-redesign-composer__schedule-btn.is-active {
     background: #af4732;
     border-color: #af4732;
@@ -4313,13 +4376,23 @@
    ========================================================================== */
 
 @keyframes sheetFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes sheetSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
 }
 
 .confession-comment-sheet-backdrop {
@@ -4340,8 +4413,8 @@
     width: 100%;
     max-width: 540px;
     margin: 0 auto;
-    max-height: 85vh;
-    height: 85vh;
+    max-height: 85dvh;
+    height: 85dvh;
     background: #FAF7F2;
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
@@ -4721,3 +4794,95 @@
     gap: 2px;
 }
 
+/* ==========================================================================
+   INSTAGRAM-STYLE NESTED REPLY THREADS
+   ========================================================================== */
+
+/* Thread container per top-level comment */
+.confession-reply-thread-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.confession-reply-thread {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Child comment: indented with a left connecting bar */
+.confession-reply-card--child {
+    margin-left: 36px !important;
+    position: relative;
+}
+
+.confession-reply-card--child::before {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 0;
+    bottom: 8px;
+    width: 1.5px;
+    background: #E0D8D0;
+    border-radius: 2px;
+}
+
+/* Children container */
+.confession-reply-card__children {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2px;
+    animation: replyChildrenFadeIn 0.2s ease-out;
+}
+
+@keyframes replyChildrenFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* "View X more replies" toggle button — Instagram style */
+.confession-reply-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none !important;
+    border: none !important;
+    padding: 6px 0 6px 52px !important;
+    cursor: pointer;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #7D6B76 !important;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 150ms ease;
+    line-height: 1;
+}
+
+.confession-reply-toggle-btn:hover {
+    color: #3B1F43 !important;
+}
+
+.confession-reply-toggle-btn:active {
+    opacity: 0.7;
+}
+
+/* The "——" horizontal connecting line before the label */
+.confession-reply-toggle-line {
+    display: inline-block;
+    width: 24px;
+    height: 1.5px;
+    background: #B0A4AB;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+.confession-reply-toggle-label {
+    flex: 1;
+    text-align: left;
+}

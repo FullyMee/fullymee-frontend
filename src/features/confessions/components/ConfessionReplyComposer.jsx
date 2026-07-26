@@ -1,9 +1,7 @@
 import React from "react";
 import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
-import { Send } from "lucide-react";
-
-const QUICK_EMOJIS = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"];
+import { Send, X } from "lucide-react";
 
 export default function ConfessionReplyComposer({
     isDesktop = false,
@@ -12,56 +10,70 @@ export default function ConfessionReplyComposer({
     posting = false,
     disabled = false,
     onChange,
-    onSubmit
+    onSubmit,
+    inputRef,
+    replyingToAlias,
+    onCancelReplyTo,
+    onFocus,
+    onBlur
 }) {
-    const handleQuickEmojiSelect = (emoji) => {
-        const nextValue = value ? `${value} ${emoji}` : emoji;
-        onChange(nextValue);
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        if (!disabled && String(value || "").trim()) {
+            onSubmit();
+        }
     };
+
+    const replyingBanner = replyingToAlias ? (
+        <div className="confession-replying-to-banner">
+            <span>Replying to <strong>@{replyingToAlias}</strong></span>
+            <button
+                type="button"
+                className="confession-replying-to-cancel"
+                onClick={onCancelReplyTo}
+                aria-label="Cancel reply"
+            >
+                <X size={14} />
+            </button>
+        </div>
+    ) : null;
 
     if (isDesktop) {
         return (
             <div className="desktop-reply-composer-wrap">
-                {/* Quick Emoji Reaction Row */}
-                <div className="confession-quick-emojis-bar">
-                    {QUICK_EMOJIS.map((emoji) => (
-                        <button
-                            key={emoji}
-                            type="button"
-                            className="confession-quick-emoji-btn"
-                            onClick={() => handleQuickEmojiSelect(emoji)}
-                            aria-label={`Add ${emoji}`}
-                        >
-                            {emoji}
-                        </button>
-                    ))}
-                </div>
+                {replyingBanner}
 
-                <div className="desktop-reply-composer" role="group" aria-label="Write a comment">
+                <form className="desktop-reply-composer" autoComplete="off" onSubmit={handleFormSubmit} role="group" aria-label="Write a comment">
                     <div className={`confession-reply-bar__avatar confession-detail-card__avatar--${getAliasTone(userLabel)}`}>
                         {getInitial(userLabel)}
                     </div>
 
                     <div className="desktop-reply-input-box">
                         <input
-                            type="text"
+                            ref={inputRef}
+                            type="search"
+                            name="comment_message_desktop"
                             value={value}
                             onChange={(event) => onChange(event.target.value)}
-                            placeholder="Join the conversation..."
+                            onFocus={onFocus}
+                            onBlur={onBlur}
+                            placeholder={replyingToAlias ? `Reply to @${replyingToAlias}...` : "Join the conversation..."}
                             maxLength={1500}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey && !disabled) {
-                                    e.preventDefault();
-                                    onSubmit();
-                                }
-                            }}
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="sentences"
+                            spellCheck={true}
+                            enterKeyHint="send"
+                            inputMode="text"
+                            data-lpignore="true"
+                            data-form-type="other"
+                            data-1p-ignore="true"
                         />
 
                         <button
-                            type="button"
+                            type="submit"
                             className="composer-send-btn"
                             disabled={disabled}
-                            onClick={onSubmit}
                             aria-label="Send comment"
                         >
                             {posting ? (
@@ -71,54 +83,47 @@ export default function ConfessionReplyComposer({
                             )}
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         );
     }
 
     return (
         <div className="confession-reply-bottom-container">
-            {/* Quick Emoji Reaction Row */}
-            <div className="confession-quick-emojis-bar" aria-label="Quick emoji reactions">
-                {QUICK_EMOJIS.map((emoji) => (
-                    <button
-                        key={emoji}
-                        type="button"
-                        className="confession-quick-emoji-btn"
-                        onClick={() => handleQuickEmojiSelect(emoji)}
-                        aria-label={`Add ${emoji}`}
-                    >
-                        {emoji}
-                    </button>
-                ))}
-            </div>
+            {replyingBanner}
 
             {/* Clean Input Bar */}
-            <div className="confession-reply-bar">
+            <form className="confession-reply-bar" autoComplete="off" onSubmit={handleFormSubmit}>
                 <div className={`confession-reply-bar__avatar confession-detail-card__avatar--${getAliasTone(userLabel)}`}>
                     {getInitial(userLabel)}
                 </div>
 
                 <div className="confession-reply-input-wrapper">
                     <input
-                        type="text"
+                        ref={inputRef}
+                        type="search"
+                        name="comment_message"
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
-                        placeholder="Join the conversation..."
+                        onFocus={onFocus}
+                        onBlur={onBlur}
+                        placeholder={replyingToAlias ? `Reply to @${replyingToAlias}...` : "Join the conversation..."}
                         maxLength={1500}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey && !disabled) {
-                                e.preventDefault();
-                                onSubmit();
-                            }
-                        }}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="sentences"
+                        spellCheck={true}
+                        enterKeyHint="send"
+                        inputMode="text"
+                        data-lpignore="true"
+                        data-form-type="other"
+                        data-1p-ignore="true"
                     />
 
                     <button
-                        type="button"
+                        type="submit"
                         className="composer-send-btn"
                         disabled={disabled}
-                        onClick={onSubmit}
                         aria-label="Post comment"
                     >
                         {posting ? (
@@ -128,7 +133,7 @@ export default function ConfessionReplyComposer({
                         )}
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 }
