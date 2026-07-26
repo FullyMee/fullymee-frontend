@@ -8,7 +8,6 @@ import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
 import { ArrowLeftIcon, CommentIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
-import { X } from "lucide-react";
 
 export default function ConfessionDetailView({
     isDesktop = false,
@@ -38,11 +37,49 @@ export default function ConfessionDetailView({
     const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
     const replyDisabled = isPostingReply || !String(replyDraft || "").trim();
 
+    // References
+    const inputRef = useRef(null);
+    const scrollContentRef = useRef(null);
+    const sheetRef = useRef(null);
+
     // Touch gesture state for drag-to-dismiss on mobile
     const [dragY, setDragY] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const touchStartY = useRef(0);
-    const sheetRef = useRef(null);
+
+    // Reply-to-reply target state: { alias, replyId }
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [isInputFocused, setIsInputFocused] = useState(false);
+
+    // Dynamic VisualViewport handling for smooth keyboard animation on mobile
+    const [vvHeight, setVvHeight] = useState(null);
+    const [vvBottom, setVvBottom] = useState(0);
+
+    useEffect(() => {
+        if (isDesktop || typeof window === "undefined" || !window.visualViewport) return;
+
+        const handleVisualViewportChange = () => {
+            const vv = window.visualViewport;
+            const layoutH = window.innerHeight;
+            const visibleH = Math.round(vv.height);
+            const offsetTop = Math.round(vv.offsetTop);
+            const bottomInset = Math.max(0, layoutH - visibleH - offsetTop);
+
+            setVvHeight(visibleH);
+            setVvBottom(bottomInset);
+        };
+
+        handleVisualViewportChange();
+        window.visualViewport.addEventListener("resize", handleVisualViewportChange);
+        window.visualViewport.addEventListener("scroll", handleVisualViewportChange);
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener("resize", handleVisualViewportChange);
+                window.visualViewport.removeEventListener("scroll", handleVisualViewportChange);
+            }
+        };
+    }, [isDesktop]);
 
     // Keydown ESC listener
     useEffect(() => {
@@ -54,6 +91,57 @@ export default function ConfessionDetailView({
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [onBack]);
+
+    // Handle reply-to-user click (Instagram style) — receives { alias, replyId }
+    const handleReplyToUser = useCallback((alias, replyId = null) => {
+        setReplyingTo({ alias, replyId });
+        const current = replyDraft || "";
+        const mentionTag = `@${alias} `;
+        if (!current.startsWith(mentionTag)) {
+            const cleanDraft = current.replace(/^@[A-Za-z0-9_.-]+\s*/, "");
+            onReplyDraftChange(`${mentionTag}${cleanDraft}`);
+        }
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [onReplyDraftChange, replyDraft]);
+
+    const handleCancelReplyTo = useCallback(() => {
+        setReplyingTo(null);
+        if (replyDraft && replyDraft.startsWith("@")) {
+            const cleanDraft = replyDraft.replace(/^@[A-Za-z0-9_.-]+\s*/, "");
+            onReplyDraftChange(cleanDraft);
+        }
+    }, [onReplyDraftChange, replyDraft]);
+
+    // Post reply — forward parentReplyId & parentAlias from replyingTo state
+    const handleSubmitReply = useCallback(() => {
+        const parentReplyId = replyingTo ? replyingTo.replyId : null;
+        const parentAlias = replyingTo ? replyingTo.alias : null;
+        onPostReply(selectedConfession.confessionId, parentReplyId, parentAlias);
+        setReplyingTo(null);
+    }, [replyingTo, onPostReply, selectedConfession]);
+
+    // Instagram feature: Auto-dismiss keyboard when scrolling comments list
+    const handleCommentsScroll = useCallback(() => {
+        if (inputRef.current && document.activeElement === inputRef.current) {
+            inputRef.current.blur();
+        }
+    }, []);
+
+    // Focus handler: smooth scroll into view on first click so input is never hidden
+    const handleInputFocus = useCallback(() => {
+        setIsInputFocused(true);
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+        }, 100);
+    }, []);
+
+    const handleInputBlur = useCallback(() => {
+        setIsInputFocused(false);
+    }, []);
 
     // Touch handlers for sheet drag handle
     const handleTouchStart = useCallback((e) => {
@@ -145,12 +233,7 @@ export default function ConfessionDetailView({
                 likedReplyIds={likedReplyIds}
                 reactingReplyIds={reactingReplyIds}
                 onReactReply={(replyId) => onReact("reply", replyId)}
-                onReplyToUser={(alias) => {
-                    const current = replyDraft || "";
-                    if (!current.includes(`@${alias}`)) {
-                        onReplyDraftChange(`@${alias} ${current}`);
-                    }
-                }}
+                onReplyToUser={handleReplyToUser}
             />
 
             {!isDesktop && loadingMoreReplies && <InfiniteScrollLoader label="Loading more responses" />}
@@ -196,24 +279,36 @@ export default function ConfessionDetailView({
                         posting={isPostingReply}
                         disabled={replyDisabled}
                         onChange={onReplyDraftChange}
-                        onSubmit={() => onPostReply(selectedConfession.confessionId)}
+                        onSubmit={handleSubmitReply}
+                        inputRef={inputRef}
+                        replyingToAlias={replyingTo ? replyingTo.alias : null}
+                        onCancelReplyTo={handleCancelReplyTo}
                     />
                 </aside>
             </div>
         );
     }
 
-    // Mobile View: Production-Grade Bottom Sheet Drawer Modal
+    // Mobile View: Senior Production-Grade Bottom Sheet Modal with Smooth Keyboard Handling
+    const mobileStyle = {
+        transform: dragY > 0 ? `translateY(${dragY}px)` : "none",
+        transition: isDragging ? "none" : "transform 0.25s ease-out"
+    };
+
+    if (vvBottom > 0) {
+        mobileStyle.bottom = `${vvBottom}px`;
+    }
+    if (vvHeight) {
+        mobileStyle.maxHeight = `${vvHeight}px`;
+    }
+
     return (
         <div className="confession-comment-sheet-backdrop" onClick={onBack}>
             <div
                 ref={sheetRef}
-                className="confession-comment-sheet"
+                className={`confession-comment-sheet${isInputFocused ? " is-keyboard-open" : ""}`}
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                    transform: dragY > 0 ? `translateY(${dragY}px)` : "none",
-                    transition: isDragging ? "none" : "transform 0.25s ease-out"
-                }}
+                style={mobileStyle}
                 role="dialog"
                 aria-modal="true"
                 aria-label="Comments"
@@ -229,8 +324,13 @@ export default function ConfessionDetailView({
                     <h2 className="confession-comment-sheet__title">Comments</h2>
                 </div>
 
-                {/* Main Scrollable Comments Area */}
-                <div className="confession-comment-sheet__scroll-content">
+                {/* Main Scrollable Comments Area - Auto-dismisses keyboard on scroll (Instagram behavior) */}
+                <div
+                    ref={scrollContentRef}
+                    className="confession-comment-sheet__scroll-content"
+                    onScroll={handleCommentsScroll}
+                    onTouchMove={handleCommentsScroll}
+                >
                     {/* Embedded Confession Post Brief Summary Card */}
                     <div className="confession-comment-sheet__post-summary">
                         <div className={`confession-detail-card__avatar confession-detail-card__avatar--small confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
@@ -250,14 +350,19 @@ export default function ConfessionDetailView({
                     </div>
                 </div>
 
-                {/* Fixed Bottom Reaction & Reply Bar */}
+                {/* Fixed Bottom Reply Bar */}
                 <ConfessionReplyComposer
                     userLabel={user && user.username ? user.username : "you"}
                     value={replyDraft}
                     posting={isPostingReply}
                     disabled={replyDisabled}
                     onChange={onReplyDraftChange}
-                    onSubmit={() => onPostReply(selectedConfession.confessionId)}
+                    onSubmit={handleSubmitReply}
+                    inputRef={inputRef}
+                    replyingToAlias={replyingTo ? replyingTo.alias : null}
+                    onCancelReplyTo={handleCancelReplyTo}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                 />
             </div>
         </div>
