@@ -4307,3 +4307,417 @@
         background: #ffffff !important;
     }
 }
+
+/* ==========================================================================
+   PRODUCTION-GRADE MOBILE COMMENT BOTTOM SHEET DRAWER
+   ========================================================================== */
+
+@keyframes sheetFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes sheetSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.confession-comment-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    animation: sheetFadeIn 0.22s ease-out;
+}
+
+.confession-comment-sheet {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+    max-height: 85vh;
+    height: 85vh;
+    background: #FAF7F2;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    touch-action: none;
+    animation: sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    color: #262626;
+}
+
+.confession-comment-sheet__handle-bar {
+    padding: 10px 16px 10px;
+    text-align: center;
+    cursor: grab;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: #FAF7F2;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    user-select: none;
+}
+
+.confession-comment-sheet__handle-bar:active {
+    cursor: grabbing;
+}
+
+.confession-comment-sheet__handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: #D6CEC7;
+    margin: 0 auto 8px;
+}
+
+.confession-comment-sheet__title {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #262626 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    letter-spacing: -0.01em;
+}
+
+.confession-comment-sheet__scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 16px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
+
+.confession-comment-sheet__post-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.confession-comment-sheet__post-summary-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.confession-comment-sheet__post-summary-copy strong {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #262626;
+    display: block;
+}
+
+.confession-comment-sheet__post-summary-copy p {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #555555;
+    margin: 2px 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.confession-comment-sheet__divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 4px 0 8px;
+}
+
+.confession-comment-sheet__replies-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Comment Card Items ── */
+.confession-reply-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.confession-reply-card {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.confession-reply-card:last-child {
+    border-bottom: none;
+}
+
+.confession-reply-card__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+.confession-reply-card__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.confession-reply-card__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.confession-reply-card__author-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.confession-reply-card__username {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    color: #262626 !important;
+}
+
+.confession-reply-card__time {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 12px !important;
+    color: #8E8E8E !important;
+    font-weight: 400 !important;
+}
+
+.confession-reply-card__edited {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 12px !important;
+    color: #8E8E8E !important;
+}
+
+.confession-reply-card__text {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 14px !important;
+    color: #262626 !important;
+    line-height: 1.45 !important;
+    margin: 2px 0 4px !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.confession-reply-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 2px;
+}
+
+.confession-reply-action-btn {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #8E8E8E !important;
+    cursor: pointer;
+    transition: color 150ms ease;
+}
+
+.confession-reply-action-btn:hover {
+    color: #262626 !important;
+}
+
+.confession-reply-card__like-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.confession-reply-like-btn {
+    background: none !important;
+    border: none !important;
+    padding: 2px !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 120ms ease;
+}
+
+.confession-reply-like-btn:active {
+    transform: scale(1.25);
+}
+
+.confession-reply-like-count {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #8E8E8E !important;
+    min-height: 14px;
+}
+
+/* ── Bottom Emoji Bar & Composer Container ── */
+.confession-reply-bottom-container {
+    background: #FAF7F2;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.confession-quick-emojis-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 12px 6px;
+    gap: 4px;
+    background: #FAF7F2;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.confession-quick-emojis-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.confession-quick-emoji-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: transform 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.confession-quick-emoji-btn:active {
+    transform: scale(1.3);
+}
+
+.confession-reply-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px 14px;
+    background: #FAF7F2;
+}
+
+.confession-reply-bar__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.confession-reply-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #F0EAE1;
+    border-radius: 999px;
+    padding: 4px 6px 4px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    min-width: 0;
+}
+
+.confession-reply-input-wrapper input {
+    flex: 1;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 14px !important;
+    color: #262626 !important;
+    min-width: 0;
+    padding: 6px 0;
+}
+
+.confession-reply-input-wrapper input::placeholder {
+    color: #9E948B !important;
+}
+
+.composer-send-btn {
+    background: #E07A5F !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: transform 120ms ease, opacity 120ms ease;
+    flex-shrink: 0;
+}
+
+.composer-send-btn:active {
+    transform: scale(0.92);
+}
+
+.composer-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Desktop Side Sheet Enhancement */
+.desktop-reply-composer-wrap {
+    display: flex;
+    flex-direction: column;
+    background: #FAF7F2;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.desktop-reply-input-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #F0EAE1;
+    border-radius: 999px;
+    padding: 4px 8px 4px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.desktop-reply-input-box input {
+    flex: 1;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 14px !important;
+    color: #262626 !important;
+    padding: 6px 0;
+}
+
+.desktop-reply-input-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
