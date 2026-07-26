@@ -39,13 +39,13 @@ export default function ConfessionReplyComposer({
                 type="text"
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                placeholder="Share your thoughts..."
+                placeholder="Write with care..."
                 maxLength={1500}
             />
-            <button type="button" disabled={disabled} onClick={onSubmit}>
+            <button type="button" disabled={disabled} onClick={onSubmit} aria-label="Send reply">
                 {posting
                     ? <InlineSpinner size="sm" tone="light" label="Posting reply" />
-                    : "Post"}
+                    : <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>}
             </button>
         </div>
     );
