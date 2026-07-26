@@ -243,9 +243,7 @@
 }
 .chat-mobile-page--thread {
     height: 100dvh;
-    height: var(--chat-mobile-visible-height, 100dvh);
-    max-height: 100dvh;
-    min-height: 0;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     padding-bottom: 0;
@@ -2029,7 +2027,7 @@
     .chat-mobile-page--thread .chat-thread-messages {
         flex: 1 1 auto;
         min-height: 0;
-        padding: 1rem 1rem calc(5.75rem + var(--chat-mobile-bottom-inset, 0px) + env(safe-area-inset-bottom, 0px)) !important;
+        padding: 1rem 1rem calc(5.75rem + env(safe-area-inset-bottom, 0px)) !important;
         background: #fffdf9;
     }
 

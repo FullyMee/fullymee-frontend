@@ -334,12 +334,6 @@ export default function ChatPage({ user }) {
         requestAnimationFrame(() => {
             node.scrollTop = node.scrollHeight;
         });
-        const timer = setTimeout(() => {
-            if (threadContentRef.current) {
-                threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
-            }
-        }, 200);
-        return () => clearTimeout(timer);
     }, [activeConversationId, isDesktop, messages.length, mobileViewportFrame]);
 
     useEffect(() => {
@@ -985,18 +979,6 @@ export default function ChatPage({ user }) {
                             name="chat_message"
                             value={draft}
                             onChange={(event) => setDraft(event.target.value)}
-                            onFocus={() => {
-                                setTimeout(() => {
-                                    if (threadContentRef.current) {
-                                        threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
-                                    }
-                                }, 150);
-                                setTimeout(() => {
-                                    if (threadContentRef.current) {
-                                        threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
-                                    }
-                                }, 350);
-                            }}
                             placeholder="Type a message..."
                             maxLength={1500}
                             disabled={!connected}
