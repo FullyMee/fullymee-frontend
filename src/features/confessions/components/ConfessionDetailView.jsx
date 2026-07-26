@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { CommentSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
@@ -6,7 +7,8 @@ import { formatRelativeTime } from "../../../utils/time.js";
 import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
-import { ArrowLeftIcon, CommentIcon, HeartIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
+import { ArrowLeftIcon, CommentIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
+import { X } from "lucide-react";
 
 export default function ConfessionDetailView({
     isDesktop = false,
@@ -35,6 +37,49 @@ export default function ConfessionDetailView({
 
     const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
     const replyDisabled = isPostingReply || !String(replyDraft || "").trim();
+
+    // Touch gesture state for drag-to-dismiss on mobile
+    const [dragY, setDragY] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const touchStartY = useRef(0);
+    const sheetRef = useRef(null);
+
+    // Keydown ESC listener
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                onBack();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [onBack]);
+
+    // Touch handlers for sheet drag handle
+    const handleTouchStart = useCallback((e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartY.current = e.touches[0].clientY;
+            setIsDragging(true);
+        }
+    }, []);
+
+    const handleTouchMove = useCallback((e) => {
+        if (!isDragging || !e.touches || e.touches.length === 0) return;
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - touchStartY.current;
+        if (deltaY > 0) {
+            setDragY(deltaY);
+        }
+    }, [isDragging]);
+
+    const handleTouchEnd = useCallback(() => {
+        if (!isDragging) return;
+        setIsDragging(false);
+        if (dragY > 120) {
+            onBack();
+        }
+        setDragY(0);
+    }, [dragY, isDragging, onBack]);
 
     const detailCard = (
         <article className="confession-detail-card">
@@ -92,15 +137,7 @@ export default function ConfessionDetailView({
             {loadingReplies && selectedReplies.length === 0 && <CommentSkeletonList count={3} />}
 
             {!loadingReplies && selectedReplies.length === 0 && (
-                isDesktop ? (
-                    <DesktopEmptyState
-                        compact
-                        title="No replies yet"
-                        description="Start the conversation with a thoughtful response."
-                    />
-                ) : (
-                    <div className="room-feed-empty">No replies yet. Start the conversation with a thoughtful response.</div>
-                )
+                <div className="room-feed-empty">No replies yet. Start the conversation with a thoughtful response.</div>
             )}
 
             <ConfessionReplyList
@@ -108,7 +145,12 @@ export default function ConfessionDetailView({
                 likedReplyIds={likedReplyIds}
                 reactingReplyIds={reactingReplyIds}
                 onReactReply={(replyId) => onReact("reply", replyId)}
-                firstBadgeLabel={isDesktop ? "Trusted Community Reply" : "Trusted Career Mentor"}
+                onReplyToUser={(alias) => {
+                    const current = replyDraft || "";
+                    if (!current.includes(`@${alias}`)) {
+                        onReplyDraftChange(`@${alias} ${current}`);
+                    }
+                }}
             />
 
             {!isDesktop && loadingMoreReplies && <InfiniteScrollLoader label="Loading more responses" />}
@@ -149,6 +191,7 @@ export default function ConfessionDetailView({
 
                     <ConfessionReplyComposer
                         isDesktop
+                        userLabel={user && user.username ? user.username : "you"}
                         value={replyDraft}
                         posting={isPostingReply}
                         disabled={replyDisabled}
@@ -160,46 +203,63 @@ export default function ConfessionDetailView({
         );
     }
 
+    // Mobile View: Production-Grade Bottom Sheet Drawer Modal
     return (
-        <>
-            <header className="confession-detail-header">
-                <button type="button" className="confession-detail-header__back" onClick={onBack}>
-                    <ArrowLeftIcon />
-                    <span>Back</span>
-                </button>
-                <button
-                    type="button"
-                    className="confession-detail-header__share"
-                    onClick={() => onShare("confession", selectedConfession)}
+        <div className="confession-comment-sheet-backdrop" onClick={onBack}>
+            <div
+                ref={sheetRef}
+                className="confession-comment-sheet"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    transform: dragY > 0 ? `translateY(${dragY}px)` : "none",
+                    transition: isDragging ? "none" : "transform 0.25s ease-out"
+                }}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Comments"
+            >
+                {/* Drag Handle Top Bar */}
+                <div
+                    className="confession-comment-sheet__handle-bar"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                 >
-                    <ShareIcon />
-                </button>
-            </header>
+                    <div className="confession-comment-sheet__handle" />
+                    <h2 className="confession-comment-sheet__title">Comments</h2>
+                </div>
 
-            <main className="confession-detail-content">
-                {detailCard}
-
-                <section className="confession-support-card">
-                    <p>Remember: You're not alone. This community is here to support you.</p>
-                </section>
-
-                <section className="confession-replies-section">
-                    <div className="confession-replies-section__head">
-                        <h2>Advice & Responses ({selectedConfession.replyCount || selectedReplies.length})</h2>
+                {/* Main Scrollable Comments Area */}
+                <div className="confession-comment-sheet__scroll-content">
+                    {/* Embedded Confession Post Brief Summary Card */}
+                    <div className="confession-comment-sheet__post-summary">
+                        <div className={`confession-detail-card__avatar confession-detail-card__avatar--small confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
+                            {getInitial(selectedConfession.alias)}
+                        </div>
+                        <div className="confession-comment-sheet__post-summary-copy">
+                            <strong>{selectedConfession.alias}</strong>
+                            <p>{selectedConfession.content || "Confession post"}</p>
+                        </div>
                     </div>
 
-                    {repliesSection}
-                </section>
-            </main>
+                    <div className="confession-comment-sheet__divider" />
 
-            <ConfessionReplyComposer
-                userLabel={user && user.username ? user.username : "you"}
-                value={replyDraft}
-                posting={isPostingReply}
-                disabled={replyDisabled}
-                onChange={onReplyDraftChange}
-                onSubmit={() => onPostReply(selectedConfession.confessionId)}
-            />
-        </>
+                    {/* Replies List */}
+                    <div className="confession-comment-sheet__replies-wrap">
+                        {repliesSection}
+                    </div>
+                </div>
+
+                {/* Fixed Bottom Reaction & Reply Bar */}
+                <ConfessionReplyComposer
+                    userLabel={user && user.username ? user.username : "you"}
+                    value={replyDraft}
+                    posting={isPostingReply}
+                    disabled={replyDisabled}
+                    onChange={onReplyDraftChange}
+                    onSubmit={() => onPostReply(selectedConfession.confessionId)}
+                />
+            </div>
+        </div>
     );
 }
