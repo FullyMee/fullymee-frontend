@@ -731,3 +731,633 @@ body,
         font-size: var(--type-title-md);
     }
 }
+
+/* ==========================================================================
+   MOBILE PROFILE REDESIGN — SENIOR PRODUCTION-GRADE MATCHING MOCKUP
+   ========================================================================== */
+
+.profile-mobile-redesign {
+    background: #FAF7F2 !important;
+    min-height: 100vh;
+    padding-bottom: 6.5rem;
+}
+
+.profile-mobile-redesign__content {
+    padding: 1.2rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* ── 1. Top Header Card: Avatar + Stats ── */
+.profile-redesign__header-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.profile-redesign__top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Avatar with double border ring & verified badge */
+.profile-redesign__avatar-wrapper {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+}
+
+.profile-redesign__avatar-ring {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    padding: 3px;
+    background: linear-gradient(135deg, #E07A5F 0%, #3B1F43 100%);
+    box-shadow: 0 4px 14px rgba(59, 31, 67, 0.12);
+}
+
+.profile-redesign__avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #3B1F43 0%, #4D2E42 100%);
+    border: 2px solid #FAF7F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    user-select: none;
+}
+
+.profile-redesign__verified-badge {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    background: #ffffff;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Stats columns */
+.profile-redesign__stats-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.profile-redesign__stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.profile-redesign__stat-value {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #262626;
+    line-height: 1.1;
+}
+
+.profile-redesign__stat-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #7D6B76;
+    margin-top: 2px;
+}
+
+/* User Bio & Badges */
+.profile-redesign__bio-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.profile-redesign__username {
+    font-family: 'Lora', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+}
+
+.profile-redesign__joined-date {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: #8E8E8E;
+}
+
+.profile-redesign__tagline {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.85rem;
+    color: #7D6B76;
+    margin: 0;
+}
+
+.profile-redesign__badges-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.profile-badge-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #EFE6E0;
+    color: #7D6B76;
+}
+
+.profile-badge-pill--highlight {
+    background: #FDF0EC;
+    color: #E07A5F;
+    border: 1px solid rgba(224, 122, 95, 0.25);
+}
+
+/* Action Buttons Row */
+.profile-redesign__actions-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.2rem;
+}
+
+.profile-redesign__btn {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 12px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 120ms ease, opacity 120ms ease;
+    text-align: center;
+}
+
+.profile-redesign__btn:active {
+    transform: scale(0.97);
+}
+
+.profile-redesign__btn--primary {
+    background: #262626;
+    color: #ffffff;
+}
+
+.profile-redesign__btn--secondary {
+    background: #8C6F8E;
+    color: #ffffff;
+}
+
+.profile-redesign__btn--danger {
+    background: #E07A5F;
+    color: #ffffff;
+}
+
+.profile-redesign__icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #E07A5F;
+    color: #ffffff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 120ms ease;
+}
+
+.profile-redesign__icon-btn:active {
+    transform: scale(0.94);
+}
+
+/* ── 2. Story Bubbles Row (Joined Rooms + "+ New") ── */
+.profile-redesign__bubbles-section {
+    width: 100%;
+    overflow: hidden;
+}
+
+.profile-redesign__bubbles-scroll {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.2rem 0;
+}
+
+.profile-redesign__bubbles-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.profile-story-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    width: 62px;
+    flex-shrink: 0;
+}
+
+.profile-story-bubble:active {
+    opacity: 0.8;
+}
+
+.profile-story-bubble__avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    border: 2px solid #E07A5F;
+    padding: 2px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-story-bubble__avatar span {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: #F0EAE1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lora', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #3B1F43;
+}
+
+.profile-story-bubble__avatar--add {
+    border: 2px solid #E07A5F;
+    color: #E07A5F;
+    background: #FAF7F2;
+}
+
+.profile-story-bubble__label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.73rem;
+    font-weight: 500;
+    color: #3B1F43;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* ── 3. Section Tabs Bar ── */
+.profile-redesign__tabs-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 2px;
+    margin-top: 0.4rem;
+}
+
+.profile-tab-btn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+    background: none;
+    border: none;
+    color: #B0A4AB;
+    cursor: pointer;
+    position: relative;
+    transition: color 150ms ease;
+}
+
+.profile-tab-btn.is-active {
+    color: #E07A5F;
+}
+
+.profile-tab-btn.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 20%;
+    right: 20%;
+    height: 2.5px;
+    background: #E07A5F;
+    border-radius: 2px;
+}
+
+/* ── 4. Card 1: Emotional Weather ── */
+.profile-weather-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 1.25rem 1.3rem;
+    box-shadow: 0 4px 20px rgba(59, 31, 67, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.profile-weather-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-weather-card__kicker {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #9A8A94;
+    text-transform: uppercase;
+}
+
+.profile-weather-card__sparkle {
+    color: #8C6F8E;
+}
+
+.profile-weather-card__title {
+    font-family: 'Lora', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+}
+
+.profile-weather-card__days-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 0.4rem 0.4rem;
+}
+
+.profile-weather-card__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.profile-weather-card__day-letter {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #9A8A94;
+}
+
+.profile-weather-card__day-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #EFE6E0;
+}
+
+.profile-weather-card__day.is-active .profile-weather-card__day-letter {
+    color: #3B1F43;
+    font-weight: 700;
+}
+
+.profile-weather-card__day.is-active .profile-weather-card__day-dot {
+    background: #E07A5F;
+}
+
+.profile-weather-card__footer {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.78rem;
+    color: #8E8E8E;
+    margin: 0.3rem 0 0;
+}
+
+/* ── 5. Card 2: Expression / Stats Grid ── */
+.profile-redesign__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.profile-redesign__section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-redesign__section-title {
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+}
+
+.profile-redesign__section-icon {
+    color: #E07A5F;
+}
+
+.profile-redesign__expression-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.7rem;
+}
+
+.expression-pill-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.1rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(59, 31, 67, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.expression-pill-card__num {
+    font-family: 'Lora', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+/* ── Topbar with 3-lines menu button ── */
+.profile-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.1rem 0.2rem;
+    background: #FAF7F2;
+}
+
+.profile-mobile-topbar__title {
+    font-family: 'Lora', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #3B1F43;
+}
+
+.profile-mobile-menu-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: transform 120ms ease;
+}
+
+.profile-mobile-menu-btn:active {
+    transform: scale(0.92);
+}
+
+/* ── Full width Edit identity button with rich plum color ── */
+.profile-redesign__btn--full {
+    width: 100%;
+    background: #3B1F43 !important;
+    color: #ffffff !important;
+    font-size: 0.95rem !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 14px rgba(59, 31, 67, 0.18);
+}
+
+.profile-redesign__avatar-ring {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    padding: 3px;
+    background: linear-gradient(135deg, #4A244A 0%, #3B1F43 100%);
+    box-shadow: 0 4px 14px rgba(59, 31, 67, 0.12);
+}
+
+.profile-story-bubble__avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    border: 2px solid #3B1F43;
+    padding: 2px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-story-bubble__avatar--add {
+    border: 2px solid #3B1F43;
+    color: #3B1F43;
+    background: #FAF7F2;
+}
+
+.profile-tab-btn.is-active {
+    color: #3B1F43;
+}
+
+.profile-tab-btn.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 20%;
+    right: 20%;
+    height: 2.5px;
+    background: #3B1F43;
+    border-radius: 2px;
+}
+
+.profile-weather-card__day.is-active .profile-weather-card__day-dot {
+    background: #3B1F43;
+}
+
+.expression-pill-card__num--plum {
+    color: #3B1F43;
+}
+
+/* ── Right Sidebar Drawer (Blank for now) ── */
+.profile-right-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: flex-end;
+    animation: fadeInSidebar 0.2s ease-out;
+}
+
+@keyframes fadeInSidebar {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.profile-right-sidebar {
+    width: 80%;
+    max-width: 340px;
+    height: 100%;
+    background: #FAF7F2;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.profile-right-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.2rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.profile-right-sidebar__header h2 {
+    font-family: 'Lora', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+}
+
+.profile-right-sidebar__close-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-right-sidebar__body {
+    flex: 1;
+    padding: 1.2rem;
+}
+
+

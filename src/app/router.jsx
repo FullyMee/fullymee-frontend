@@ -168,8 +168,7 @@ function AnimatedAppRoutes({ isAuthenticated, user }) {
         currentLoc.pathname === "/" ||
         (currentLoc.pathname === "/confessions" && !searchParams.get("roomId")) ||
         (currentLoc.pathname === "/chats" && !searchParams.get("conversationId") && searchParams.get("requests") !== "1") ||
-        currentLoc.pathname === "/search" ||
-        currentLoc.pathname === "/profile"
+        currentLoc.pathname === "/search"
     );
     const showGlobalHeader = !isDesktop && isAuthenticated && isLobby;
     const showGlobalFooter = !isDesktop && isAuthenticated && (
