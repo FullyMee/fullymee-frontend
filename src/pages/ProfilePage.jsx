@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import Modal from "../components/common/Modal";
 import { disconnectSocket } from "../services/socket";
 import ProfileEditForm from "../features/profile/components/ProfileEditForm.jsx";
+import SettingsDrawer from "../features/profile/components/SettingsDrawer.jsx";
 import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
@@ -565,26 +566,18 @@ export default function ProfilePage({ user }) {
                 />
             </Modal>
 
-            {/* Right Sidebar Drawer (Blank for now) */}
+            {/* Right Sidebar Drawer — Settings Panel */}
             {showRightSidebar && (
-                <div className="profile-right-sidebar-backdrop" onClick={() => setShowRightSidebar(false)}>
-                    <aside className="profile-right-sidebar" onClick={(e) => e.stopPropagation()}>
-                        <div className="profile-right-sidebar__header">
-                            <h2>Settings & Options</h2>
-                            <button
-                                type="button"
-                                className="profile-right-sidebar__close-btn"
-                                onClick={() => setShowRightSidebar(false)}
-                                aria-label="Close menu"
-                            >
-                                <X size={20} color="#3B1F43" />
-                            </button>
-                        </div>
-                        <div className="profile-right-sidebar__body">
-                            {/* Kept blank for now per user instruction */}
-                        </div>
-                    </aside>
-                </div>
+                <SettingsDrawer
+                    user={profileUser}
+                    onClose={() => setShowRightSidebar(false)}
+                    onUserUpdated={(updatedUser) => {
+                        setProfileUser(updatedUser);
+                        setUsernameDraft(updatedUser.username || "");
+                        setDraftAvatar(updatedUser.preferences?.avatar || updatedUser.avatar || '🌊');
+                        window.dispatchEvent(new Event("auth-changed"));
+                    }}
+                />
             )}
         </>
     );
