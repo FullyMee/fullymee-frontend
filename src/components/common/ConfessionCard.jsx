@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useNavigate } from "react-router-dom";
 import { InlineSpinner } from './LoadingStates.jsx';
 import { getAliasTone, getInitial } from '../../utils/presentation.js';
 import { formatRelativeTime } from '../../utils/time.js';
@@ -15,23 +16,35 @@ const MemoizedConfessionCard = memo(({
     onReact,
     onChatRequest
 }) => {
+    const navigate = useNavigate();
+
     if (!isDesktop) {
         return (
             <article className="room-mobile-redesign-card">
-                <button
-                    type="button"
+                <div
                     className="room-mobile-redesign-card__content-btn"
                     onClick={() => onOpenView(confession.confessionId)}
+                    role="button"
+                    tabIndex={0}
+                    style={{ textAlign: "left", cursor: "pointer", display: "block", width: "100%", background: "none", border: "none", padding: 0 }}
                 >
                     <div className="room-mobile-redesign-card__author-row">
-                        <div className="room-mobile-redesign-card__author-info">
+                        <div
+                            className="room-mobile-redesign-card__author-info"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
+                            }}
+                            style={{ cursor: "pointer" }}
+                        >
                             <div className={`room-mobile-redesign-card__avatar room-mobile-redesign-card__avatar--${getAliasTone(confession.alias)}`}>
                                 {getInitial(confession.alias)}
                             </div>
                             <strong className="room-mobile-redesign-card__alias">{confession.alias}</strong>
                             <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                             <span className="room-mobile-redesign-card__meta">
-                                {formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })} &bull; anonymous {confession.audio ? "" : "· written"}
+                                {formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })} {confession.audio ? "" : "· written"}
                             </span>
                         </div>
                         <div className="room-mobile-redesign-card__more">
@@ -44,7 +57,7 @@ const MemoizedConfessionCard = memo(({
                             {confession.audio ? `“${confession.content}”` : confession.content}
                         </div>
                     ) : null}
-                </button>
+                </div>
 
                 {confession.audio ? (
                     <div className="room-mobile-redesign-card__audio-wrapper">
@@ -96,12 +109,22 @@ const MemoizedConfessionCard = memo(({
     
     return (
         <article className={rootClass}>
-            <button
-                type="button"
+            <div
                 className={contentClass}
                 onClick={() => onOpenView(confession.confessionId)}
+                role="button"
+                tabIndex={0}
+                style={{ textAlign: "left", cursor: "pointer", display: "block", width: "100%", background: "none", border: "none", padding: 0 }}
             >
-                <div className="room-confession-card__author">
+                <div
+                    className="room-confession-card__author"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
+                    }}
+                    style={{ cursor: "pointer" }}
+                >
                     <div className={`room-confession-card__avatar room-confession-card__avatar--${getAliasTone(confession.alias)}`}>
                         {getInitial(confession.alias)}
                     </div>
@@ -111,7 +134,7 @@ const MemoizedConfessionCard = memo(({
                     </div>
                 </div>
                 {confession.content ? <p>{confession.content}</p> : null}
-            </button>
+            </div>
 
             {confession.audio ? (
                 <AudioPlayer

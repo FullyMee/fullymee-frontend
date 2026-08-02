@@ -41,7 +41,7 @@ export default function ConfessionLobbyDesktop({
                         <div className="desktop-confessions-hub">
                             <section className="desktop-confessions-hub__hero">
                                 <h1>Your Confession Rooms</h1>
-                                <p>Rooms you have joined and communities where you can post anonymously.</p>
+                                <p>Rooms you have joined and communities where you can post.</p>
                             </section>
 
                             <section className="desktop-pill-tabs desktop-confessions-hub__filters" aria-label="Room filters">

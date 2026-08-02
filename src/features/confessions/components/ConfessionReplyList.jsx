@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
 import { Heart, ChevronDown, ChevronUp } from "lucide-react";
@@ -30,19 +31,32 @@ function ReplyCard({
     onReactReply,
     onReplyToUser
 }) {
+    const navigate = useNavigate();
     const reactionCount = Number(reply.reactionCount || 0);
 
     return (
         <article className={`confession-reply-card${isChild ? " confession-reply-card--child" : ""}`}>
             <div className="confession-reply-card__row">
                 {/* Avatar */}
-                <div className={`confession-reply-card__avatar confession-detail-card__avatar--${getAliasTone(reply.alias)}`}>
+                <div
+                    className={`confession-reply-card__avatar confession-detail-card__avatar--${getAliasTone(reply.alias)}`}
+                    onClick={() => navigate(`/user/${reply.alias}`, { state: { profileUser: { username: reply.alias, isAlias: true } } })}
+                    style={{ cursor: "pointer" }}
+                    role="button"
+                    tabIndex={0}
+                >
                     {getInitial(reply.alias)}
                 </div>
 
                 {/* Center Content */}
                 <div className="confession-reply-card__main">
-                    <div className="confession-reply-card__author-line">
+                    <div
+                        className="confession-reply-card__author-line"
+                        onClick={() => navigate(`/user/${reply.alias}`, { state: { profileUser: { username: reply.alias, isAlias: true } } })}
+                        style={{ cursor: "pointer" }}
+                        role="button"
+                        tabIndex={0}
+                    >
                         <strong className="confession-reply-card__username">{reply.alias || "Anonymous"}</strong>
                         <span className="confession-reply-card__time">{formatRelativeTime(reply.createdAt)}</span>
                     </div>

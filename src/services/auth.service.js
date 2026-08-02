@@ -63,6 +63,19 @@ export function getCurrentUser() {
     });
 }
 
+export function getAllUsers(options = {}) {
+    const params = new URLSearchParams();
+    if (options.search) params.append("search", options.search);
+    if (options.limit) params.append("limit", options.limit);
+    if (options.offset !== undefined) params.append("offset", options.offset);
+    if (options.paginate) params.append("paginate", "true");
+
+    return apiRequest(`/users?${params.toString()}`, {
+        method: "GET",
+        skipErrorLog: true
+    });
+}
+
 export function updateCurrentUserPreferences(payload) {
     return apiRequest("/users/preferences", {
         method: "PUT",

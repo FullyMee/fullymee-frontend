@@ -16,6 +16,7 @@ const ConfessionRoomPage = lazy(() => import("../pages/ConfessionRoomPage.jsx"))
 const ChatPage = lazy(() => import("../pages/ChatPage.jsx"));
 const SearchPage = lazy(() => import("../pages/SearchPage.jsx"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage.jsx"));
+const UserProfilePage = lazy(() => import("../pages/UserProfilePage.jsx"));
 const PRIMARY_TAB_ROUTES = ["/", "/confessions", "/chats", "/search", "/profile"];
 const PRIMARY_TAB_TRANSITION_MS = 280;
 
@@ -63,6 +64,11 @@ function AppRouteSet({ isAuthenticated, user, locationOverride }) {
             <Route
                 path="/profile"
                 element={isAuthenticated ? <ProfilePage user={user} /> : <Navigate to="/login" />}
+            />
+
+            <Route
+                path="/user/:userId"
+                element={isAuthenticated ? <UserProfilePage user={user} /> : <Navigate to="/login" />}
             />
 
             <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} />} />
@@ -223,7 +229,7 @@ export default function Router() {
             return;
         }
 
-        connectSocket().catch(() => {});
+        connectSocket().catch(() => { });
     }, [isAuthenticated]);
 
     if (loading) return null;

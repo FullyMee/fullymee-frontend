@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { FeedSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import MemoizedConfessionCard from "../../../components/common/ConfessionCard.jsx";
@@ -56,6 +57,7 @@ export default function ActiveRoomFeed({
     scheduledConfessions = [],
     onCancelScheduled
 }) {
+    const navigate = useNavigate();
     const [scheduleNow, setScheduleNow] = useState(() => Date.now());
 
     useEffect(() => {
@@ -76,7 +78,15 @@ export default function ActiveRoomFeed({
 
                 return (
                     <article key={confession.confessionId} className="desktop-social-post">
-                        <header className="desktop-social-post__header">
+                        <header 
+                            className="desktop-social-post__header"
+                            style={{ cursor: "pointer" }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
+                            }}
+                        >
                             <div className={`desktop-social-post__avatar desktop-social-post__avatar--${getAliasTone(confession.alias)}`}>
                                 {getInitial(confession.alias)}
                             </div>
@@ -305,7 +315,7 @@ export default function ActiveRoomFeed({
                         <div className="room-scheduled-strip__list">
                             {scheduledConfessions.map((item) => (
                                 <article key={item.confessionId} className="room-mobile-redesign-card">
-                                    <button type="button" className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left" }}>
+                                    <div className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left", display: "block", width: "100%", background: "none", border: "none", padding: 0 }}>
                                         <div className="room-mobile-redesign-card__author-row">
                                             <div className="room-mobile-redesign-card__author-info">
                                                 <div className={`room-mobile-redesign-card__avatar room-mobile-redesign-card__avatar--${getAliasTone(item.alias || "Anonymous")}`}>
@@ -314,7 +324,7 @@ export default function ActiveRoomFeed({
                                                 <strong className="room-mobile-redesign-card__alias">{item.alias || "Anonymous"}</strong>
                                                 <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                                                 <span className="room-mobile-redesign-card__meta">
-                                                    Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)} &bull; anonymous {item.audio ? "" : "· written"}
+                                                    Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)} {item.audio ? "" : "· written"}
                                                 </span>
                                             </div>
                                             <div className="room-mobile-redesign-card__more">
@@ -327,7 +337,7 @@ export default function ActiveRoomFeed({
                                                 {item.audio ? `“${item.content}”` : item.content}
                                             </div>
                                         ) : null}
-                                    </button>
+                                    </div>
                                     
                                     {item.audio ? (
                                         <div className="room-mobile-redesign-card__audio-wrapper">

@@ -98,7 +98,7 @@ export default function ConfessionComposerModal({
                         <section className="room-mobile-redesign-composer__safety">
                             <ShieldIcon />
                             <div className="room-mobile-redesign-composer__safety-text">
-                                <strong>Share freely. Your identity stays anonymous.</strong>
+                                <strong>Share freely. Your identity is visible.</strong>
                                 <span>No one can trace this confession back to you.</span>
                             </div>
                         </section>
@@ -109,23 +109,6 @@ export default function ConfessionComposerModal({
                                     <span>Posting as</span>
                                     <strong>{alias}</strong>
                                 </div>
-                                {typeof onShuffle === "function" && (
-                                    <button
-                                        type="button"
-                                        className="room-mobile-redesign-composer__shuffle"
-                                        onClick={onShuffle}
-                                        disabled={shufflingAlias}
-                                        aria-label="Shuffle identity"
-                                    >
-                                        <RefreshCw
-                                            size={14}
-                                            strokeWidth={2.2}
-                                            style={shufflingAlias ? { animation: "room-shuffle-spin 0.7s linear infinite" } : undefined}
-                                            aria-hidden="true"
-                                        />
-                                        <span>Shuffle</span>
-                                    </button>
-                                )}
                             </section>
                         )}
 
@@ -196,7 +179,7 @@ export default function ConfessionComposerModal({
                                                 id="confession-compose-mobile"
                                                 value={draft}
                                                 onChange={(event) => onDraftChange(event.target.value)}
-                                                placeholder="Share what's on your mind... This is a safe space to express yourself anonymously."
+                                                placeholder="Share what's on your mind... This is a safe space to express yourself."
                                                 maxLength={200}
                                             />
                                         </label>
@@ -280,28 +263,11 @@ export default function ConfessionComposerModal({
                     </section>
 
                     {alias && (
-                        <section className="room-post-modal__identity" aria-label="Your anonymous identity">
+                        <section className="room-post-modal__identity" aria-label="Your identity">
                             <div className="room-post-modal__identity-info">
                                 <span className="room-post-modal__identity-label">Posting as</span>
                                 <strong className="room-post-modal__identity-alias">{alias}</strong>
                             </div>
-                            {typeof onShuffle === "function" && (
-                                <button
-                                    type="button"
-                                    className="room-post-modal__shuffle-btn"
-                                    onClick={onShuffle}
-                                    disabled={shufflingAlias}
-                                    aria-label="Shuffle identity"
-                                >
-                                    <RefreshCw
-                                        size={13}
-                                        strokeWidth={2.2}
-                                        style={shufflingAlias ? { animation: "room-shuffle-spin 0.7s linear infinite" } : undefined}
-                                        aria-hidden="true"
-                                    />
-                                    <span>{shufflingAlias ? "Shuffling..." : "Shuffle"}</span>
-                                </button>
-                            )}
                         </section>
                     )}
 
@@ -371,7 +337,7 @@ export default function ConfessionComposerModal({
                                         id="confession-compose"
                                         value={draft}
                                         onChange={(event) => onDraftChange(event.target.value)}
-                                        placeholder="Share what's on your mind... This is a safe space to express yourself anonymously."
+                                        placeholder="Share what's on your mind... This is a safe space to express yourself."
                                         maxLength={200}
                                     />
                                 </label>
