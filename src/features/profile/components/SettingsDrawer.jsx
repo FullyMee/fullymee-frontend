@@ -208,6 +208,14 @@ function MainPage({ s, user, onNavigate, onClose, animDir }) {
                         onClick={() => onNavigate("hide-rooms")}
                     />
                     <ListRow
+                        icon={Lock}
+                        iconColor="#8B5CF6"
+                        title="Hide My Profile"
+                        subtitle="Invisible to all other users"
+                        value={s.hideProfileGlobal ? "Hidden" : "Visible"}
+                        onClick={() => onNavigate("hide-profile")}
+                    />
+                    <ListRow
                         icon={Clock}
                         iconColor="#EF4444"
                         title="Played Audio Expiry"
@@ -565,6 +573,53 @@ function HideRoomsPage({ s, onBack, onClose, animDir }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sub-page: Hide Profile Globally
+// ─────────────────────────────────────────────────────────────────────────────
+
+function HideProfilePage({ s, onBack, onClose, animDir }) {
+    return (
+        <PageShell title="Hide My Profile" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
+            <div className="sd-subpage-form">
+                <div className="sd-toggle-hero">
+                    <div className="sd-toggle-hero__icon" style={{ background: "#8B5CF615", color: "#8B5CF6" }}>
+                        <Lock size={28} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="sd-toggle-hero__title">Profile Visibility</h3>
+                    <p className="sd-toggle-hero__desc">
+                        When enabled, your username and profile will be completely hidden from
+                        other users. Nobody can search for you, and clicking your alias in a
+                        room will show a &ldquo;kept private&rdquo; screen instead of your profile.
+                    </p>
+
+                    <div className="sd-toggle-hero__control">
+                        <span className="sd-toggle-hero__status">
+                            {s.hideProfileGlobal ? "Hidden" : "Visible"}
+                        </span>
+                        <ToggleSwitch
+                            id="sd-hide-profile-toggle"
+                            checked={s.hideProfileGlobal}
+                            onChange={s.handleHideProfileGlobal}
+                        />
+                    </div>
+                </div>
+
+                <div className="sd-info-card">
+                    <span className="sd-info-card__icon">👻</span>
+                    <span>You can still see your own profile normally. Only others are affected by this setting.</span>
+                </div>
+
+                {s.hideProfileGlobal && (
+                    <div className="sd-info-card" style={{ borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }}>
+                        <span className="sd-info-card__icon">🔮</span>
+                        <span>Your profile is currently hidden. Other users cannot find or view you.</span>
+                    </div>
+                )}
+            </div>
+        </PageShell>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Sub-page: Audio Expiry
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -628,6 +683,7 @@ const PAGE_COMPONENTS = {
     "chat-permission": ChatPermissionPage,
     nighttime:       NighttimePage,
     "hide-rooms":    HideRoomsPage,
+    "hide-profile":  HideProfilePage,
     "audio-expiry":  AudioExpiryPage,
 };
 

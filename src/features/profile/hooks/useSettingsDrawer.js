@@ -30,6 +30,7 @@ function extractPrefs(user) {
         chatRequestPermission:    p.chatRequestPermission    || 'everyone',
         limitNighttimeRequests:   !!p.limitNighttimeRequests,
         hideJoinedRooms:          !!p.hideJoinedRooms,
+        hideProfileGlobal:        !!p.hideProfileGlobal,
         audioExpiry:              p.audioExpiry              || 'never',
     };
 }
@@ -64,8 +65,9 @@ export default function useSettingsDrawer(user, onUserUpdated) {
     const [nighttimeLimit,   setNighttimeLimit]   = useState(prefs.limitNighttimeRequests);
 
     // ── Privacy & Safety ──────────────────────────────────────────────────────
-    const [hideRooms,   setHideRooms]   = useState(prefs.hideJoinedRooms);
-    const [audioExpiry, setAudioExpiry] = useState(prefs.audioExpiry);
+    const [hideRooms,          setHideRooms]          = useState(prefs.hideJoinedRooms);
+    const [hideProfileGlobal,  setHideProfileGlobal]  = useState(prefs.hideProfileGlobal);
+    const [audioExpiry,        setAudioExpiry]        = useState(prefs.audioExpiry);
 
     // ── Misc notice ──────────────────────────────────────────────────────────
     const [notice, setNotice]   = useState('');
@@ -168,6 +170,17 @@ export default function useSettingsDrawer(user, onUserUpdated) {
         }
     }
 
+    async function handleHideProfileGlobal(value) {
+        setHideProfileGlobal(value);
+        try {
+            await callPrefsAPI({ hideProfileGlobal: value });
+            showNotice(value ? 'Profile hidden from others.' : 'Profile is now visible.');
+        } catch {
+            setHideProfileGlobal((prev) => !prev);
+            showNotice('Could not save profile visibility.');
+        }
+    }
+
     async function handleAudioExpiry(value) {
         setAudioExpiry(value);
         try {
@@ -197,8 +210,9 @@ export default function useSettingsDrawer(user, onUserUpdated) {
         nighttimeLimit,   handleNighttimeLimit,
 
         // Privacy & Safety
-        hideRooms,    handleHideRooms,
-        audioExpiry,  handleAudioExpiry,
+        hideRooms,          handleHideRooms,
+        hideProfileGlobal,  handleHideProfileGlobal,
+        audioExpiry,        handleAudioExpiry,
 
         // Notice
         notice,

@@ -256,8 +256,12 @@ export function useSearchData(user, query) {
 
     const addPersonToHistory = useCallback((person) => {
         const userId = user && (user.id || user.userId);
-        if (!userId) return;
-        addRecentPerson(userId, person);
+        if (!userId || !person) return;
+        const updated = addRecentPerson(userId, person);
+        // If no active search query, immediately reflect the new history in the list
+        if (!activeQueryRef.current) {
+            setPeopleResults(updated);
+        }
     }, [user]);
 
     return {

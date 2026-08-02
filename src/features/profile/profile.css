@@ -2711,4 +2711,90 @@ body,
 /* ── Desktop overrides ── */
 .user-profile-page--desktop .desktop-profile-container {
     padding-top: 2rem;
-}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Hidden-Profile Splash
+══════════════════════════════════════════════════════════════════════════════ */
+
+.uprofile-hidden-splash {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 3rem 2rem;
+    text-align: center;
+    overflow: hidden;
+}
+
+.uprofile-hidden-splash__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(192, 132, 252, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.uprofile-hidden-splash__icon-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: rgba(192, 132, 252, 0.12);
+    border: 1.5px solid rgba(192, 132, 252, 0.25);
+    margin-bottom: 1.5rem;
+    animation: hidden-pulse 3s ease-in-out infinite;
+}
+
+@keyframes hidden-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192, 132, 252, 0); }
+    50%       { box-shadow: 0 0 0 14px rgba(192, 132, 252, 0.08); }
+}
+
+.uprofile-hidden-splash__title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #2D1B69;
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.02em;
+}
+
+.uprofile-hidden-splash__sub {
+    font-size: 0.975rem;
+    color: #5A3E6B;
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 0 0.5rem;
+}
+
+.uprofile-hidden-splash__hint {
+    font-size: 0.82rem;
+    color: #9B7FAD;
+    line-height: 1.5;
+    max-width: 290px;
+    margin: 0 0 2rem;
+}
+
+.uprofile-hidden-splash__back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 50px;
+    border: 1.5px solid rgba(59, 31, 67, 0.2);
+    background: rgba(59, 31, 67, 0.06);
+    color: #3B1F43;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+}
+
+.uprofile-hidden-splash__back-btn:hover {
+    background: rgba(59, 31, 67, 0.12);
+    border-color: rgba(59, 31, 67, 0.35);
+}
+
