@@ -18,7 +18,7 @@ export default function SearchTabs({ tab, setTab, roomCount, peopleCount, onJoin
                 className={`search-pill${tab === PEOPLE_TAB ? " is-active" : ""}`}
                 onClick={() => setTab(PEOPLE_TAB)}
             >
-                People ({peopleCount || 0})
+                People
             </button>
             {typeof onJoinByCode === "function" && (
                 <button

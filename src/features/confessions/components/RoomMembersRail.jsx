@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
 
@@ -6,6 +7,8 @@ export default function RoomMembersRail({ activeRoom, roomMembers }) {
     if (!activeRoom) return null;
 
     const members = Array.isArray(roomMembers) ? roomMembers : [];
+
+    const navigate = useNavigate();
 
     return (
         <aside className="confession-room-rail" aria-label="Room details">
@@ -20,7 +23,12 @@ export default function RoomMembersRail({ activeRoom, roomMembers }) {
                         const alias = String(member.alias || "").trim();
                         const isSelf = alias && String(activeRoom.alias || "").trim() === alias;
                         return (
-                            <div key={`${member.userId || alias}-${member.joinedAt || ""}`} className="confession-room-rail__member">
+                            <div 
+                                key={`${member.userId || alias}-${member.joinedAt || ""}`} 
+                                className="confession-room-rail__member"
+                                onClick={() => { if (member.userId) navigate(`/profile/${member.userId}`); }}
+                                style={{ cursor: member.userId ? 'pointer' : 'default' }}
+                            >
                                 <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
                                     {getInitial(alias)}
                                 </div>

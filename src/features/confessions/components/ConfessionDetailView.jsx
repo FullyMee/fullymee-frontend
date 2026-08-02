@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { CommentSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
@@ -32,6 +33,8 @@ export default function ConfessionDetailView({
     onReplyDraftChange,
     onPostReply
 }) {
+    const navigate = useNavigate();
+
     if (!activeRoom || !selectedConfession) return null;
 
     const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
@@ -171,7 +174,13 @@ export default function ConfessionDetailView({
 
     const detailCard = (
         <article className="confession-detail-card">
-            <div className="confession-detail-card__author">
+            <div
+                className="confession-detail-card__author"
+                onClick={() => navigate(`/user/${selectedConfession.alias}`, { state: { profileUser: { username: selectedConfession.alias, isAlias: true } } })}
+                style={{ cursor: "pointer" }}
+                role="button"
+                tabIndex={0}
+            >
                 <div className={`confession-detail-card__avatar confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
                     {getInitial(selectedConfession.alias)}
                 </div>

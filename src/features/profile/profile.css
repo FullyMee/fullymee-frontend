@@ -6,7 +6,8 @@
 /* ── Stage content scroll shell ── */
 .desktop-profile-shell {
     overflow-y: auto;
-    height: calc(100vh - 4.5rem); /* full height minus stage header */
+    height: calc(100vh - 4.5rem);
+    /* full height minus stage header */
     background: #f7efe5;
 }
 
@@ -45,7 +46,8 @@
     align-items: center;
     gap: 1.3rem;
     padding: 0 2rem 1.45rem;
-    margin-top: -2.65rem; /* pull avatar up into gradient */
+    margin-top: -2.65rem;
+    /* pull avatar up into gradient */
 }
 
 .desktop-profile-banner-card__avatar-shell {
@@ -1309,8 +1311,13 @@ body,
 }
 
 @keyframes fadeInSidebar {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .profile-right-sidebar {
@@ -1325,8 +1332,13 @@ body,
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
 
 .profile-right-sidebar__header {
@@ -1380,8 +1392,13 @@ body,
 }
 
 @keyframes sd-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* ── Sliding Panel ── */
@@ -1397,8 +1414,13 @@ body,
 }
 
 @keyframes sd-slide-in {
-    from { transform: translateX(100%); }
-    to   { transform: translateX(0); }
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
 
 /* ── Header ── */
@@ -1444,8 +1466,13 @@ body,
     transition: background 0.15s, transform 0.12s;
 }
 
-.sd-header__close:hover  { background: rgba(59, 31, 67, 0.13); }
-.sd-header__close:active { transform: scale(0.9); }
+.sd-header__close:hover {
+    background: rgba(59, 31, 67, 0.13);
+}
+
+.sd-header__close:active {
+    transform: scale(0.9);
+}
 
 /* ── Notice toast ── */
 .sd-notice {
@@ -1462,8 +1489,15 @@ body,
 }
 
 @keyframes sd-notice-in {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ── Scrollable Body ── */
@@ -1475,8 +1509,14 @@ body,
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.sd-body::-webkit-scrollbar { width: 3px; }
-.sd-body::-webkit-scrollbar-thumb { background: rgba(59, 31, 67, 0.15); border-radius: 99px; }
+.sd-body::-webkit-scrollbar {
+    width: 3px;
+}
+
+.sd-body::-webkit-scrollbar-thumb {
+    background: rgba(59, 31, 67, 0.15);
+    border-radius: 99px;
+}
 
 /* ── Section Header ── */
 .sd-section-header {
@@ -1569,7 +1609,9 @@ body,
 }
 
 /* ── Email pill ── */
-.sd-row__content--email { gap: 0.35rem; }
+.sd-row__content--email {
+    gap: 0.35rem;
+}
 
 .sd-email-pill {
     display: inline-flex;
@@ -1624,7 +1666,9 @@ body,
     background: rgba(59, 31, 67, 0.09);
 }
 
-.sd-avatar-chip:active { transform: scale(0.95); }
+.sd-avatar-chip:active {
+    transform: scale(0.95);
+}
 
 .sd-avatar-chip--selected {
     border-color: #3B1F43;
@@ -1694,15 +1738,31 @@ body,
     padding: 0.18rem 0;
 }
 
-.sd-status-badge--error   { color: #c0392b; }
-.sd-status-badge--success { color: #1e8449; }
-.sd-status-badge--checking { color: #7f8c8d; }
+.sd-status-badge--error {
+    color: #c0392b;
+}
+
+.sd-status-badge--success {
+    color: #1e8449;
+}
+
+.sd-status-badge--checking {
+    color: #7f8c8d;
+}
 
 @keyframes sd-spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
-.sd-status-badge__spin { animation: sd-spin 0.8s linear infinite; }
+
+.sd-status-badge__spin {
+    animation: sd-spin 0.8s linear infinite;
+}
 
 /* ── Save buttons ── */
 .sd-save-btn {
@@ -1724,8 +1784,14 @@ body,
     letter-spacing: 0.01em;
 }
 
-.sd-save-btn:hover  { background: #4f2a5a; }
-.sd-save-btn:active { transform: scale(0.97); }
+.sd-save-btn:hover {
+    background: #4f2a5a;
+}
+
+.sd-save-btn:active {
+    transform: scale(0.97);
+}
+
 .sd-save-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
@@ -1737,9 +1803,14 @@ body,
     border: 1.5px solid rgba(59, 31, 67, 0.25);
     color: #3B1F43;
 }
-.sd-save-btn--ghost:hover { background: rgba(59, 31, 67, 0.06); }
 
-.sd-save-btn__spin { animation: sd-spin 0.8s linear infinite; }
+.sd-save-btn--ghost:hover {
+    background: rgba(59, 31, 67, 0.06);
+}
+
+.sd-save-btn__spin {
+    animation: sd-spin 0.8s linear infinite;
+}
 
 /* ── Interest / Mood Tag Chips ── */
 .sd-tags-wrap {
@@ -1766,8 +1837,15 @@ body,
 }
 
 @keyframes sd-chip-pop {
-    from { transform: scale(0.8); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .sd-tag-chip__remove {
@@ -1817,8 +1895,14 @@ body,
     transition: background 0.13s;
     white-space: nowrap;
 }
-.sd-add-tag-btn:hover  { background: rgba(59, 31, 67, 0.07); }
-.sd-add-tag-btn:active { background: rgba(59, 31, 67, 0.13); }
+
+.sd-add-tag-btn:hover {
+    background: rgba(59, 31, 67, 0.07);
+}
+
+.sd-add-tag-btn:active {
+    background: rgba(59, 31, 67, 0.13);
+}
 
 /* ── Toggle Switch ── */
 .sd-toggle {
@@ -1890,7 +1974,9 @@ body,
     transition: background 0.14s, border-color 0.14s, color 0.14s;
 }
 
-.sd-radio-pill:hover { background: rgba(59, 31, 67, 0.06); }
+.sd-radio-pill:hover {
+    background: rgba(59, 31, 67, 0.06);
+}
 
 .sd-radio-pill--active {
     background: #3B1F43;
@@ -1899,7 +1985,9 @@ body,
     font-weight: 600;
 }
 
-.sd-radio-pill__check { flex-shrink: 0; }
+.sd-radio-pill__check {
+    flex-shrink: 0;
+}
 
 /* ── Native Select (audio expiry) ── */
 .sd-select-wrap {
@@ -1965,13 +2053,27 @@ body,
 }
 
 @keyframes sd-page-slide-in-right {
-    from { transform: translateX(42%); opacity: 0; }
-    to   { transform: translateX(0);   opacity: 1; }
+    from {
+        transform: translateX(42%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes sd-page-slide-in-left {
-    from { transform: translateX(-42%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
+    from {
+        transform: translateX(-42%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* ── Sub-page back button header ── */
@@ -1991,8 +2093,13 @@ body,
     flex-shrink: 0;
 }
 
-.sd-header__back:hover  { opacity: 0.7; }
-.sd-header__back:active { opacity: 0.5; }
+.sd-header__back:hover {
+    opacity: 0.7;
+}
+
+.sd-header__back:active {
+    opacity: 0.5;
+}
 
 .sd-header__title--sub {
     position: absolute;
@@ -2431,3 +2538,177 @@ body,
 .sd-suggestion-pill:active {
     background: rgba(59, 31, 67, 0.12);
 }
+
+/* ═══════════════════════════════════════════════════════
+   USER PROFILE PAGE — /user/:userId (Instagram-style)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Mobile Shell ── */
+.uprofile-mobile {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    background: #FAF7F2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Top bar ── */
+.uprofile-mobile__topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #FAF7F2;
+    border-bottom: 1px solid rgba(59, 31, 67, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.uprofile-mobile__back {
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.uprofile-mobile__back:active {
+    background: rgba(59, 31, 67, 0.08);
+}
+
+.uprofile-mobile__topbar-title {
+    flex: 1;
+    font-family: 'Lora', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uprofile-mobile__topbar-spacer {
+    width: 34px;
+    flex-shrink: 0;
+}
+
+/* ── Content ── */
+.uprofile-mobile__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 1rem 2rem;
+}
+
+/* ── Button Inner ── */
+.uprofile-btn-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+}
+
+.profile-redesign__btn--full {
+    width: 100%;
+}
+
+/* ── Privacy Card ── */
+.uprofile-privacy-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 4px 16px rgba(59, 31, 67, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.uprofile-privacy-card__icon {
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.uprofile-privacy-card__copy {
+    flex: 1;
+}
+
+.uprofile-privacy-card__copy strong {
+    display: block;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin-bottom: 4px;
+}
+
+.uprofile-privacy-card__copy p {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8rem;
+    color: #7D6B76;
+    line-height: 1.45;
+    margin: 0;
+}
+
+/* ── Info Card ── */
+.uprofile-info-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 0.85rem 1.1rem;
+    box-shadow: 0 2px 12px rgba(59, 31, 67, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #3B1F43;
+}
+
+/* ── Empty / Not Found State ── */
+.uprofile-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #8E8E8E;
+}
+
+.uprofile-empty h2 {
+    font-family: 'Lora', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0;
+}
+
+.uprofile-empty p {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.88rem;
+    color: #7D6B76;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.uprofile-empty .profile-redesign__btn {
+    margin-top: 0.5rem;
+    min-width: 140px;
+}
+
+/* ── Desktop overrides ── */
+.user-profile-page--desktop .desktop-profile-container {
+    padding-top: 2rem;
+}

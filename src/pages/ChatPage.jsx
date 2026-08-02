@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import { getChatAvatarGlyph } from "../components/common/MobileRoomVisuals.jsx";
 import { ChatListSkeleton, ChatThreadSkeleton, InfiniteScrollLoader, InlineSpinner } from "../components/common/LoadingStates.jsx";
@@ -63,6 +63,7 @@ const MESSAGE_PAGE_SIZE = 30;
 export default function ChatPage({ user }) {
     const isDesktop = useIsDesktop();
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const { socket, connected } = useSocket();
     const { showError, dismissError } = useGlobalError();
 
@@ -678,7 +679,16 @@ export default function ChatPage({ user }) {
                             {activeConversation && (
                                 <>
                                     <header className="desktop-chat-column__header desktop-chat-column__header--thread">
-                                        <div className="desktop-chat-thread__identity">
+                                        <div
+                                            className="desktop-chat-thread__identity"
+                                            onClick={() => {
+                                                const uid = Number(activeConversation.otherUserId);
+                                                if (uid) navigate(`/user/${uid}`, { state: { profileUser: { id: uid, username: activeConversation.title } } });
+                                            }}
+                                            style={{ cursor: "pointer" }}
+                                            role="button"
+                                            tabIndex={0}
+                                        >
                                             <div className={`desktop-chat-avatar desktop-chat-avatar--${activeConversation.avatarTone}`}>
                                                 <span>{getInitial(activeConversation.title)}</span>
                                             </div>
@@ -691,7 +701,7 @@ export default function ChatPage({ user }) {
 
                                     <main className="desktop-chat-thread__messages desktop-chat-thread__messages--reference" style={{ display: 'flex', flexDirection: 'column' }}>
                                         {loadingMessages && messages.length === 0 && <ChatThreadSkeleton count={5} />}
-                                        
+
                                         {!loadingMessages && (
                                             <VirtualChatFeed
                                                 messages={messages}
@@ -908,7 +918,14 @@ export default function ChatPage({ user }) {
                             <ArrowLeftIcon />
                         </button>
 
-                        <button type="button" className="chat-thread-header__identity">
+                        <button
+                            type="button"
+                            className="chat-thread-header__identity"
+                            onClick={() => {
+                                const uid = Number(activeConversation.otherUserId);
+                                if (uid) navigate(`/user/${uid}`, { state: { profileUser: { id: uid, username: activeConversation.title } } });
+                            }}
+                        >
                             <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${activeConversation.avatarTone}`}>
                                 <span>{activeConversation.avatarLabel}</span>
                             </div>

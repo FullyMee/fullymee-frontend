@@ -6,11 +6,14 @@ import ActiveRoomFeed from "./ActiveRoomFeed.jsx";
 import ConfessionDetailView from "./ConfessionDetailView.jsx";
 import { LeaveIcon, PlusIcon } from "./ConfessionIcons.jsx";
 import { RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-function RoomMembersRail({ activeRoom, roomMembers, onShuffleAlias, shufflingAlias }) {
+function RoomMembersRail({ activeRoom, roomMembers }) {
     if (!activeRoom) return null;
 
     const members = Array.isArray(roomMembers) ? roomMembers : [];
+
+    const navigate = useNavigate();
 
     return (
         <aside className="confession-room-rail" aria-label="Room details">
@@ -25,7 +28,12 @@ function RoomMembersRail({ activeRoom, roomMembers, onShuffleAlias, shufflingAli
                         const alias = String(member.alias || "").trim();
                         const isSelf = alias && String(activeRoom.alias || "").trim() === alias;
                         return (
-                            <div key={`${member.userId || alias}-${member.joinedAt || ""}`} className="confession-room-rail__member">
+                            <div 
+                                key={`${member.userId || alias}-${member.joinedAt || ""}`} 
+                                className="confession-room-rail__member"
+                                onClick={() => { if (member.userId) navigate(`/profile/${member.userId}`); }}
+                                style={{ cursor: member.userId ? 'pointer' : 'default' }}
+                            >
                                 <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
                                     {getInitial(alias)}
                                 </div>
@@ -36,23 +44,6 @@ function RoomMembersRail({ activeRoom, roomMembers, onShuffleAlias, shufflingAli
                                 {isSelf && (
                                     <>
                                         <span className="confession-room-rail__badge">You</span>
-                                        {typeof onShuffleAlias === "function" && (
-                                            <button
-                                                type="button"
-                                                className="confession-room-rail__shuffle-btn"
-                                                onClick={onShuffleAlias}
-                                                disabled={shufflingAlias}
-                                                aria-label="Shuffle your alias"
-                                                title="Shuffle identity"
-                                            >
-                                                <RefreshCw
-                                                    size={11}
-                                                    strokeWidth={2.3}
-                                                    style={shufflingAlias ? { animation: "room-shuffle-spin 0.7s linear infinite" } : undefined}
-                                                    aria-hidden="true"
-                                                />
-                                            </button>
-                                        )}
                                     </>
                                 )}
                             </div>
@@ -117,13 +108,11 @@ export default function ConfessionActiveRoomDesktop({
         <RoomMembersRail
             activeRoom={activeRoom}
             roomMembers={roomMembers}
-            onShuffleAlias={onShuffleAlias}
-            shufflingAlias={shufflingAlias}
         />
     ) : null;
 
     const desktopSubtitle = !activeRoom
-        ? "Rooms you have joined and communities where you can post anonymously"
+        ? "Rooms you have joined and communities where you can post"
         : (selectedConfession
             ? "Read the confession and keep the conversation thoughtful"
             : (activeRoom.roomType === "private"

@@ -51,7 +51,9 @@ export default function SearchPage({ user }) {
         peopleHasMore,
         loadMoreRooms,
         loadMorePeople,
-        joinedRoomIds 
+        joinedRoomIds,
+        removePerson,
+        addPersonToHistory
     } = useSearchData(user, query);
 
     const swipeNavigationHandlers = usePrimaryTabSwipeNavigation({
@@ -84,39 +86,6 @@ export default function SearchPage({ user }) {
             navigate(`/confessions?roomId=${roomId}`);
         } catch (err) {
             showError(err && err.message ? err.message : "Unable to open this room.");
-        } finally {
-            setBusyKey("");
-        }
-    }
-
-    async function handleOpenPerson(person) {
-        const targetUserId = Number(person && person.id);
-        if (!targetUserId) return;
-
-        try {
-            setBusyKey(`person-${targetUserId}`);
-            const result = await sendUserChatRequest(targetUserId);
-            const requestState = String((result && result.requestState) || "").trim();
-
-            if ((requestState === "already_connected" || requestState === "accepted") && Number(result && result.conversationId)) {
-                setNotice(`You are already connected with ${person.username}.`);
-                navigate(`/chats?conversationId=${result.conversationId}`);
-                return;
-            }
-
-            if (requestState === "already_pending") {
-                setNotice(`Chat request already pending for ${person.username}.`);
-                return;
-            }
-
-            if (requestState === "sent" || requestState === "pending") {
-                setNotice(`Chat request sent to ${person.username}.`);
-                return;
-            }
-
-            setNotice(`Chat request updated for ${person.username}.`);
-        } catch (err) {
-            showError(err && err.message ? err.message : "Unable to send a chat request right now.");
         } finally {
             setBusyKey("");
         }
@@ -205,21 +174,17 @@ export default function SearchPage({ user }) {
                )}
 
                {!loading && tab === PEOPLE_TAB && peopleResults.length === 0 && (
-                   <p style={{ color: "#718096" }}>People search is private. Connect from a confession or room alias instead.</p>
+                   <p style={{ color: "#718096" }}>No recent searches found{query ? ` matching "${query}"` : ""}.</p>
                )}
                {!loading && tab === PEOPLE_TAB && peopleResults.map((person) => (
                    <SearchUserCard
-                       key={person.id}
+                       key={person.id || person.userId}
                        person={person}
-                       isBusy={busyKey === `person-${person.id}`}
-                       onAction={handleOpenPerson}
+                       isBusy={busyKey === `person-${person.id || person.userId}`}
+                       onRemove={() => removePerson(person.id || person.userId)}
+                       onClickCard={addPersonToHistory}
                    />
                ))}
-               {!loading && tab === PEOPLE_TAB && peopleHasMore && (
-                   <button type="button" className="search-show-more" onClick={loadMorePeople} disabled={loadingMorePeople}>
-                       {loadingMorePeople ? "Loading..." : "Show more people"}
-                   </button>
-               )}
             </div>
         </div>
     );
@@ -341,22 +306,18 @@ export default function SearchPage({ user }) {
 
                     {tab === PEOPLE_TAB && peopleResults.length === 0 && !loading && (
                         <p style={{ color: "#718096", textAlign: "center", padding: "2rem 0" }}>
-                            People search is private. Connect from a confession or room alias instead.
+                            No recent searches found{query ? ` matching "${query}"` : "."}
                         </p>
                     )}
                     {tab === PEOPLE_TAB && peopleResults.map((person) => (
                         <SearchUserCard
-                            key={person.id}
+                            key={person.id || person.userId}
                             person={person}
-                            isBusy={busyKey === `person-${person.id}`}
-                            onAction={handleOpenPerson}
+                            isBusy={busyKey === `person-${person.id || person.userId}`}
+                            onRemove={() => removePerson(person.id || person.userId)}
+                            onClickCard={addPersonToHistory}
                         />
                     ))}
-                    {tab === PEOPLE_TAB && peopleHasMore && (
-                        <button type="button" className="search-show-more" onClick={loadMorePeople} disabled={loadingMorePeople}>
-                            {loadingMorePeople ? "Loading..." : "Show more people"}
-                        </button>
-                    )}
 
                     {loading && (
                         <p style={{ color: "#718096", textAlign: "center", padding: "2rem 0" }}>Searching...</p>
