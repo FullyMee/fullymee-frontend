@@ -5,18 +5,18 @@ import {
     CheckCircle2,
     MessageCircle,
     Shield,
-    Calendar
+    Calendar,
+    EyeOff
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
-import { InlineSpinner, ProfileSkeleton } from "../components/common/LoadingStates.jsx";
+import { ProfileSkeleton } from "../components/common/LoadingStates.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
-import { sendUserChatRequest } from "../services/chat.service.js";
 import { getJoinedRooms } from "../services/confession.service.js";
 import api from "../services/api.js";
 import useIsDesktop from "../hooks/useIsDesktop.js";
 import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
-import { getInitial, getAliasTone } from "../utils/presentation.js";
+import { getInitial } from "../utils/presentation.js";
 
 function formatJoinedDate(value) {
     if (!value) return "Recently";
@@ -28,38 +28,58 @@ function formatJoinedDate(value) {
     }).format(date);
 }
 
+/* ─── Hidden-Profile Splash ─────────────────────────────────────────────────── */
+function HiddenProfileSplash({ username, onBack }) {
+    return (
+        <div className="uprofile-hidden-splash">
+            <div className="uprofile-hidden-splash__glow" />
+            <div className="uprofile-hidden-splash__icon-ring">
+                <EyeOff size={36} strokeWidth={1.5} color="#C084FC" />
+            </div>
+            <h2 className="uprofile-hidden-splash__title">Identity Kept Private</h2>
+            <p className="uprofile-hidden-splash__sub">
+                <strong>{username || "This user"}</strong> has chosen to keep their
+                profile and identity hidden from others.
+            </p>
+            <p className="uprofile-hidden-splash__hint">
+                Their confessions and room activity remain anonymous, as always.
+            </p>
+            <button
+                type="button"
+                className="uprofile-hidden-splash__back-btn"
+                onClick={onBack}
+            >
+                <ArrowLeft size={16} strokeWidth={2.2} />
+                Go Back
+            </button>
+        </div>
+    );
+}
+
+/* ─── Main Page ──────────────────────────────────────────────────────────────── */
 export default function UserProfilePage({ user: currentUser }) {
     const { userId: rawUserId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const isDesktop = useIsDesktop();
     const { showError, dismissError } = useGlobalError();
-    const [notice, setNotice] = useTimedNotice("", 2600);
-    const [connecting, setConnecting] = useState(false);
+    const [notice] = useTimedNotice("", 2600);
 
-    // If it's a number, it's a real user ID. If not, it's an alias name.
-    const targetUserId = Number(rawUserId);
-    const isAliasProfile = isNaN(targetUserId) || location.state?.profileUser?.isAlias;
     const currentUserId = Number(currentUser?.userId || 0);
 
-    // Redirect to own profile page if viewing self
-    useEffect(() => {
-        if (targetUserId && currentUserId && targetUserId === currentUserId) {
-            navigate("/profile", { replace: true });
-        }
-    }, [targetUserId, currentUserId, navigate]);
-
-    // The user data may arrive through location.state
     const passedUser = location.state?.profileUser || null;
 
-    const [profileUser, setProfileUser] = useState(passedUser);
-    const [profileStats, setProfileStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [joinedRooms, setJoinedRooms] = useState([]);
+    const [profileUser, setProfileUser]     = useState(passedUser);
+    const [profileStats, setProfileStats]   = useState(null);
+    const [isConnected, setIsConnected]     = useState(false);
+    const [conversationId, setConversationId] = useState(null);
+    const [isProfileHidden, setIsProfileHidden] = useState(false);
+    const [loading, setLoading]             = useState(true);
+    const [joinedRooms, setJoinedRooms]     = useState([]);
 
     useBodyClass("confessions-scroll-unlocked");
 
-    // Fetch user data and stats
+    /* ── Fetch profile data ─────────────────────────────────────────────────── */
     useEffect(() => {
         if (!rawUserId) {
             setLoading(false);
@@ -72,19 +92,34 @@ export default function UserProfilePage({ user: currentUser }) {
             try {
                 setLoading(true);
                 dismissError();
-                
+
                 const data = await api.get(`/users/${rawUserId}/profile`);
-                
+
                 if (cancelled) return;
-                
+
+                // Backend says this is the current user → redirect to own profile
+                if (data && data.isSelf) {
+                    navigate("/profile", { replace: true });
+                    return;
+                }
+
+                // Backend says profile is hidden
+                if (data && data.isProfileHidden) {
+                    setIsProfileHidden(true);
+                    setProfileUser({ username: data.username || rawUserId });
+                    setLoading(false);
+                    return;
+                }
+
                 if (data && !data.error) {
                     setProfileUser({
                         ...passedUser,
                         userId: data.userId,
                         username: data.username,
-                        isAlias: data.isAlias,
-                        createdAt: data.createdAt
+                        createdAt: data.createdAt,
                     });
+                    setIsConnected(!!data.isConnected);
+                    setConversationId(data.conversationId || null);
                     setProfileStats(data.stats);
                 } else {
                     showError(data?.error || "User not found.");
@@ -100,52 +135,29 @@ export default function UserProfilePage({ user: currentUser }) {
 
         fetchProfile();
         return () => { cancelled = true; };
-    }, [rawUserId, dismissError, showError, passedUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rawUserId]);
 
-    // Load sidebar rooms for desktop
+    /* ── Sidebar rooms (desktop) ────────────────────────────────────────────── */
     useEffect(() => {
         getJoinedRooms()
             .then((rooms) => setJoinedRooms(Array.isArray(rooms) ? rooms : []))
             .catch(() => {});
     }, []);
 
-    const displayUsername = profileUser?.username || `User ${targetUserId}`;
-    const avatarTone = getAliasTone(displayUsername);
+    const displayUsername = profileUser?.username || rawUserId || "User";
 
-    async function handleConnect() {
-        if (isAliasProfile) {
-            setNotice("You cannot directly connect with an anonymous identity from here.");
-            return;
-        }
-        if (!targetUserId || connecting) return;
-        try {
-            setConnecting(true);
-            dismissError();
-            const result = await sendUserChatRequest(targetUserId);
-            const requestState = String(result?.requestState || "").trim();
-
-            if ((requestState === "already_connected" || requestState === "accepted") && Number(result?.conversationId)) {
-                setNotice(`You are already connected with ${displayUsername}.`);
-                navigate(`/chats?conversationId=${result.conversationId}`);
-                return;
-            }
-            if (requestState === "already_pending") {
-                setNotice(`Chat request already pending for ${displayUsername}.`);
-                return;
-            }
-            if (requestState === "sent" || requestState === "pending") {
-                setNotice(`Chat request sent to ${displayUsername}!`);
-                return;
-            }
-            setNotice(`Chat request updated for ${displayUsername}.`);
-        } catch (err) {
-            showError(err?.message || "Unable to send a chat request right now.");
-        } finally {
-            setConnecting(false);
+    function handleMessageButton() {
+        if (conversationId) {
+            navigate(`/chats?conversationId=${conversationId}`);
+        } else {
+            navigate(`/chats`);
         }
     }
 
-    // ── Desktop Layout ──
+    /* ════════════════════════════════════════════════════════════════════════
+       DESKTOP LAYOUT
+    ════════════════════════════════════════════════════════════════════════ */
     if (isDesktop) {
         return (
             <div className="user-profile-page user-profile-page--desktop">
@@ -160,10 +172,19 @@ export default function UserProfilePage({ user: currentUser }) {
                     <div className="desktop-profile-container">
                         {loading && <ProfileSkeleton />}
 
-                        {!loading && profileUser && (
+                        {/* Hidden profile splash */}
+                        {!loading && isProfileHidden && (
+                            <HiddenProfileSplash
+                                username={displayUsername}
+                                onBack={() => navigate(-1)}
+                            />
+                        )}
+
+                        {/* Normal profile */}
+                        {!loading && !isProfileHidden && profileUser && (
                             <div className="desktop-profile-grid">
                                 <section className="desktop-profile-banner-card">
-                                    <div className="desktop-profile-banner-card__gradient"></div>
+                                    <div className="desktop-profile-banner-card__gradient" />
                                     <div className="desktop-profile-banner-card__bottom">
                                         <div className="desktop-profile-banner-card__avatar-shell">
                                             <div className="desktop-profile-banner-card__avatar">
@@ -172,38 +193,52 @@ export default function UserProfilePage({ user: currentUser }) {
                                         </div>
                                         <div className="desktop-profile-banner-card__info">
                                             <h2>{displayUsername}</h2>
-                                            <p>{isAliasProfile ? "Private Identity" : "Anonymous User"}</p>
-                                            
-                                            <div className="profile-redesign__stats-group" style={{ marginTop: '1rem', justifyContent: 'flex-start', gap: '2rem' }}>
+                                            <p>
+                                                {isConnected
+                                                    ? "Anonymous identity on FullyMe."
+                                                    : "Private Identity — not yet connected"}
+                                            </p>
+
+                                            <div
+                                                className="profile-redesign__stats-group"
+                                                style={{ marginTop: "1rem", justifyContent: "flex-start", gap: "2rem" }}
+                                            >
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.confessions : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: '#FDF2F8' }}>confessions</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>confessions</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.rooms : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: '#FDF2F8' }}>rooms</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>rooms</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.replies : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: '#FDF2F8' }}>replies</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>replies</span>
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div className="desktop-profile-banner-card__actions">
-                                            <button
-                                                type="button"
-                                                className="desktop-profile-edit-button"
-                                                onClick={handleConnect}
-                                                disabled={connecting || isAliasProfile}
-                                                style={{ opacity: isAliasProfile ? 0.5 : 1 }}
-                                            >
-                                                {connecting ? (
-                                                    <InlineSpinner size="sm" tone="dark" label="Connecting" />
-                                                ) : (
+                                            {isConnected ? (
+                                                <button
+                                                    type="button"
+                                                    className="desktop-profile-edit-button"
+                                                    onClick={handleMessageButton}
+                                                >
                                                     <MessageCircle size={18} strokeWidth={2} />
-                                                )}
-                                                <span>{connecting ? "Sending..." : (isAliasProfile ? "Private" : "Connect")}</span>
-                                            </button>
+                                                    <span>Message</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="desktop-profile-edit-button"
+                                                    style={{ opacity: 0.55, cursor: "default" }}
+                                                    disabled
+                                                >
+                                                    <Shield size={18} strokeWidth={2} />
+                                                    <span>Private</span>
+                                                </button>
+                                            )}
                                             <button
                                                 type="button"
                                                 className="desktop-profile-edit-button"
@@ -218,21 +253,26 @@ export default function UserProfilePage({ user: currentUser }) {
 
                                 <section className="desktop-privacy-banner">
                                     <h3>Privacy Notice</h3>
-                                    {isAliasProfile ? (
-                                        <p>You are viewing an anonymous identity from a room. Their real profile remains private.</p>
+                                    {isConnected ? (
+                                        <p>All identities on FullyMe are anonymous. Confessions and room activity are never shared on profiles.</p>
                                     ) : (
-                                        <p>This is a public profile. All identities on FullyMe are anonymous. Confessions and room activity are private and never shared on profiles.</p>
+                                        <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
                                     )}
                                 </section>
                             </div>
                         )}
 
-                        {!loading && !profileUser && (
+                        {/* Not found */}
+                        {!loading && !isProfileHidden && !profileUser && (
                             <div className="uprofile-empty">
                                 <Shield size={48} strokeWidth={1.5} />
                                 <h2>User not found</h2>
                                 <p>This profile may no longer exist or the link is invalid.</p>
-                                <button type="button" className="profile-redesign__btn profile-redesign__btn--primary" onClick={() => navigate(-1)}>
+                                <button
+                                    type="button"
+                                    className="profile-redesign__btn profile-redesign__btn--primary"
+                                    onClick={() => navigate(-1)}
+                                >
                                     Go back
                                 </button>
                             </div>
@@ -243,16 +283,25 @@ export default function UserProfilePage({ user: currentUser }) {
         );
     }
 
-    // ── Mobile Layout ──
+    /* ════════════════════════════════════════════════════════════════════════
+       MOBILE LAYOUT
+    ════════════════════════════════════════════════════════════════════════ */
     return (
         <div className="uprofile-mobile">
             {notice && <p className="profile-page-v2__alert profile-page-v2__alert--notice">{notice}</p>}
 
             <header className="uprofile-mobile__topbar">
-                <button type="button" className="uprofile-mobile__back" onClick={() => navigate(-1)} aria-label="Go back">
+                <button
+                    type="button"
+                    className="uprofile-mobile__back"
+                    onClick={() => navigate(-1)}
+                    aria-label="Go back"
+                >
                     <ArrowLeft size={22} strokeWidth={2.2} color="#3B1F43" />
                 </button>
-                <h1 className="uprofile-mobile__topbar-title">{loading ? "Profile" : displayUsername}</h1>
+                <h1 className="uprofile-mobile__topbar-title">
+                    {loading ? "Profile" : displayUsername}
+                </h1>
                 <div className="uprofile-mobile__topbar-spacer" />
             </header>
 
@@ -260,7 +309,16 @@ export default function UserProfilePage({ user: currentUser }) {
                 <div className="profile-content">
                     <ProfileSkeleton />
                 </div>
+
+            ) : isProfileHidden ? (
+                /* ── Hidden profile ── */
+                <HiddenProfileSplash
+                    username={displayUsername}
+                    onBack={() => navigate(-1)}
+                />
+
             ) : profileUser ? (
+                /* ── Normal profile ── */
                 <main className="uprofile-mobile__content">
                     <section className="profile-redesign__header-card">
                         <div className="profile-redesign__top-row">
@@ -294,38 +352,49 @@ export default function UserProfilePage({ user: currentUser }) {
                         <div className="profile-redesign__bio-block">
                             <h1 className="profile-redesign__username">
                                 {displayUsername}
-                                {profileUser.createdAt && !isAliasProfile && (
-                                    <span className="profile-redesign__joined-date"> · {formatJoinedDate(profileUser.createdAt)}</span>
+                                {profileUser.createdAt && isConnected && (
+                                    <span className="profile-redesign__joined-date">
+                                        &nbsp;· {formatJoinedDate(profileUser.createdAt)}
+                                    </span>
                                 )}
                             </h1>
                             <p className="profile-redesign__tagline">
-                                {isAliasProfile ? "You are always anonymous in rooms." : "Anonymous identity on FullyMe."}
+                                {isConnected
+                                    ? "Anonymous identity on FullyMe."
+                                    : "You are always anonymous in rooms."}
                             </p>
                             <div className="profile-redesign__badges-row">
-                                <span className="profile-badge-pill">{isAliasProfile ? "Private identity" : "Anonymous"}</span>
+                                <span className="profile-badge-pill">
+                                    {isConnected ? "Anonymous" : "Private identity"}
+                                </span>
                             </div>
                         </div>
 
                         <div className="profile-redesign__actions-row">
-                            <button
-                                type="button"
-                                className="profile-redesign__btn profile-redesign__btn--primary profile-redesign__btn--full"
-                                onClick={handleConnect}
-                                disabled={connecting || isAliasProfile}
-                                style={{ opacity: isAliasProfile ? 0.5 : 1 }}
-                            >
-                                {connecting ? (
-                                    <span className="uprofile-btn-inner">
-                                        <InlineSpinner size="sm" tone="light" label="Connecting" />
-                                        Sending...
-                                    </span>
-                                ) : (
+                            {isConnected ? (
+                                <button
+                                    type="button"
+                                    className="profile-redesign__btn profile-redesign__btn--primary profile-redesign__btn--full"
+                                    onClick={handleMessageButton}
+                                >
                                     <span className="uprofile-btn-inner">
                                         <MessageCircle size={16} strokeWidth={2} />
-                                        {isAliasProfile ? "Private" : "Connect"}
+                                        Message
                                     </span>
-                                )}
-                            </button>
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="profile-redesign__btn profile-redesign__btn--primary profile-redesign__btn--full"
+                                    disabled
+                                    style={{ opacity: 0.55, cursor: "default" }}
+                                >
+                                    <span className="uprofile-btn-inner">
+                                        <Shield size={16} strokeWidth={2} />
+                                        Private
+                                    </span>
+                                </button>
+                            )}
                         </div>
                     </section>
 
@@ -335,27 +404,33 @@ export default function UserProfilePage({ user: currentUser }) {
                         </div>
                         <div className="uprofile-privacy-card__copy">
                             <strong>Privacy Notice</strong>
-                            {isAliasProfile ? (
-                                <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
-                            ) : (
+                            {isConnected ? (
                                 <p>All identities on FullyMe are anonymous. Confessions and room activity are never shared on profiles.</p>
+                            ) : (
+                                <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
                             )}
                         </div>
                     </section>
 
-                    {profileUser.createdAt && !isAliasProfile && (
+                    {profileUser.createdAt && isConnected && (
                         <section className="uprofile-info-card">
                             <Calendar size={18} strokeWidth={2} color="#E07A5F" />
                             <span>Joined {formatJoinedDate(profileUser.createdAt)}</span>
                         </section>
                     )}
                 </main>
+
             ) : (
+                /* ── Not found ── */
                 <div className="uprofile-empty">
                     <Shield size={48} strokeWidth={1.5} />
                     <h2>User not found</h2>
                     <p>This profile may no longer exist or the link is invalid.</p>
-                    <button type="button" className="profile-redesign__btn profile-redesign__btn--primary" onClick={() => navigate(-1)}>
+                    <button
+                        type="button"
+                        className="profile-redesign__btn profile-redesign__btn--primary"
+                        onClick={() => navigate(-1)}
+                    >
                         Go back
                     </button>
                 </div>
