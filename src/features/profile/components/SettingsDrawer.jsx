@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import {
     X, ChevronLeft, ChevronRight, User, Tag, Mail,
-    MessageCircle, Moon, Lock, EyeOff, Clock, Check, Loader2, Smile
+    MessageCircle, Moon, Lock, EyeOff, Clock, Check, Loader2, Smile, LogOut
 } from "lucide-react";
 import useSettingsDrawer, {
     AVATAR_OPTIONS,
     CHAT_PERMISSION_OPTIONS,
     AUDIO_EXPIRY_OPTIONS
 } from "../hooks/useSettingsDrawer.js";
+import { logout } from "../../../services/auth.service.js";
+import { disconnectSocket } from "../../../services/socket.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared atomic helpers
@@ -90,7 +92,7 @@ function PageShell({ title, onBack, onClose, notice, children, animDir }) {
 // Main List — root settings page
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, onClick, isLast }) {
+function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, onClick, isLast, titleColor, hideChevron }) {
     return (
         <button
             type="button"
@@ -101,13 +103,13 @@ function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, on
                 <Icon size={16} strokeWidth={2} />
             </div>
             <div className="sd-list-row__body">
-                <span className="sd-list-row__title">{title}</span>
+                <span className="sd-list-row__title" style={titleColor ? { color: titleColor } : undefined}>{title}</span>
                 {subtitle && <span className="sd-list-row__sub">{subtitle}</span>}
             </div>
             <div className="sd-list-row__right">
                 {valueEmoji && <span className="sd-list-row__emoji">{valueEmoji}</span>}
                 {value && <span className="sd-list-row__value">{value}</span>}
-                <ChevronRight size={15} className="sd-list-row__chevron" />
+                {!hideChevron && <ChevronRight size={15} className="sd-list-row__chevron" />}
             </div>
         </button>
     );
@@ -124,10 +126,25 @@ function SectionGroup({ label, children }) {
     );
 }
 
-function MainPage({ s, user, onNavigate, onClose, animDir }) {
+function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
     const chatLabel = CHAT_PERMISSION_OPTIONS.find(o => o.value === s.chatPermission)?.label || "Everyone";
     const expiryLabel = AUDIO_EXPIRY_OPTIONS.find(o => o.value === s.audioExpiry)?.label || "Never";
     const interestCount = s.interests.length;
+
+    async function handleLogoutClick() {
+        if (typeof onLogout === "function") {
+            onLogout();
+            return;
+        }
+        disconnectSocket();
+        try {
+            await logout();
+        } catch {
+            // continue redirecting even if cleanup fails
+        }
+        window.dispatchEvent(new Event("auth-changed"));
+        window.location.href = "/login";
+    }
 
     return (
         <div className={`sd-page sd-page--${animDir}`}>
@@ -222,6 +239,20 @@ function MainPage({ s, user, onNavigate, onClose, animDir }) {
                         subtitle="When your audio confessions expire"
                         value={expiryLabel}
                         onClick={() => onNavigate("audio-expiry")}
+                        isLast
+                    />
+                </SectionGroup>
+
+                {/* ── ACCOUNT / LOG OUT ── */}
+                <SectionGroup label="Account">
+                    <ListRow
+                        icon={LogOut}
+                        iconColor="#EF4444"
+                        title="Log Out"
+                        subtitle="Sign out of your account"
+                        onClick={handleLogoutClick}
+                        titleColor="#EF4444"
+                        hideChevron
                         isLast
                     />
                 </SectionGroup>
@@ -687,7 +718,7 @@ const PAGE_COMPONENTS = {
     "audio-expiry":  AudioExpiryPage,
 };
 
-export default function SettingsDrawer({ user, onClose, onUserUpdated }) {
+export default function SettingsDrawer({ user, onClose, onUserUpdated, onLogout }) {
     const [page, setPage]       = useState("main");
     const [animDir, setAnimDir] = useState("forward");
 
@@ -727,6 +758,7 @@ export default function SettingsDrawer({ user, onClose, onUserUpdated }) {
                 onNavigate={navigate}
                 onClose={onClose}
                 animDir={animDir}
+                onLogout={onLogout}
             />
         );
     } else {
