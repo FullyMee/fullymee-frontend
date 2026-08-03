@@ -577,6 +577,7 @@ export default function ProfilePage({ user }) {
                         setDraftAvatar(updatedUser.preferences?.avatar || updatedUser.avatar || '🌊');
                         window.dispatchEvent(new Event("auth-changed"));
                     }}
+                    onLogout={handleLogout}
                 />
             )}
         </>

@@ -50,6 +50,79 @@ const GET_CACHE_TTL_MS = 5000;
 const getRequestCache = new Map();
 const inflightGetRequests = new Map();
 
+/**
+ * Pre-warm / keep-alive strategy for Render free-tier.
+ *
+ * 1. Fires an immediate ping as soon as the module loads so the backend
+ *    starts waking up while the React app is still mounting.
+ *
+ * 2. After the initial ping, continues to send a lightweight health
+ *    request every KEEP_ALIVE_INTERVAL_MS (4 minutes). This prevents
+ *    Render's 15-minute inactivity sleep — so users who return to an
+ *    open tab never hit the 20-second cold-start delay.
+ *
+ * 3. Pauses automatically when the browser tab is hidden (Page
+ *    Visibility API) and resumes immediately when the tab becomes
+ *    visible again, also firing a fresh ping on resume.
+ */
+const KEEP_ALIVE_INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+
+function getHealthUrl() {
+    return API_URL.replace(/\/api\/?$/, "") + "/health";
+}
+
+function pingHealth() {
+    if (typeof window === "undefined" || !window.fetch) return;
+    try {
+        fetch(getHealthUrl(), { method: "GET", cache: "no-store" }).catch(() => { });
+    } catch {
+        // Non-blocking — ignore all errors
+    }
+}
+
+export function prewarmBackend() {
+    pingHealth();
+}
+
+// ── Keep-alive scheduler ─────────────────────────────────────────────────────
+if (typeof window !== "undefined") {
+    // Fire immediately on page load
+    pingHealth();
+
+    let keepAliveTimer = null;
+
+    function startKeepAlive() {
+        if (keepAliveTimer) return; // already running
+        keepAliveTimer = setInterval(() => {
+            if (document.visibilityState !== "hidden") {
+                pingHealth();
+            }
+        }, KEEP_ALIVE_INTERVAL_MS);
+    }
+
+    function stopKeepAlive() {
+        if (keepAliveTimer) {
+            clearInterval(keepAliveTimer);
+            keepAliveTimer = null;
+        }
+    }
+
+    // Pause/resume based on tab visibility
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+            stopKeepAlive();
+        } else {
+            // Tab became visible again — ping immediately then restart interval
+            pingHealth();
+            startKeepAlive();
+        }
+    });
+
+    // Start the first interval
+    startKeepAlive();
+}
+
+
 const DEFAULT_RETRY_OPTIONS = {
     retries: 3,
     baseDelayMs: 300,
@@ -178,7 +251,7 @@ async function parseResponseBody(response) {
     if (response.status === 204) return null;
     const text = await response.text();
     if (!text) return null;
- 
+
     try {
         return JSON.parse(text);
     } catch {
@@ -207,7 +280,7 @@ let csrfTokenPromise = null;
 
 async function getCsrfTokenSafe() {
     if (inMemoryCsrfToken) return inMemoryCsrfToken;
-    
+
     let token = getDocumentCookieValue('csrf_token');
     if (token) {
         inMemoryCsrfToken = token;
@@ -219,16 +292,16 @@ async function getCsrfTokenSafe() {
             method: 'GET',
             credentials: 'include'
         }).then(res => res.ok ? res.json() : null)
-          .then(data => {
-              if (data && data.csrfToken) {
-                  inMemoryCsrfToken = data.csrfToken;
-                  return inMemoryCsrfToken;
-              }
-              return null;
-          }).catch(() => null)
-          .finally(() => {
-              csrfTokenPromise = null;
-          });
+            .then(data => {
+                if (data && data.csrfToken) {
+                    inMemoryCsrfToken = data.csrfToken;
+                    return inMemoryCsrfToken;
+                }
+                return null;
+            }).catch(() => null)
+            .finally(() => {
+                csrfTokenPromise = null;
+            });
     }
     return csrfTokenPromise;
 }
@@ -436,12 +509,12 @@ export async function safeApiRequest(endpoint, options = {}) {
         const data = await apiRequest(endpoint, options);
         return { data, error: null, retry: null };
     } catch (error) {
-        const retryFn = error.retryable 
-            ? () => safeApiRequest(endpoint, options) 
+        const retryFn = error.retryable
+            ? () => safeApiRequest(endpoint, options)
             : null;
-        
-        return { 
-            data: null, 
+
+        return {
+            data: null,
             error: {
                 message: error.message,
                 status: error.status,
@@ -464,10 +537,10 @@ export function get(endpoint, options = {}) {
  * POST request helper
  */
 export function post(endpoint, body, options = {}) {
-    return apiRequest(endpoint, { 
-        ...options, 
-        method: 'POST', 
-        body: JSON.stringify(body) 
+    return apiRequest(endpoint, {
+        ...options,
+        method: 'POST',
+        body: JSON.stringify(body)
     });
 }
 
@@ -475,10 +548,10 @@ export function post(endpoint, body, options = {}) {
  * PUT request helper
  */
 export function put(endpoint, body, options = {}) {
-    return apiRequest(endpoint, { 
-        ...options, 
-        method: 'PUT', 
-        body: JSON.stringify(body) 
+    return apiRequest(endpoint, {
+        ...options,
+        method: 'PUT',
+        body: JSON.stringify(body)
     });
 }
 
@@ -486,10 +559,10 @@ export function put(endpoint, body, options = {}) {
  * PATCH request helper
  */
 export function patch(endpoint, body, options = {}) {
-    return apiRequest(endpoint, { 
-        ...options, 
-        method: 'PATCH', 
-        body: JSON.stringify(body) 
+    return apiRequest(endpoint, {
+        ...options,
+        method: 'PATCH',
+        body: JSON.stringify(body)
     });
 }
 

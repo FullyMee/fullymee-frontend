@@ -27,12 +27,20 @@ function RoomMembersRail({ activeRoom, roomMembers }) {
                     {members.length > 0 ? members.map((member) => {
                         const alias = String(member.alias || "").trim();
                         const isSelf = alias && String(activeRoom.alias || "").trim() === alias;
+                        const handleMemberClick = () => {
+                            const target = alias || member.userId;
+                            if (target) {
+                                navigate(`/user/${target}`, {
+                                    state: { profileUser: { username: alias, isAlias: true } }
+                                });
+                            }
+                        };
                         return (
                             <div 
                                 key={`${member.userId || alias}-${member.joinedAt || ""}`} 
                                 className="confession-room-rail__member"
-                                onClick={() => { if (member.userId) navigate(`/profile/${member.userId}`); }}
-                                style={{ cursor: member.userId ? 'pointer' : 'default' }}
+                                onClick={handleMemberClick}
+                                style={{ cursor: alias || member.userId ? 'pointer' : 'default' }}
                             >
                                 <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
                                     {getInitial(alias)}
