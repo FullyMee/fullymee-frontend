@@ -831,6 +831,71 @@
     font-weight: 700;
     font-size: 0.92rem;
 }
+
+/* ── Redesigned On-Brand Chat Empty State ── */
+.chat-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem 1rem;
+    margin: 0.75rem 1rem;
+    border-radius: 1.2rem;
+    background: linear-gradient(145deg, #ffffff 0%, #fcf7f3 100%);
+    border: 1px solid rgba(59, 31, 67, 0.08);
+    box-shadow: 0 4px 14px rgba(59, 31, 67, 0.04);
+    text-align: center;
+}
+
+.chat-empty-state__icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(76, 33, 69, 0.08);
+    color: #4c2145;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.chat-empty-state__title {
+    font-family: var(--font-serif, "Playfair Display", serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #3B1F43;
+    margin: 0 0 0.25rem 0;
+    letter-spacing: -0.01em;
+}
+
+.chat-empty-state__sub {
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: #6C5972;
+    margin: 0 0 0.75rem 0;
+    max-width: 260px;
+}
+
+.chat-empty-state__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(180deg, #4c2145 0%, #3a1737 100%);
+    color: #fff3ef;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(76, 33, 69, 0.28);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.chat-empty-state__cta:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #5b2853 0%, #461d42 100%);
+    box-shadow: 0 6px 18px rgba(76, 33, 69, 0.38);
+}
 .chat-list-header {
     padding: 1.45rem 1.5rem 0.9rem;
 }
