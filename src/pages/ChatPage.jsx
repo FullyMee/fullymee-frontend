@@ -57,7 +57,7 @@ import {
     createClientMessageId
 } from "../features/chats/utils/messageHelpers.js";
 
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, MessageSquare } from "lucide-react";
 
 const MESSAGE_PAGE_SIZE = 30;
 
@@ -80,6 +80,20 @@ function ChatEmptyState() {
                 <Sparkles size={15} strokeWidth={2} />
                 Find People
             </button>
+        </div>
+    );
+}
+
+function ChatRequestsEmptyState() {
+    return (
+        <div className="chat-empty-state">
+            <div className="chat-empty-state__icon-wrapper">
+                <MessageSquare size={20} strokeWidth={1.8} className="chat-empty-state__icon" />
+            </div>
+            <h3 className="chat-empty-state__title">No chat requests yet</h3>
+            <p className="chat-empty-state__sub">
+                When someone sends you a request from a confession, it will appear here.
+            </p>
         </div>
     );
 }
@@ -909,10 +923,7 @@ export default function ChatPage({ user }) {
                         )}
 
                         {pendingRequests.length === 0 && acceptedRequests.length === 0 && !loadingIndex && (
-                            <section className="chat-empty-card">
-                                <h2>No chat requests yet</h2>
-                                <p>When someone sends you a request from a confession, it will appear here.</p>
-                            </section>
+                            <ChatRequestsEmptyState />
                         )}
 
                         <section className="chat-requests-info">

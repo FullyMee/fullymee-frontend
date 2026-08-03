@@ -1,6 +1,20 @@
 import React from "react";
-import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
+import { MessageSquare } from "lucide-react";
 import { PendingRequestCard, AcceptedRequestCard } from "./ChatRequestCard.jsx";
+
+export function ChatRequestsEmptyState() {
+    return (
+        <div className="chat-empty-state">
+            <div className="chat-empty-state__icon-wrapper">
+                <MessageSquare size={20} strokeWidth={1.8} className="chat-empty-state__icon" />
+            </div>
+            <h3 className="chat-empty-state__title">No chat requests yet</h3>
+            <p className="chat-empty-state__sub">
+                When someone sends you a request from a confession, it will appear here.
+            </p>
+        </div>
+    );
+}
 
 export default function ChatRequestsView({
     pendingRequests,
@@ -15,11 +29,7 @@ export default function ChatRequestsView({
     if (!hasPending && !hasAccepted) {
         return (
             <div className="desktop-chat-requests-view">
-                <DesktopEmptyState
-                    compact
-                    title="No chat requests yet"
-                    description="When someone sends you a request, it will appear here."
-                />
+                <ChatRequestsEmptyState />
             </div>
         );
     }
