@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.js";
 import { RoomGlyphIcon, getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
 import { getInitial } from "../../utils/presentation.js";
-import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search } from "lucide-react";
+import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search, Settings } from "lucide-react";
 import fullymeLogo from "../../assets/fullyme-logo.png";
 
 const DEFAULT_NAV_ITEMS = [
@@ -10,7 +10,8 @@ const DEFAULT_NAV_ITEMS = [
     { key: "confessions", label: "Confessions", to: "/confessions" },
     { key: "messages", label: "Messages", to: "/chats" },
     { key: "search", label: "Search", to: "/search" },
-    { key: "profile", label: "Profile", to: "/profile" }
+    { key: "profile", label: "Profile", to: "/profile" },
+    { key: "settings", label: "Settings", to: "/settings" }
 ];
 
 function getNavIcon(key) {
@@ -18,6 +19,7 @@ function getNavIcon(key) {
     if (key === "confessions") return MessageSquareQuote;
     if (key === "messages") return MessageCircle;
     if (key === "search") return Search;
+    if (key === "settings") return Settings;
     return CircleUser;
 }
 

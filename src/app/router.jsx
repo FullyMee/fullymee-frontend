@@ -17,7 +17,8 @@ const ChatPage = lazy(() => import("../pages/ChatPage.jsx"));
 const SearchPage = lazy(() => import("../pages/SearchPage.jsx"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage.jsx"));
 const UserProfilePage = lazy(() => import("../pages/UserProfilePage.jsx"));
-const PRIMARY_TAB_ROUTES = ["/", "/confessions", "/chats", "/search", "/profile"];
+const SettingsPage = lazy(() => import("../pages/SettingsPage.jsx"));
+const PRIMARY_TAB_ROUTES = ["/", "/confessions", "/chats", "/search", "/profile", "/settings"];
 const PRIMARY_TAB_TRANSITION_MS = 280;
 
 function PageLoader() {
@@ -64,6 +65,11 @@ function AppRouteSet({ isAuthenticated, user, locationOverride }) {
             <Route
                 path="/profile"
                 element={isAuthenticated ? <ProfilePage user={user} /> : <Navigate to="/login" />}
+            />
+
+            <Route
+                path="/settings"
+                element={isAuthenticated ? <SettingsPage user={user} /> : <Navigate to="/login" />}
             />
 
             <Route
