@@ -1,0 +1,732 @@
+/* Desktop Settings Page Styling */
+
+.dt-settings-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 2.5rem 4rem;
+    font-family: inherit;
+    color: #3B1F43;
+}
+
+/* Header */
+.dt-settings-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dt-settings-header__title {
+    font-family: 'Lora', serif;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.33;
+    color: #3B1F43;
+    margin: 0 0 0.4rem 0;
+}
+
+.dt-settings-header__subtitle {
+    font-size: 0.875rem;
+    color: #7F6A78;
+    margin-top: 0.5rem;
+    max-width: 560px;
+    line-height: 1.45;
+}
+
+.dt-settings-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: #FFFFFF;
+    border: 1px solid rgba(77, 40, 72, 0.12);
+    border-radius: 999px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #665264;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(59, 31, 67, 0.03);
+}
+
+/* Layout */
+.dt-settings-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 2.25rem;
+    align-items: start;
+}
+
+/* Left Column */
+.dt-settings-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: sticky;
+    top: 2rem;
+}
+
+.dt-settings-nav-card {
+    background: #FFFFFF;
+    border-radius: 1.1rem;
+    padding: 0.45rem;
+    border: 1px solid rgba(77, 40, 72, 0.08);
+    box-shadow: 0 4px 16px rgba(59, 31, 67, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.dt-settings-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.8rem;
+    border: none;
+    background: transparent;
+    color: #4A3A48;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dt-settings-nav-btn__left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.dt-settings-nav-btn__left span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex: 1 1 0%;
+    text-align: left;
+}
+
+.dt-settings-nav-btn__count {
+    font-size: 0.78rem;
+    opacity: 0.6;
+}
+
+.dt-settings-nav-btn:hover {
+    background: rgba(78, 36, 72, 0.04);
+}
+
+.dt-settings-nav-btn.is-active {
+    background: #4C2240;
+    color: #FFFFFF;
+}
+
+.dt-settings-nav-btn.is-active .dt-settings-nav-btn__count {
+    opacity: 0.85;
+}
+
+/* Anon Box */
+.dt-settings-anon-card {
+    background: #4C2240;
+    color: #FFFFFF;
+    border-radius: 1.1rem;
+    padding: 1.35rem;
+    box-shadow: 0 8px 24px rgba(76, 34, 64, 0.15);
+}
+
+.dt-settings-anon-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+}
+
+.dt-settings-anon-title {
+    font-family: 'Lora', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0.85rem 0 0.4rem 0;
+    color: #FFFFFF;
+}
+
+.dt-settings-anon-desc {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #D8B8D0;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+/* Logout Button */
+.dt-settings-logout-btn {
+    width: 100%;
+    border-radius: 0.85rem;
+    border: 1px solid #F5C5B5;
+    background: #FFF5F0;
+    color: #C55E3B;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dt-settings-logout-btn:hover {
+    background: #FFEBE3;
+    border-color: #EEB29F;
+}
+
+/* Outlined accent action button (hidden by default, shown contextually) */
+.dt-settings-outline-btn {
+    appearance: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #E8C5B0;
+    background: transparent;
+    color: #C56847;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0 1rem;
+    margin-top: 1rem;
+    line-height: 1.2;
+    cursor: pointer;
+    white-space: nowrap;
+    vertical-align: middle;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dt-settings-outline-btn:hover {
+    background: rgba(197, 104, 71, 0.06);
+    border-color: #D4956E;
+}
+
+/* Right Main Area */
+.dt-settings-right {
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+}
+
+.dt-settings-section-head {
+    margin-bottom: 0.85rem;
+}
+
+.dt-settings-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #C56847;
+    text-transform: uppercase;
+    margin: 0 0 0.25rem 0;
+}
+
+.dt-settings-section-desc {
+    font-size: 0.875rem;
+    color: #7F6A78;
+    margin-top: 0.25rem;
+}
+
+/* Accordion Card Group */
+.dt-settings-accordion-group {
+    background: #FFFFFF;
+    border-radius: 1.1rem;
+    border: 1px solid rgba(77, 40, 72, 0.08);
+    box-shadow: 0 4px 16px rgba(59, 31, 67, 0.03);
+    overflow: hidden;
+}
+
+.dt-settings-accordion-item {
+    border-bottom: 1px solid rgba(77, 40, 72, 0.06);
+    transition: background 0.15s ease;
+}
+
+.dt-settings-accordion-item.is-expanded {
+    background: #FAF7F2;
+}
+
+.dt-settings-accordion-item.is-expanded .dt-settings-accordion-header {
+    background: #FAF7F2;
+}
+
+.dt-settings-accordion-item:last-child {
+    border-bottom: none;
+}
+
+.dt-settings-accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.dt-settings-accordion-header:hover {
+    background: rgba(78, 36, 72, 0.02);
+}
+
+.dt-settings-accordion-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.dt-settings-icon-bubble {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dt-settings-icon-bubble--purple { background: #F3E8FF; color: #8B5CF6; }
+.dt-settings-icon-bubble--blue   { background: #E6F4FF; color: #3B82F6; }
+.dt-settings-icon-bubble--pink   { background: #FFEBF0; color: #EC4899; }
+.dt-settings-icon-bubble--green  { background: #E6F9F0; color: #10B981; }
+.dt-settings-icon-bubble--indigo { background: #EEF2FF; color: #4F46E5; }
+.dt-settings-icon-bubble--amber  { background: #FEF3C7; color: #D97706; }
+.dt-settings-icon-bubble--rose   { background: #FFE4E6; color: #F43F5E; }
+
+.dt-settings-accordion-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #3B1F43;
+    margin: 0 0 0.15rem 0;
+}
+
+.dt-settings-accordion-subtitle {
+    font-size: 0.875rem;
+    color: #7F6A78;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+.dt-settings-accordion-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: #4A3A48;
+}
+
+/* Accordion Body */
+.dt-settings-accordion-body {
+    padding-inline-start: 1.25rem;
+    padding-inline-end: 1.25rem;
+    padding-top: 0.25rem;
+    padding-bottom: 1.5rem;
+    background: #FAF7F2;
+    border-top: none;
+    animation: dt-settings-fade 0.2s ease;
+}
+
+@keyframes dt-settings-fade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dt-settings-field-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #3B1F43;
+    margin: 0.85rem 0 0.4rem 0;
+}
+
+/* Input & Shuffle */
+.dt-settings-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 450px;
+}
+
+.dt-settings-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid rgba(77, 40, 72, 0.15);
+    border-radius: 0.75rem;
+    padding: 0 0.85rem;
+    flex: 1;
+    height: 2.5rem;
+}
+
+.dt-settings-input-prefix {
+    color: #8C778B;
+    font-size: 0.88rem;
+    margin-right: 0.35rem;
+}
+
+.dt-settings-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.88rem;
+    color: #3B1F43;
+    font-weight: 500;
+}
+
+.dt-settings-shuffle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #4C2240;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0 1rem;
+    height: 2.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.dt-settings-shuffle-btn:hover {
+    background: #3B1A32;
+}
+
+.dt-settings-help-text {
+    font-size: 0.78rem;
+    color: #8C778B;
+    margin-top: 0.4rem;
+    line-height: 1.4;
+}
+
+/* Avatar list */
+.dt-settings-avatar-grid {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+    margin-top: 0.6rem;
+}
+
+.dt-settings-avatar-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    border: 1px solid rgba(77, 40, 72, 0.12);
+    background: #FFFFFF;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.dt-settings-avatar-btn:hover {
+    transform: scale(1.08);
+}
+
+.dt-settings-avatar-btn.is-selected {
+    border: none;
+    background: #3B1F43;
+    color: #FFFFFF;
+    box-shadow: 0 0 0 2px #FAF7F2, 0 0 0 3.5px #C56847;
+}
+
+/* Toggle Switch */
+.dt-settings-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.dt-settings-toggle {
+    width: 3.2rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    background: #C4D9EC;
+    border: 2px solid #A8C6E2;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    padding: 0.15rem;
+    box-sizing: border-box;
+}
+
+.dt-settings-toggle--on {
+    background: #3B1F43;
+    border-color: #7DA4CD;
+}
+
+.dt-settings-toggle__thumb {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dt-settings-toggle--on .dt-settings-toggle__thumb {
+    transform: translateX(1.35rem);
+}
+
+/* Select options */
+.dt-settings-select {
+    background: #FFFFFF;
+    border: 1px solid rgba(77, 40, 72, 0.15);
+    border-radius: 0.65rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    color: #3B1F43;
+    outline: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* ── Mood Tag Pills (Interests accordion) ───────────────────────────────── */
+.dt-settings-mood-hint {
+    font-size: 0.875rem;
+    color: #7F6A78;
+    margin: 0.75rem 0 0.85rem 0;
+    line-height: 1.55;
+}
+
+.dt-settings-mood-tags {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    gap: 0.5rem;
+    padding: 0px;
+    margin-top: 0.1rem;
+}
+
+.dt-settings-mood-pill {
+    display: inline-flex;
+    vertical-align: top;
+    align-items: center;
+    max-width: 100%;
+    min-height: 2rem;
+    line-height: 1.2;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba(77, 40, 72, 0.15);
+    background: #FFFFFF;
+    color: #3B1F43;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.dt-settings-mood-pill:hover {
+    background: rgba(76, 34, 64, 0.05);
+    border-color: rgba(77, 40, 72, 0.3);
+}
+
+.dt-settings-mood-pill.is-selected {
+    background: #4C2240;
+    color: #FAF7F2;
+    border: 1px solid #4C2240;
+}
+
+/* ── Email: label + Verified badge row ──────────────────────────────────── */
+.dt-settings-email-label-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+}
+
+.dt-settings-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: #D1FAE5;
+    color: #065F46;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* ── Nighttime toggle card variant ──────────────────────────────────────── */
+.dt-settings-switch-row--card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFFFFF;
+    border: 1px solid rgba(77, 40, 72, 0.08);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    margin-top: 0.75rem;
+}
+
+/* ── Save Banner Callout ────────────────────────────────────────────────── */
+.dt-settings-save-banner {
+    margin-top: 1rem;
+    background: #4C2240;
+    color: #FAF7F2;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: none;
+}
+
+/* ── Quiet Hours From / Until row ───────────────────────────────────────── */
+.dt-settings-quiet-hours-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    transition: opacity 0.2s ease;
+}
+
+.dt-settings-quiet-hours-row.is-disabled {
+    opacity: 0.38;
+    pointer-events: none;
+}
+
+.dt-settings-quiet-hours-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dt-settings-quiet-hours-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #8C778B;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.dt-settings-select--time {
+    background: #FFFFFF;
+    border: 1px solid rgba(77, 40, 72, 0.08);
+    border-radius: 0.85rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+    color: #8C778B;
+    outline: none;
+    cursor: pointer;
+    font-weight: 500;
+    min-width: 140px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238C778B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.2rem;
+}
+
+/* ── Card Grids ────────────────────────────────────────────────────────── */
+.dt-settings-card-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+    width: 100%;
+}
+
+.dt-settings-audio-expiry-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    width: 100%;
+}
+
+.dt-settings-audio-card {
+    display: flex;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.65rem;
+    padding: 0.85rem 0.95rem;
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(77, 40, 72, 0.12);
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: 0.15s;
+    box-sizing: border-box;
+}
+
+.dt-settings-audio-card:hover {
+    border-color: rgba(77, 40, 72, 0.28);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* .css-1ihb88b selected state */
+.dt-settings-audio-card.is-selected {
+    border-width: 1px;
+    border-color: #4C2240;
+    background: #F7EFF5;
+}
+
+.dt-settings-audio-radio {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 1.5px solid rgba(77, 40, 72, 0.25);
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: #FFFFFF;
+    transition: all 0.15s ease;
+}
+
+.dt-settings-audio-radio.is-selected {
+    border-color: #4C2240;
+    background: #4C2240;
+}
+
+.dt-settings-audio-card-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* .css-wyi94d */
+.dt-settings-audio-card-title {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #3B1F43;
+    line-height: 1.3;
+}
+
+/* .css-13ki1ks */
+.dt-settings-audio-card-desc {
+    font-size: 0.72rem;
+    color: #7F6A78;
+    margin-top: 0.2rem;
+    line-height: 1.45;
+}
