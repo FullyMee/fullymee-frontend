@@ -57,7 +57,32 @@ import {
     createClientMessageId
 } from "../features/chats/utils/messageHelpers.js";
 
+import { Search, Sparkles } from "lucide-react";
+
 const MESSAGE_PAGE_SIZE = 30;
+
+function ChatEmptyState() {
+    const navigate = useNavigate();
+    return (
+        <div className="chat-empty-state">
+            <div className="chat-empty-state__icon-wrapper">
+                <Search size={22} strokeWidth={1.8} className="chat-empty-state__icon" />
+            </div>
+            <h3 className="chat-empty-state__title">No conversations found</h3>
+            <p className="chat-empty-state__sub">
+                Try another search or find people to connect with and start messaging.
+            </p>
+            <button
+                type="button"
+                className="chat-empty-state__cta"
+                onClick={() => navigate("/search")}
+            >
+                <Sparkles size={15} strokeWidth={2} />
+                Find People
+            </button>
+        </div>
+    );
+}
 
 
 export default function ChatPage({ user }) {
@@ -630,12 +655,7 @@ export default function ChatPage({ user }) {
                                 )}
 
                                 {!loadingIndex && !isRequestsView && filteredConversationItems.length === 0 && (
-                                    <DesktopEmptyState
-                                        compact
-                                        title="No conversations found"
-                                        description="Try another search or start from Search to connect with someone."
-                                        action={<Link to="/search" className="chat-empty-card__link">Find People</Link>}
-                                    />
+                                    <ChatEmptyState />
                                 )}
 
                                 {!loadingIndex && !isRequestsView && filteredConversationItems.length > 0 && (
@@ -808,10 +828,7 @@ export default function ChatPage({ user }) {
                         {loadingIndex && <ChatListSkeleton count={5} />}
 
                         {!loadingIndex && filteredConversationItems.length === 0 && (
-                            <section className="chat-empty-card">
-                                <h2>No conversations found</h2>
-                                <p>Try another search or connect with someone from the Search page.</p>
-                            </section>
+                            <ChatEmptyState />
                         )}
 
                         {!loadingIndex && filteredConversationItems.length > 0 && (
