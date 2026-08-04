@@ -1,7 +1,14 @@
 import { apiRequest } from "./api";
 
-export function listConversations() {
-    return apiRequest("/conversations", { method: "GET" });
+export function listConversations({ view = "active" } = {}) {
+    const params = new URLSearchParams();
+    if (view) params.set("view", view);
+    const suffix = params.toString() ? `?${params.toString()}` : "";
+    return apiRequest(`/conversations${suffix}`, { method: "GET" });
+}
+
+export function getConversation(conversationId) {
+    return apiRequest(`/conversations/${conversationId}`, { method: "GET" });
 }
 
 export function listConversationMessages(conversationId, { limit } = {}) {
@@ -55,5 +62,57 @@ export function respondToChatRequest(requestId, action) {
     return apiRequest(`/conversations/requests/${requestId}/respond`, {
         method: "POST",
         body: JSON.stringify({ action })
+    });
+}
+
+export function getClosingNotes() {
+    return apiRequest("/conversations/closing-notes", { method: "GET" });
+}
+
+export function endConnection(conversationId, { closingNoteId = null } = {}) {
+    return apiRequest(`/conversations/${conversationId}/end`, {
+        method: "POST",
+        body: JSON.stringify({ closingNoteId })
+    });
+}
+
+export function pauseConnection(conversationId) {
+    return apiRequest(`/conversations/${conversationId}/pause`, {
+        method: "POST",
+        body: JSON.stringify({})
+    });
+}
+
+export function resumeConnection(conversationId) {
+    return apiRequest(`/conversations/${conversationId}/resume`, {
+        method: "POST",
+        body: JSON.stringify({})
+    });
+}
+
+export function archiveConnection(conversationId) {
+    return apiRequest(`/conversations/${conversationId}/archive`, {
+        method: "POST",
+        body: JSON.stringify({})
+    });
+}
+
+export function unarchiveConnection(conversationId) {
+    return apiRequest(`/conversations/${conversationId}/unarchive`, {
+        method: "POST",
+        body: JSON.stringify({})
+    });
+}
+
+export function reportConnection(conversationId, { reason = "" } = {}) {
+    return apiRequest(`/conversations/${conversationId}/report`, {
+        method: "POST",
+        body: JSON.stringify({ reason })
+    });
+}
+
+export function deleteConnection(conversationId) {
+    return apiRequest(`/conversations/${conversationId}`, {
+        method: "DELETE"
     });
 }
