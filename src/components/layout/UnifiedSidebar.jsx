@@ -43,7 +43,7 @@ export default function UnifiedSidebar({
     const { user } = useAuth();
 
     const displayName = String((user && user.username) || "Quiet Fox").trim() || "Quiet Fox";
-    const displayAvatar = String((user && user.avatar) || "").trim() || getInitial(displayName, "Q");
+    const displayAvatar = String((user && (user.preferences?.avatar || user.avatar)) || "").trim() || getInitial(displayName, "Q");
 
     return (
         <aside className="home-desktop-sidebar desktop-app-shell__sidebar">

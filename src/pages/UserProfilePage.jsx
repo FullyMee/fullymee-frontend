@@ -196,7 +196,7 @@ export default function UserProfilePage({ user: currentUser }) {
                                             <p>
                                                 {isConnected
                                                     ? "Anonymous identity on FullyMe."
-                                                    : "Private Identity — not yet connected"}
+                                                    : "Private Identity not yet connected"}
                                             </p>
 
                                             <div
@@ -205,15 +205,15 @@ export default function UserProfilePage({ user: currentUser }) {
                                             >
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.confessions : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>confessions</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>confessions</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.rooms : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>rooms</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>rooms</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.replies : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: "#FDF2F8" }}>replies</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>replies</span>
                                                 </div>
                                             </div>
                                         </div>

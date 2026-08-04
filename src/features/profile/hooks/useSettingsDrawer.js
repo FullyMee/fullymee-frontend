@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { updateCurrentUserPreferences } from "../../../services/auth.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -79,6 +79,21 @@ export default function useSettingsDrawer(user, onUserUpdated) {
         noticeTimer.current = setTimeout(() => setNotice(''), 2800);
     }
 
+    // Sync draft states when authoritative user prop updates (e.g., after auth-changed)
+    useEffect(() => {
+        if (user) {
+            setUsernameDraft(user.username || '');
+            const p = extractPrefs(user);
+            setAvatarDraft(p.avatar);
+            setInterests(Array.isArray(user.interests) ? user.interests : []);
+            setChatPermission(p.chatRequestPermission);
+            setNighttimeLimit(!!p.limitNighttimeRequests);
+            setHideRooms(!!p.hideJoinedRooms);
+            setHideProfileGlobal(!!p.hideProfileGlobal);
+            setAudioExpiry(p.audioExpiry);
+        }
+    }, [user]);
+
     // ─────────────────────────────────────────────────────────────────────────
     // Save helpers
     // ─────────────────────────────────────────────────────────────────────────
@@ -93,17 +108,28 @@ export default function useSettingsDrawer(user, onUserUpdated) {
     }
 
     // Identity: username + avatar — explicit Save button
-    const saveIdentity = useCallback(async (e) => {
-        e?.preventDefault();
-        const cleaned = String(usernameDraft || '').trim().toLowerCase();
-        if (!cleaned) {
+    // Accepts optional explicit values to avoid stale closure issues
+    const saveIdentity = useCallback(async (eOrOpts) => {
+        // If called as a form onSubmit, the first arg is a SyntheticEvent
+        if (eOrOpts && typeof eOrOpts.preventDefault === 'function') {
+            eOrOpts.preventDefault();
+        }
+
+        // Allow callers to pass { username, avatar } directly to avoid stale closures
+        const explicitUsername = (eOrOpts && typeof eOrOpts === 'object' && 'username' in eOrOpts) ? eOrOpts.username : undefined;
+        const explicitAvatar   = (eOrOpts && typeof eOrOpts === 'object' && 'avatar'   in eOrOpts) ? eOrOpts.avatar   : undefined;
+
+        const usernameToSave = String(explicitUsername ?? usernameDraft ?? '').trim().toLowerCase().replace(/^@/, "");
+        const avatarToSave   = explicitAvatar ?? avatarDraft;
+
+        if (!usernameToSave) {
             setIdentityStatus({ status: 'error', message: 'Username cannot be empty.' });
             return;
         }
         try {
             setSavingIdentity(true);
             setIdentityStatus({ status: 'checking', message: 'Saving…' });
-            await callPrefsAPI({ username: cleaned, avatar: avatarDraft });
+            await callPrefsAPI({ username: usernameToSave, avatar: avatarToSave });
             setIdentityStatus({ status: 'success', message: 'Saved!' });
             showNotice('Identity updated.');
             window.dispatchEvent(new Event('auth-changed'));

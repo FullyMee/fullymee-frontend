@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     User, MessageCircle, Lock, Tag, Mail, Moon, EyeOff, Clock,
-    CheckCircle2, ChevronDown, ChevronUp, Shuffle, LogOut, Check,
-    Star, Waves, Leaf, Flame, Cloud, Sparkles, Ghost
+    CheckCircle2, ChevronDown, ChevronUp, LogOut, Check, Loader2
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import useAuth from "../hooks/useAuth.js";
@@ -14,9 +13,6 @@ import useSettingsDrawer, {
 } from "../features/profile/hooks/useSettingsDrawer.js";
 import { logout } from "../services/auth.service.js";
 import "../features/profile/settings-desktop.css";
-
-const ADJECTIVES = ["amber", "quiet", "silent", "gentle", "calm", "swift", "velvet", "bright", "misty", "solar"];
-const ANIMALS = ["dolphin", "orca", "fox", "falcon", "lynx", "koala", "panda", "otter", "owl", "tiger"];
 
 const PREDEFINED_MOOD_TAGS = [
     "Late-night thoughts", "Heartbreak", "Career", "Anxiety",
@@ -31,16 +27,7 @@ const QUIET_HOURS_UNTIL = [
     "5:00 AM", "6:00 AM", "7:00 AM", "8:00 AM"
 ];
 
-const AVATAR_ICON_OPTIONS = [
-    { id: "moon", emoji: "🌙", icon: Moon },
-    { id: "star", emoji: "⭐", icon: Star },
-    { id: "waves", emoji: "🌊", icon: Waves },
-    { id: "leaf", emoji: "🍃", icon: Leaf },
-    { id: "flame", emoji: "🔥", icon: Flame },
-    { id: "cloud", emoji: "☁️", icon: Cloud },
-    { id: "sparkles", emoji: "✨", icon: Sparkles },
-    { id: "ghost", emoji: "👻", icon: Ghost }
-];
+
 
 const AUDIO_EXPIRY_CARD_OPTIONS = [
     { value: "never", label: "Never", desc: "Audio confessions stay available." },
@@ -54,13 +41,6 @@ const CHAT_PERMISSION_CARD_OPTIONS = [
     { value: "rooms", label: "People in my rooms", desc: "Only members of rooms you have joined can reach you." },
     { value: "nobody", label: "No one", desc: "Requests are turned off. You can still start chats yourself." }
 ];
-
-function generateRandomHandle() {
-    const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-    const anim = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    const num = Math.floor(1000 + Math.random() * 9000);
-    return `${adj}.${anim}${num}`;
-}
 
 export default function SettingsPage({ user: propUser }) {
     const navigate = useNavigate();
@@ -79,14 +59,6 @@ export default function SettingsPage({ user: propUser }) {
 
     const toggleAccordion = (id) => {
         setOpenAccordion((prev) => (prev === id ? null : id));
-    };
-
-    const handleShuffleHandle = async () => {
-        const newHandle = generateRandomHandle();
-        s.setUsernameDraft(newHandle);
-        try {
-            await s.saveIdentity();
-        } catch { }
     };
 
     const handleLogout = async () => {
@@ -204,8 +176,12 @@ export default function SettingsPage({ user: propUser }) {
                                         onClick={() => toggleAccordion("username-avatar")}
                                     >
                                         <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--purple">
-                                                <User size={18} />
+                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--purple" style={{ overflow: 'hidden' }}>
+                                                {s.avatarDraft ? (
+                                                    <span style={{ fontSize: '18px', lineHeight: 1 }}>{s.avatarDraft}</span>
+                                                ) : (
+                                                    <User size={18} />
+                                                )}
                                             </span>
                                             <div>
                                                 <h4 className="dt-settings-accordion-title">Username & Avatar</h4>
@@ -231,39 +207,48 @@ export default function SettingsPage({ user: propUser }) {
                                                         onChange={(e) => s.setUsernameDraft(e.target.value)}
                                                     />
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    className="dt-settings-shuffle-btn"
-                                                    onClick={handleShuffleHandle}
-                                                >
-                                                    <Shuffle size={14} />
-                                                    <span>Shuffle</span>
-                                                </button>
                                             </div>
                                             <p className="dt-settings-help-text">
-                                                Shuffling gives you a brand new handle. Past confessions keep the old one.
+                                                Choose a unique handle. Past confessions keep the old one.
                                             </p>
 
                                             <label className="dt-settings-field-label" style={{ marginTop: "1.25rem" }}>Avatar</label>
                                             <div className="dt-settings-avatar-grid">
-                                                {AVATAR_ICON_OPTIONS.map(({ id, emoji, icon: IconComponent }) => {
-                                                    const isSelected = s.avatarDraft === id || s.avatarDraft === emoji;
+                                                {AVATAR_OPTIONS.map((emoji) => {
+                                                    const isSelected = s.avatarDraft === emoji;
                                                     return (
                                                         <button
-                                                            key={id}
+                                                            key={emoji}
                                                             type="button"
                                                             className={`dt-settings-avatar-btn${isSelected ? " is-selected" : ""}`}
-                                                            onClick={() => {
-                                                                s.setAvatarDraft(id);
-                                                                s.saveIdentity();
-                                                            }}
-                                                            aria-label={`Select avatar ${id}`}
+                                                            onClick={() => s.setAvatarDraft(emoji)}
+                                                            aria-label={`Select avatar ${emoji}`}
                                                         >
-                                                            <IconComponent size={18} strokeWidth={2} />
+                                                            {emoji}
                                                         </button>
                                                     );
                                                 })}
                                             </div>
+
+                                            {s.identityStatus.message && (
+                                                <p className={`dt-settings-help-text dt-settings-help-text--${s.identityStatus.status}`}
+                                                   style={{ marginTop: "0.75rem" }}>
+                                                    {s.identityStatus.message}
+                                                </p>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                className="dt-settings-save-btn"
+                                                disabled={s.savingIdentity}
+                                                onClick={() => s.saveIdentity()}
+                                                style={{ marginTop: "1.25rem" }}
+                                            >
+                                                {s.savingIdentity
+                                                    ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>
+                                                    : <><Check size={15} /> Save Changes</>
+                                                }
+                                            </button>
                                         </div>
                                     )}
                                 </div>
