@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, Pencil, Settings, Shield, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Lock, ShieldCheck, Menu, X } from "lucide-react";
+import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, Settings, Shield, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Lock, ShieldCheck, Menu, X } from "lucide-react";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import DesktopIconStatCard from "../components/common/DesktopIconStatCard.jsx";
 import { InlineSpinner, ProfileSkeleton } from "../components/common/LoadingStates.jsx";
@@ -22,12 +22,11 @@ import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.
 const VISIBLE_ROOMS_LIMIT = 6;
 
 function SettingsIcon(props) { return <Settings size={18} strokeWidth={2} {...props} />; }
-function PencilIcon() { return <Pencil size={18} strokeWidth={2} />; }
+
 function ShieldIcon(props) { return <Shield size={18} strokeWidth={2} {...props} />; }
 function QuoteIcon() { return <MessageSquareQuote size={18} strokeWidth={2} />; }
 function EnvelopeIcon(props) { return <Mail size={18} strokeWidth={2} {...props} />; }
 function PeopleIcon() { return <Users size={18} strokeWidth={2} />; }
-function MoonIcon() { return <Moon size={18} strokeWidth={2} />; }
 function CardIcon() { return <CreditCard size={18} strokeWidth={2} />; }
 function ArrowRightIcon(props) { return <ArrowRight size={18} strokeWidth={2} {...props} />; }
 function MessageIcon() { return <MessageCircle size={18} strokeWidth={2} />; }
@@ -84,6 +83,16 @@ export default function ProfilePage({ user }) {
             dismissError();
         }
     }, [error, dismissError, showError]);
+
+    // Sync local profileUser whenever the upstream user prop changes
+    // (e.g. after avatar / username changes on Settings page trigger auth-changed)
+    useEffect(() => {
+        if (user) {
+            setProfileUser(user);
+            setUsernameDraft(user.username || "");
+            setDraftAvatar(user.preferences?.avatar || user.avatar || '🌊');
+        }
+    }, [user]);
 
     const joinedRooms = profileData?.joinedRooms || [];
     const myConfessions = profileData?.myConfessions || [];
@@ -199,7 +208,7 @@ export default function ProfilePage({ user }) {
                                     <div className="desktop-profile-banner-card__bottom">
                                         <div className="desktop-profile-banner-card__avatar-shell">
                                             <div className="desktop-profile-banner-card__avatar">
-                                                {profileUser && profileUser.avatar ? profileUser.avatar : <MoonIcon />}
+                                                {profileUser && (profileUser.preferences?.avatar || profileUser.avatar) ? (profileUser.preferences?.avatar || profileUser.avatar) : getInitial(profileUser?.username || profileUser?.email || "A")}
                                             </div>
                                         </div>
                                         <div className="desktop-profile-banner-card__info">
@@ -207,18 +216,6 @@ export default function ProfilePage({ user }) {
                                             <p>Anonymous User</p>
                                         </div>
                                         <div className="desktop-profile-banner-card__actions">
-                                            <button
-                                                type="button"
-                                                className="desktop-profile-edit-button"
-                                                onClick={() => {
-                                                    setShowEditModal(true);
-                                                    setUsernameStatus({ status: "idle", message: "" });
-                                                    setDraftAvatar(profileUser && profileUser.avatar ? profileUser.avatar : '🌊');
-                                                }}
-                                            >
-                                                <PencilIcon />
-                                                <span>Edit Profile</span>
-                                            </button>
                                             <button
                                                 type="button"
                                                 className="desktop-profile-edit-button desktop-profile-edit-button--logout"
@@ -315,29 +312,6 @@ export default function ProfilePage({ user }) {
                         )}
                     </div>
                 </DesktopAppShell>
-
-                <Modal
-                    isOpen={showEditModal}
-                    onClose={() => setShowEditModal(false)}
-                    title="Edit Profile"
-                    className="profile-modal-custom"
-                >
-                    <ProfileEditForm
-                        usernameId="profile-username"
-                        usernameDraft={usernameDraft}
-                        onUsernameChange={(event) => {
-                            setUsernameDraft(event.target.value);
-                            if (usernameStatus.message) setUsernameStatus({ status: "idle", message: "" });
-                        }}
-                        usernameStatus={usernameStatus}
-                        draftAvatar={draftAvatar}
-                        onAvatarSelect={setDraftAvatar}
-                        avatarOptions={AVATAR_OPTIONS}
-                        saving={savingUsername}
-                        onCancel={() => setShowEditModal(false)}
-                        onSubmit={handleUsernameSave}
-                    />
-                </Modal>
             </div>
         );
     }
@@ -373,8 +347,8 @@ export default function ProfilePage({ user }) {
                                 <div className="profile-redesign__avatar-wrapper">
                                     <div className="profile-redesign__avatar-ring">
                                         <div className="profile-redesign__avatar-inner">
-                                            {profileUser && profileUser.avatar
-                                                ? profileUser.avatar
+                                            {profileUser && (profileUser.preferences?.avatar || profileUser.avatar)
+                                                ? (profileUser.preferences?.avatar || profileUser.avatar)
                                                 : getInitial(profileUser?.username || profileUser?.email || "A")}
                                         </div>
                                     </div>

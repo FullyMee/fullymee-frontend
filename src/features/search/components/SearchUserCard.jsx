@@ -17,7 +17,11 @@ export default function SearchUserCard({ person, isBusy, onRemove, onClickCard }
                 role="button"
                 tabIndex={0}
             >
-                <span>{getInitial(person.username)}</span>
+                {person.preferences?.avatar ? (
+                    <span style={{ fontSize: "1.2em", background: "none" }}>{person.preferences.avatar}</span>
+                ) : (
+                    <span>{getInitial(person.username)}</span>
+                )}
             </div>
 
             <div className="search-person-card__body">

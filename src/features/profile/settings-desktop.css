@@ -394,24 +394,39 @@
     font-weight: 500;
 }
 
-.dt-settings-shuffle-btn {
+.dt-settings-save-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
+    gap: 0.45rem;
     background: #4C2240;
     color: #FFFFFF;
     border: none;
     border-radius: 0.75rem;
-    padding: 0 1rem;
-    height: 2.5rem;
-    font-size: 0.82rem;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, opacity 0.15s ease;
+    width: 100%;
+    max-width: 260px;
 }
 
-.dt-settings-shuffle-btn:hover {
+.dt-settings-save-btn:hover {
     background: #3B1A32;
+}
+
+.dt-settings-save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes dt-spin {
+    to { transform: rotate(360deg); }
+}
+
+.dt-settings-save-btn__spin {
+    animation: dt-spin 0.8s linear infinite;
 }
 
 .dt-settings-help-text {
@@ -421,9 +436,25 @@
     line-height: 1.4;
 }
 
+.dt-settings-help-text--success {
+    color: #10B981;
+    font-weight: 500;
+}
+
+.dt-settings-help-text--error {
+    color: #EF4444;
+    font-weight: 500;
+}
+
+.dt-settings-help-text--checking {
+    color: #7B4FA6;
+    font-weight: 500;
+}
+
 /* Avatar list */
 .dt-settings-avatar-grid {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
     max-width: 100%;
