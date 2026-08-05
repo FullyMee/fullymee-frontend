@@ -88,7 +88,7 @@ export default function ActiveRoomFeed({
                             }}
                         >
                             <div className={`desktop-social-post__avatar desktop-social-post__avatar--${getAliasTone(confession.alias)}`}>
-                                {getInitial(confession.alias)}
+                                {confession.authorAvatar ? confession.authorAvatar : getInitial(confession.alias)}
                             </div>
                             <div className="desktop-social-post__meta">
                                 <strong>{confession.alias}</strong>

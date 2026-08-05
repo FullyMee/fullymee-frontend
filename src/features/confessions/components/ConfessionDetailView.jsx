@@ -182,7 +182,7 @@ export default function ConfessionDetailView({
                 tabIndex={0}
             >
                 <div className={`confession-detail-card__avatar confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
-                    {getInitial(selectedConfession.alias)}
+                    {selectedConfession.authorAvatar ? selectedConfession.authorAvatar : getInitial(selectedConfession.alias)}
                 </div>
                 <div className="confession-detail-card__author-copy">
                     <strong>{selectedConfession.alias}</strong>
@@ -343,7 +343,7 @@ export default function ConfessionDetailView({
                     {/* Embedded Confession Post Brief Summary Card */}
                     <div className="confession-comment-sheet__post-summary">
                         <div className={`confession-detail-card__avatar confession-detail-card__avatar--small confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
-                            {getInitial(selectedConfession.alias)}
+                            {selectedConfession.authorAvatar ? selectedConfession.authorAvatar : getInitial(selectedConfession.alias)}
                         </div>
                         <div className="confession-comment-sheet__post-summary-copy">
                             <strong>{selectedConfession.alias}</strong>
