@@ -45,7 +45,7 @@ function ReplyCard({
                     role="button"
                     tabIndex={0}
                 >
-                    {getInitial(reply.alias)}
+                    {reply.authorAvatar ? reply.authorAvatar : getInitial(reply.alias)}
                 </div>
 
                 {/* Center Content */}

@@ -43,7 +43,7 @@ function RoomMembersRail({ activeRoom, roomMembers }) {
                                 style={{ cursor: alias || member.userId ? 'pointer' : 'default' }}
                             >
                                 <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
-                                    {getInitial(alias)}
+                                    {member.avatar ? member.avatar : getInitial(alias)}
                                 </div>
                                 <div className="confession-room-rail__member-copy">
                                     <strong>{alias || "Anonymous"}</strong>

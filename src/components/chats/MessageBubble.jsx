@@ -18,13 +18,13 @@ function formatDesktopDateLabel(value) {
     return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
 }
 
-const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, isDesktop }) => {
+const MemoizedMessageBubble = memo(({ message, isMine, title, avatar, avatarTone, isDesktop }) => {
     if (isDesktop) {
         return (
             <article className={`desktop-chat-message${isMine ? " is-mine" : ""}`}>
                 {!isMine && (
                     <div className={`desktop-chat-avatar desktop-chat-avatar--${avatarTone}`}>
-                        <span>{getInitial(title)}</span>
+                        <span>{avatar ? avatar : getInitial(title)}</span>
                     </div>
                 )}
                 <div className="desktop-chat-message__stack">
@@ -43,7 +43,7 @@ const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, isDesk
         >
             {!isMine && (
                 <span className="chat-thread-bubble__author">
-                    {getInitial(title)}
+                    {avatar ? avatar : getInitial(title)}
                 </span>
             )}
             <p>{message.content}</p>

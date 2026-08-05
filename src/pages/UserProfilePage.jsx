@@ -116,6 +116,7 @@ export default function UserProfilePage({ user: currentUser }) {
                         ...passedUser,
                         userId: data.userId,
                         username: data.username,
+                        avatar: data.avatar || null,
                         createdAt: data.createdAt,
                     });
                     setIsConnected(!!data.isConnected);
@@ -188,7 +189,7 @@ export default function UserProfilePage({ user: currentUser }) {
                                     <div className="desktop-profile-banner-card__bottom">
                                         <div className="desktop-profile-banner-card__avatar-shell">
                                             <div className="desktop-profile-banner-card__avatar">
-                                                {getInitial(displayUsername)}
+                                                {profileUser?.avatar ? profileUser.avatar : getInitial(displayUsername)}
                                             </div>
                                         </div>
                                         <div className="desktop-profile-banner-card__info">
@@ -325,7 +326,7 @@ export default function UserProfilePage({ user: currentUser }) {
                             <div className="profile-redesign__avatar-wrapper">
                                 <div className="profile-redesign__avatar-ring">
                                     <div className="profile-redesign__avatar-inner">
-                                        {getInitial(displayUsername)}
+                                        {profileUser?.avatar ? profileUser.avatar : getInitial(displayUsername)}
                                     </div>
                                 </div>
                                 <div className="profile-redesign__verified-badge" title="Verified Identity">

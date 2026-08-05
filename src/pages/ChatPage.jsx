@@ -276,6 +276,7 @@ export default function ChatPage({ user }) {
                 desktopMetaLabel: connected && isOtherUserOnline ? "Active now" : (desktopDateLabel || timeLabel),
                 unreadCount: Number(unreadByConversation[conversation.id]) || 0,
                 avatarLabel: getChatAvatarGlyph(rawTitle),
+                avatar: conversation?.participantAvatars?.[String(otherUserId)] || null,
                 avatarTone: getAvatarTone(rawTitle),
                 status: conversationStatusOverrides[conversation.id] || conversation.status,
                 isArchivedForMe: Boolean(conversation.isArchivedForMe)
@@ -965,7 +966,7 @@ export default function ChatPage({ user }) {
                                                 onClick={() => openConversation(conversation.id)}
                                             >
                                                 <div className={`desktop-chat-avatar desktop-chat-avatar--${conversation.avatarTone}`}>
-                                                    <span>{getInitial(conversation.title)}</span>
+                                                    <span>{conversation.avatar ? conversation.avatar : getInitial(conversation.title)}</span>
                                                     {conversation.unreadCount > 0 && (
                                                         <b>{conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}</b>
                                                     )}
@@ -1110,7 +1111,7 @@ export default function ChatPage({ user }) {
                                                         tabIndex={0}
                                                     >
                                                         <div className={`desktop-chat-avatar desktop-chat-avatar--${activeConversation.avatarTone}`}>
-                                                            <span>{getInitial(activeConversation.title)}</span>
+                                                            <span>{activeConversation.avatar ? activeConversation.avatar : getInitial(activeConversation.title)}</span>
                                                         </div>
                                                         <div>
                                                             <strong>{activeConversation.title}</strong>
@@ -1159,6 +1160,7 @@ export default function ChatPage({ user }) {
                                                                             message={message}
                                                                             isMine={isMine}
                                                                             title={activeConversation.title}
+                                                                            avatar={activeConversation.avatar}
                                                                             avatarTone={activeConversation.avatarTone}
                                                                             isDesktop={true}
                                                                         />
@@ -1323,7 +1325,7 @@ export default function ChatPage({ user }) {
                                         onClick={() => openConversation(conversation.id)}
                                     >
                                         <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${conversation.avatarTone}`}>
-                                            <span>{conversation.avatarLabel}</span>
+                                            <span>{conversation.avatar ? conversation.avatar : conversation.avatarLabel}</span>
                                         </div>
 
                                         <div className="chat-conversation-card__body">
@@ -1528,7 +1530,7 @@ export default function ChatPage({ user }) {
                                         }}
                                     >
                                         <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${activeConversation.avatarTone}`}>
-                                            <span>{activeConversation.avatarLabel}</span>
+                                            <span>{activeConversation.avatar ? activeConversation.avatar : activeConversation.avatarLabel}</span>
                                         </div>
                                         <div>
                                             <strong>{activeConversation.title}</strong>
@@ -1602,6 +1604,7 @@ export default function ChatPage({ user }) {
                                                         message={message}
                                                         isMine={isMine}
                                                         title={activeConversation.title}
+                                                        avatar={activeConversation.avatar}
                                                         isDesktop={false}
                                                     />
                                                 );
