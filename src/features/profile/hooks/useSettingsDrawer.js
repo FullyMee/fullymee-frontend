@@ -5,7 +5,7 @@ import { updateCurrentUserPreferences } from "../../../services/auth.service";
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const AVATAR_OPTIONS = ['🌙', '⭐', '🌸', '🦋', '🌊', '🔮', '💫', '🌺', '🎭', '🌿', '🦅', '🐺'];
+// AVATAR_OPTIONS moved to src/constants/avatars.js
 
 export const CHAT_PERMISSION_OPTIONS = [
     { value: 'everyone', label: 'Everyone' },
@@ -26,7 +26,7 @@ export const AUDIO_EXPIRY_OPTIONS = [
 function extractPrefs(user) {
     const p = (user && user.preferences) || {};
     return {
-        avatar:                   p.avatar                   || '🌊',
+        avatar:                   p.avatar                   || 'flowing_waterfall',
         chatRequestPermission:    p.chatRequestPermission    || 'everyone',
         limitNighttimeRequests:   !!p.limitNighttimeRequests,
         hideJoinedRooms:          !!p.hideJoinedRooms,

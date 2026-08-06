@@ -1,11 +1,13 @@
 import React from "react";
 import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { Send, X } from "lucide-react";
 
 export default function ConfessionReplyComposer({
     isDesktop = false,
     userLabel = "you",
+    avatar,
     value,
     posting = false,
     disabled = false,
@@ -44,9 +46,7 @@ export default function ConfessionReplyComposer({
                 {replyingBanner}
 
                 <form className="desktop-reply-composer" autoComplete="off" onSubmit={handleFormSubmit} role="group" aria-label="Write a comment">
-                    <div className={`confession-reply-bar__avatar confession-detail-card__avatar--${getAliasTone(userLabel)}`}>
-                        {getInitial(userLabel)}
-                    </div>
+                    <UserAvatar avatarId={avatar} className="confession-reply-bar__avatar" />
 
                     <div className="desktop-reply-input-box">
                         <input
@@ -94,9 +94,7 @@ export default function ConfessionReplyComposer({
 
             {/* Clean Input Bar */}
             <form className="confession-reply-bar" autoComplete="off" onSubmit={handleFormSubmit}>
-                <div className={`confession-reply-bar__avatar confession-detail-card__avatar--${getAliasTone(userLabel)}`}>
-                    {getInitial(userLabel)}
-                </div>
+                <UserAvatar avatarId={avatar} className="confession-reply-bar__avatar" />
 
                 <div className="confession-reply-input-wrapper">
                     <input

@@ -18,6 +18,7 @@ import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 
 const VISIBLE_ROOMS_LIMIT = 6;
 
@@ -57,8 +58,7 @@ export default function ProfilePage({ user }) {
     const [usernameDraft, setUsernameDraft] = useState(user && user.username ? user.username : "");
     const [usernameStatus, setUsernameStatus] = useState({ status: "idle", message: "" });
     const [savingUsername, setSavingUsername] = useState(false);
-    const AVATAR_OPTIONS = ['🌙', '⭐', '🌸', '🦋', '🌊', '🔮', '💫', '🌺'];
-    const [draftAvatar, setDraftAvatar] = useState('🌊');
+    const [draftAvatar, setDraftAvatar] = useState('flowing_waterfall');
 
     const { data: profileData, isLoading: loading, error } = useQuery({
         queryKey: ['profile'],
@@ -90,7 +90,7 @@ export default function ProfilePage({ user }) {
         if (user) {
             setProfileUser(user);
             setUsernameDraft(user.username || "");
-            setDraftAvatar(user.preferences?.avatar || user.avatar || '🌊');
+            setDraftAvatar(user.preferences?.avatar || user.avatar || 'flowing_waterfall');
         }
     }, [user]);
 
@@ -208,7 +208,9 @@ export default function ProfilePage({ user }) {
                                     <div className="desktop-profile-banner-card__bottom">
                                         <div className="desktop-profile-banner-card__avatar-shell">
                                             <div className="desktop-profile-banner-card__avatar">
-                                                {profileUser && (profileUser.preferences?.avatar || profileUser.avatar) ? (profileUser.preferences?.avatar || profileUser.avatar) : getInitial(profileUser?.username || profileUser?.email || "A")}
+                                                {profileUser && (profileUser.preferences?.avatar || profileUser.avatar) ? (
+                                                    <UserAvatar avatarId={profileUser.preferences?.avatar || profileUser.avatar} />
+                                                ) : getInitial(profileUser?.username || profileUser?.email || "A")}
                                             </div>
                                         </div>
                                         <div className="desktop-profile-banner-card__info">
@@ -347,9 +349,9 @@ export default function ProfilePage({ user }) {
                                 <div className="profile-redesign__avatar-wrapper">
                                     <div className="profile-redesign__avatar-ring">
                                         <div className="profile-redesign__avatar-inner">
-                                            {profileUser && (profileUser.preferences?.avatar || profileUser.avatar)
-                                                ? (profileUser.preferences?.avatar || profileUser.avatar)
-                                                : getInitial(profileUser?.username || profileUser?.email || "A")}
+                                            {profileUser && (profileUser.preferences?.avatar || profileUser.avatar) ? (
+                                                <UserAvatar avatarId={profileUser.preferences?.avatar || profileUser.avatar} />
+                                            ) : getInitial(profileUser?.username || profileUser?.email || "A")}
                                         </div>
                                     </div>
                                     <div className="profile-redesign__verified-badge" title="Verified Anonymous Identity">
@@ -533,7 +535,6 @@ export default function ProfilePage({ user }) {
                     usernameStatus={usernameStatus}
                     draftAvatar={draftAvatar}
                     onAvatarSelect={setDraftAvatar}
-                    avatarOptions={AVATAR_OPTIONS}
                     saving={savingUsername}
                     onCancel={() => setShowEditModal(false)}
                     onSubmit={handleUsernameSave}
@@ -548,7 +549,7 @@ export default function ProfilePage({ user }) {
                     onUserUpdated={(updatedUser) => {
                         setProfileUser(updatedUser);
                         setUsernameDraft(updatedUser.username || "");
-                        setDraftAvatar(updatedUser.preferences?.avatar || updatedUser.avatar || '🌊');
+                        setDraftAvatar(updatedUser.preferences?.avatar || updatedUser.avatar || 'flowing_waterfall');
                         window.dispatchEvent(new Event("auth-changed"));
                     }}
                     onLogout={handleLogout}

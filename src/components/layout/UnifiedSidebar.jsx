@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.js";
 import { RoomGlyphIcon, getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
 import { getInitial } from "../../utils/presentation.js";
+import UserAvatar from "../common/UserAvatar.jsx";
 import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search, Settings } from "lucide-react";
 import fullymeLogo from "../../assets/fullyme-logo.png";
 
@@ -35,7 +36,7 @@ export default function UnifiedSidebar({
     onSelectRoom = null,
     pendingMessageCount = 0,
     browsingAsLabel = "Browsing as",
-    identityActionLabel = "Shuffle Identity",
+    identityActionLabel = "",
     identityProfileTo = "/profile"
 }) {
     const location = useLocation();
@@ -43,7 +44,7 @@ export default function UnifiedSidebar({
     const { user } = useAuth();
 
     const displayName = String((user && user.username) || "Quiet Fox").trim() || "Quiet Fox";
-    const displayAvatar = String((user && (user.preferences?.avatar || user.avatar)) || "").trim() || getInitial(displayName, "Q");
+    const displayAvatarId = String((user && (user.preferences?.avatar || user.avatar)) || "flowing_waterfall").trim();
 
     return (
         <aside className="home-desktop-sidebar desktop-app-shell__sidebar">
@@ -113,11 +114,13 @@ export default function UnifiedSidebar({
                 className="home-identity-card"
                 onClick={() => navigate(identityProfileTo)}
             >
-                <span className="home-identity-card__avatar" aria-hidden="true">{displayAvatar}</span>
+                <span className="home-identity-card__avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
+                    <UserAvatar avatarId={displayAvatarId} />
+                </span>
                 <span className="home-identity-card__copy">
                     <span className="home-identity-card__eyebrow">{browsingAsLabel}</span>
                     <strong>{displayName}</strong>
-                    <span className="home-identity-card__action">{identityActionLabel}</span>
+
                 </span>
             </button>
         </aside>

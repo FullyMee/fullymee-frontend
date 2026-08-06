@@ -1,6 +1,7 @@
 import React from "react";
 import { CheckIcon, CloseIcon, ChatBubbleIcon } from "../../../components/common/Icons.jsx";
 import { getChatAvatarGlyph } from "../../../components/common/MobileRoomVisuals.jsx";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
 import {
     getAvatarTone,
@@ -16,9 +17,7 @@ export function PendingRequestCard({ request, handlingRequestId, onRespond }) {
     return (
         <article className="chat-request-card">
             <div className="chat-request-card__head">
-                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                </div>
+                <UserAvatar avatarId={request.displayAvatar} className="chat-conversation-card__avatar" />
                 <div className="chat-request-card__copy">
                     <strong>{request.displayAlias}</strong>
                     <p>{getRequestSubtitle(request)}</p>
@@ -63,9 +62,7 @@ export function AcceptedRequestCard({ request, onOpenConversation }) {
     return (
         <article className="chat-request-card chat-request-card--accepted">
             <div className="chat-request-card__head">
-                <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${getAvatarTone(request.displayAlias)}`}>
-                    <span>{getChatAvatarGlyph(request.displayAlias)}</span>
-                </div>
+                <UserAvatar avatarId={request.displayAvatar} className="chat-conversation-card__avatar" />
                 <div className="chat-request-card__copy">
                     <strong>{request.displayAlias}</strong>
                     <p>{getRequestInfoLine(request)}</p>

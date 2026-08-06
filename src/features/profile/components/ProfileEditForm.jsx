@@ -1,6 +1,7 @@
 import Button from "../../../components/common/Button.jsx";
 import Input from "../../../components/common/Input.jsx";
 import AvatarPicker from "../../../components/common/AvatarPicker.jsx";
+import { AVATAR_OPTIONS } from "../../../constants/avatars.js";
 
 export default function ProfileEditForm({
     usernameId,
@@ -9,7 +10,6 @@ export default function ProfileEditForm({
     usernameStatus,
     draftAvatar,
     onAvatarSelect,
-    avatarOptions,
     saving,
     onCancel,
     onSubmit
@@ -36,8 +36,19 @@ export default function ProfileEditForm({
                 <AvatarPicker
                     selectedAvatar={draftAvatar}
                     onSelect={onAvatarSelect}
-                    options={avatarOptions}
                 />
+                {draftAvatar && (() => {
+                    const sel = AVATAR_OPTIONS.find(a => a.id === draftAvatar);
+                    if (sel) {
+                        return (
+                            <div className="figma-edit-modal__avatar-desc" style={{ marginTop: '1rem' }}>
+                                <h5 style={{ margin: 0, fontSize: '0.9rem', color: '#243355' }}>{sel.name}</h5>
+                                <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: '#6B7280' }}>"{sel.quote}"</p>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
             </div>
 
             <div className="figma-edit-modal__actions" style={{ padding: '0', marginTop: '1.8rem' }}>
