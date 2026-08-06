@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { InlineSpinner } from './LoadingStates.jsx';
 import { getAliasTone, getInitial } from '../../utils/presentation.js';
+import UserAvatar from './UserAvatar.jsx';
 import { formatRelativeTime } from '../../utils/time.js';
 import { Heart, MessageSquare, Send } from "lucide-react";
 import AudioPlayer from "../../features/confessions/components/AudioPlayer.jsx";
@@ -38,9 +39,7 @@ const MemoizedConfessionCard = memo(({
                             }}
                             style={{ cursor: "pointer" }}
                         >
-                            <div className={`room-mobile-redesign-card__avatar room-mobile-redesign-card__avatar--${getAliasTone(confession.alias)}`}>
-                                {confession.authorAvatar ? confession.authorAvatar : getInitial(confession.alias)}
-                            </div>
+                            <UserAvatar avatarId={confession.avatar} className="room-mobile-redesign-card__avatar" />
                             <strong className="room-mobile-redesign-card__alias">{confession.alias}</strong>
                             <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                             <span className="room-mobile-redesign-card__meta">
@@ -125,9 +124,7 @@ const MemoizedConfessionCard = memo(({
                     }}
                     style={{ cursor: "pointer" }}
                 >
-                    <div className={`room-confession-card__avatar room-confession-card__avatar--${getAliasTone(confession.alias)}`}>
-                        {confession.authorAvatar ? confession.authorAvatar : getInitial(confession.alias)}
-                    </div>
+                    <UserAvatar avatarId={confession.avatar} className="confession-card__avatar" />
                     <div>
                         <strong>{confession.alias}</strong>
                         <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>

@@ -17,6 +17,7 @@ import useIsDesktop from "../hooks/useIsDesktop.js";
 import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 
 function formatJoinedDate(value) {
     if (!value) return "Recently";
@@ -116,7 +117,7 @@ export default function UserProfilePage({ user: currentUser }) {
                         ...passedUser,
                         userId: data.userId,
                         username: data.username,
-                        avatar: data.avatar || null,
+                        avatar: data.avatar,
                         createdAt: data.createdAt,
                     });
                     setIsConnected(!!data.isConnected);
@@ -189,7 +190,9 @@ export default function UserProfilePage({ user: currentUser }) {
                                     <div className="desktop-profile-banner-card__bottom">
                                         <div className="desktop-profile-banner-card__avatar-shell">
                                             <div className="desktop-profile-banner-card__avatar">
-                                                {profileUser?.avatar ? profileUser.avatar : getInitial(displayUsername)}
+                                                {profileUser?.avatar ? (
+                                                    <UserAvatar avatarId={profileUser.avatar} />
+                                                ) : getInitial(displayUsername)}
                                             </div>
                                         </div>
                                         <div className="desktop-profile-banner-card__info">
@@ -326,7 +329,9 @@ export default function UserProfilePage({ user: currentUser }) {
                             <div className="profile-redesign__avatar-wrapper">
                                 <div className="profile-redesign__avatar-ring">
                                     <div className="profile-redesign__avatar-inner">
-                                        {profileUser?.avatar ? profileUser.avatar : getInitial(displayUsername)}
+                                        {profileUser?.avatar ? (
+                                            <UserAvatar avatarId={profileUser.avatar} />
+                                        ) : getInitial(displayUsername)}
                                     </div>
                                 </div>
                                 <div className="profile-redesign__verified-badge" title="Verified Identity">

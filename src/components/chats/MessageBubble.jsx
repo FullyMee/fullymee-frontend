@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { getInitial } from '../../utils/presentation.js';
+import UserAvatar from '../common/UserAvatar.jsx';
 
 function formatMessageTime(value) {
     if (!value) return "now";
@@ -18,14 +19,12 @@ function formatDesktopDateLabel(value) {
     return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
 }
 
-const MemoizedMessageBubble = memo(({ message, isMine, title, avatar, avatarTone, isDesktop }) => {
+const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, avatar, isDesktop }) => {
     if (isDesktop) {
         return (
             <article className={`desktop-chat-message${isMine ? " is-mine" : ""}`}>
                 {!isMine && (
-                    <div className={`desktop-chat-avatar desktop-chat-avatar--${avatarTone}`}>
-                        <span>{avatar ? avatar : getInitial(title)}</span>
-                    </div>
+                    <UserAvatar avatarId={avatar} className="desktop-chat-avatar" />
                 )}
                 <div className="desktop-chat-message__stack">
                     <div className={`desktop-chat-message__bubble${isMine ? " is-mine" : ""}`}>
@@ -42,9 +41,7 @@ const MemoizedMessageBubble = memo(({ message, isMine, title, avatar, avatarTone
             className={`chat-thread-bubble${isMine ? " is-mine" : ""}`}
         >
             {!isMine && (
-                <span className="chat-thread-bubble__author">
-                    {avatar ? avatar : getInitial(title)}
-                </span>
+                <UserAvatar avatarId={avatar} className="chat-thread-bubble__author-avatar" style={{width: "24px", height: "24px", borderRadius: "50%", marginRight: "8px"}} />
             )}
             <p>{message.content}</p>
             <small>{formatMessageTime(message.createdAt)}</small>

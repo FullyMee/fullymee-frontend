@@ -4,12 +4,13 @@ import {
     MessageCircle, Moon, Lock, EyeOff, Clock, Check, Loader2, Smile, LogOut
 } from "lucide-react";
 import useSettingsDrawer, {
-    AVATAR_OPTIONS,
     CHAT_PERMISSION_OPTIONS,
     AUDIO_EXPIRY_OPTIONS
 } from "../hooks/useSettingsDrawer.js";
 import { logout } from "../../../services/auth.service.js";
 import { disconnectSocket } from "../../../services/socket.js";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
+import AvatarPicker from "../../../components/common/AvatarPicker.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared atomic helpers
@@ -171,7 +172,7 @@ function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
                         iconColor="#7B4FA6"
                         title="Username & Avatar"
                         subtitle={user?.username ? `@${user.username}` : "Not set"}
-                        valueEmoji={s.avatarDraft}
+                        valueEmoji={<div style={{ width: '20px', height: '20px' }}><UserAvatar avatarId={s.avatarDraft} /></div>}
                         onClick={() => onNavigate("identity")}
                     />
                     <ListRow
@@ -274,7 +275,9 @@ function IdentityPage({ s, onBack, onClose, animDir }) {
 
                 {/* Current preview */}
                 <div className="sd-identity-preview">
-                    <div className="sd-identity-preview__avatar">{s.avatarDraft}</div>
+                    <div className="sd-identity-preview__avatar" style={{ width: '64px', height: '64px', overflow: 'hidden' }}>
+                        <UserAvatar avatarId={s.avatarDraft} />
+                    </div>
                     <div className="sd-identity-preview__name">
                         {s.usernameDraft || <span style={{ opacity: 0.4 }}>your_username</span>}
                     </div>
@@ -286,20 +289,7 @@ function IdentityPage({ s, onBack, onClose, animDir }) {
                         <Smile size={14} />
                         Choose Avatar
                     </div>
-                    <div className="sd-avatar-grid" role="group" aria-label="Choose avatar">
-                        {AVATAR_OPTIONS.map((emoji) => (
-                            <button
-                                key={emoji}
-                                type="button"
-                                className={`sd-avatar-chip${s.avatarDraft === emoji ? " sd-avatar-chip--selected" : ""}`}
-                                aria-label={`Avatar ${emoji}`}
-                                aria-pressed={s.avatarDraft === emoji}
-                                onClick={() => s.setAvatarDraft(emoji)}
-                            >
-                                {emoji}
-                            </button>
-                        ))}
-                    </div>
+                    <AvatarPicker selectedAvatar={s.avatarDraft} onSelect={s.setAvatarDraft} />
                 </div>
 
                 {/* Username input */}
@@ -336,7 +326,7 @@ function IdentityPage({ s, onBack, onClose, animDir }) {
                     >
                         {s.savingIdentity
                             ? <><Loader2 size={15} className="sd-save-btn__spin" /> Saving…</>
-                            : <><Check size={15} /> Save Identity</>
+                            : <><Check size={15} /> Save Changes</>
                         }
                     </button>
                 </div>

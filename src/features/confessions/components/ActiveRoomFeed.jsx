@@ -5,6 +5,7 @@ import { FeedSkeletonList, InfiniteScrollLoader } from "../../../components/comm
 import MemoizedConfessionCard from "../../../components/common/ConfessionCard.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { formatRelativeTime } from "../../../utils/time.js";
 import {
     formatCompactMemberCount,
@@ -87,9 +88,7 @@ export default function ActiveRoomFeed({
                                 navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
                             }}
                         >
-                            <div className={`desktop-social-post__avatar desktop-social-post__avatar--${getAliasTone(confession.alias)}`}>
-                                {confession.authorAvatar ? confession.authorAvatar : getInitial(confession.alias)}
-                            </div>
+                            <UserAvatar avatarId={confession.avatar} className="desktop-social-post__avatar" />
                             <div className="desktop-social-post__meta">
                                 <strong>{confession.alias}</strong>
                                 <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
@@ -318,9 +317,7 @@ export default function ActiveRoomFeed({
                                     <div className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left", display: "block", width: "100%", background: "none", border: "none", padding: 0 }}>
                                         <div className="room-mobile-redesign-card__author-row">
                                             <div className="room-mobile-redesign-card__author-info">
-                                                <div className={`room-mobile-redesign-card__avatar room-mobile-redesign-card__avatar--${getAliasTone(item.alias || "Anonymous")}`}>
-                                                    {getInitial(item.alias || "Anonymous")}
-                                                </div>
+                                                <UserAvatar avatarId={item.avatar} className="rm-avatar" />
                                                 <strong className="room-mobile-redesign-card__alias">{item.alias || "Anonymous"}</strong>
                                                 <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                                                 <span className="room-mobile-redesign-card__meta">

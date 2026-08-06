@@ -1,4 +1,6 @@
 import React from 'react';
+import { AVATAR_OPTIONS } from '../../constants/avatars';
+import UserAvatar from './UserAvatar';
 import './AvatarPicker.css';
 
 /**
@@ -6,31 +8,34 @@ import './AvatarPicker.css';
  * @param {Object} props
  * @param {string} props.selectedAvatar
  * @param {Function} props.onSelect
- * @param {string[]} props.options
  * @param {string} props.className
  */
 export default function AvatarPicker({
     selectedAvatar,
     onSelect,
-    options = ['🌙', '⭐', '🌸', '🦋', '🌊', '🔮', '💫', '🌺'],
     className = ''
 }) {
     return (
         <div className={`shared-avatar-picker ${className}`.trim()}>
             <div className="shared-avatar-picker__list">
-                {options.map((avatar) => (
-                    <button
-                        key={avatar}
-                        type="button"
-                        className={`shared-avatar-picker__btn ${selectedAvatar === avatar ? 'is-selected' : ''}`}
-                        onClick={() => onSelect(avatar)}
-                        title={`Select ${avatar} as avatar`}
-                        aria-label={`Select ${avatar} as avatar`}
-                        aria-pressed={selectedAvatar === avatar}
-                    >
-                        {avatar}
-                    </button>
-                ))}
+                {AVATAR_OPTIONS.map((avatarObj) => {
+                    const isSelected = selectedAvatar === avatarObj.id;
+                    return (
+                        <button
+                            key={avatarObj.id}
+                            type="button"
+                            className={`shared-avatar-picker__btn ${isSelected ? 'is-selected' : ''}`}
+                            onClick={() => onSelect(avatarObj.id)}
+                            title={`Select ${avatarObj.name}`}
+                            aria-label={`Select ${avatarObj.name}`}
+                            aria-pressed={isSelected}
+                        >
+                            <div className="shared-avatar-picker__img-wrapper">
+                                <UserAvatar avatarId={avatarObj.id} />
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

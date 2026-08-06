@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
 import { Heart, ChevronDown, ChevronUp } from "lucide-react";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -38,15 +39,7 @@ function ReplyCard({
         <article className={`confession-reply-card${isChild ? " confession-reply-card--child" : ""}`}>
             <div className="confession-reply-card__row">
                 {/* Avatar */}
-                <div
-                    className={`confession-reply-card__avatar confession-detail-card__avatar--${getAliasTone(reply.alias)}`}
-                    onClick={() => navigate(`/user/${reply.alias}`, { state: { profileUser: { username: reply.alias, isAlias: true } } })}
-                    style={{ cursor: "pointer" }}
-                    role="button"
-                    tabIndex={0}
-                >
-                    {reply.authorAvatar ? reply.authorAvatar : getInitial(reply.alias)}
-                </div>
+                <UserAvatar avatarId={reply.avatar} className="confession-reply-card__avatar" />
 
                 {/* Center Content */}
                 <div className="confession-reply-card__main">

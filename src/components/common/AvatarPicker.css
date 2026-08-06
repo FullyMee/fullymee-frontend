@@ -5,15 +5,9 @@
 .shared-avatar-picker__list {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    gap: 1rem;
+    flex-wrap: wrap;
     padding-bottom: 0.2rem;
-    scrollbar-width: none; /* Firefox */
-}
-
-.shared-avatar-picker__list::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
 }
 
 .shared-avatar-picker__btn {
@@ -21,28 +15,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.2rem;
-    height: 3.2rem;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    font-size: 1.4rem;
+    background: transparent;
+    border: none;
     cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+    padding: 0;
 }
 
 .shared-avatar-picker__btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    transform: scale(1.05);
 }
 
-.shared-avatar-picker__btn:active {
-    transform: scale(0.95);
+.shared-avatar-picker__img-wrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 3px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease;
 }
 
-.shared-avatar-picker__btn.is-selected {
-    border: 2px solid #a855f7;
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+.shared-avatar-picker__btn.is-selected .shared-avatar-picker__img-wrapper {
+    border-color: #3B1F43;
+}
+
+.shared-avatar-picker__img-wrapper .user-avatar {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }

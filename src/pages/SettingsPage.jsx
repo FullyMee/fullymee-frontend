@@ -7,10 +7,11 @@ import {
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import useAuth from "../hooks/useAuth.js";
 import useSettingsDrawer, {
-    AVATAR_OPTIONS,
     CHAT_PERMISSION_OPTIONS,
     AUDIO_EXPIRY_OPTIONS
 } from "../features/profile/hooks/useSettingsDrawer.js";
+import { AVATAR_OPTIONS } from "../constants/avatars.js";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 import { logout } from "../services/auth.service.js";
 import "../features/profile/settings-desktop.css";
 
@@ -176,15 +177,15 @@ export default function SettingsPage({ user: propUser }) {
                                         onClick={() => toggleAccordion("username-avatar")}
                                     >
                                         <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--purple" style={{ overflow: 'hidden' }}>
+                                            <span className="dt-settings-icon-bubble" style={{ overflow: 'hidden', padding: 0, backgroundColor: 'transparent', width: '36px', height: '36px' }}>
                                                 {s.avatarDraft ? (
-                                                    <span style={{ fontSize: '18px', lineHeight: 1 }}>{s.avatarDraft}</span>
+                                                    <UserAvatar avatarId={s.avatarDraft} />
                                                 ) : (
-                                                    <User size={18} />
+                                                    <div className="dt-settings-icon-bubble dt-settings-icon-bubble--purple"><User size={18} /></div>
                                                 )}
                                             </span>
                                             <div>
-                                                <h4 className="dt-settings-accordion-title">Username & Avatar</h4>
+                                                <h4 className="dt-settings-accordion-title">Username & Emotional Identity</h4>
                                                 <p className="dt-settings-accordion-subtitle">@{s.usernameDraft || "amber.dolphin3279"}</p>
                                             </div>
                                         </div>
@@ -209,26 +210,50 @@ export default function SettingsPage({ user: propUser }) {
                                                 </div>
                                             </div>
                                             <p className="dt-settings-help-text">
-                                                Choose a unique handle. Past confessions keep the old one.
+                                                3–20 chars · letters, numbers, dots, underscores
                                             </p>
 
-                                            <label className="dt-settings-field-label" style={{ marginTop: "1.25rem" }}>Avatar</label>
-                                            <div className="dt-settings-avatar-grid">
-                                                {AVATAR_OPTIONS.map((emoji) => {
-                                                    const isSelected = s.avatarDraft === emoji;
+                                            <label className="dt-settings-field-label" style={{ marginTop: "1.25rem" }}>Emotional Identity</label>
+                                            <p className="dt-settings-help-text" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
+                                                Choose the symbol that feels closest to you today.
+                                            </p>
+                                            
+                                            <div className="dt-settings-emotional-grid">
+                                                {AVATAR_OPTIONS.map((avatarObj) => {
+                                                    const isSelected = s.avatarDraft === avatarObj.id;
                                                     return (
                                                         <button
-                                                            key={emoji}
+                                                            key={avatarObj.id}
                                                             type="button"
-                                                            className={`dt-settings-avatar-btn${isSelected ? " is-selected" : ""}`}
-                                                            onClick={() => s.setAvatarDraft(emoji)}
-                                                            aria-label={`Select avatar ${emoji}`}
+                                                            className={`dt-settings-emotional-btn${isSelected ? " is-selected" : ""}`}
+                                                            onClick={() => s.setAvatarDraft(avatarObj.id)}
+                                                            aria-label={`Select avatar ${avatarObj.name}`}
                                                         >
-                                                            {emoji}
+                                                            <div className="dt-settings-emotional-img-wrapper">
+                                                                <UserAvatar avatarId={avatarObj.id} />
+                                                                {isSelected && (
+                                                                    <div className="dt-settings-emotional-check">
+                                                                        <Check size={12} strokeWidth={3} />
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </button>
                                                     );
                                                 })}
                                             </div>
+                                            
+                                            {s.avatarDraft && (() => {
+                                                const sel = AVATAR_OPTIONS.find(a => a.id === s.avatarDraft);
+                                                if (sel) {
+                                                    return (
+                                                        <div className="dt-settings-emotional-desc-box">
+                                                            <h5 className="dt-settings-emotional-desc-title">{sel.name}</h5>
+                                                            <p className="dt-settings-emotional-desc-text">{sel.quote}</p>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
 
                                             {s.identityStatus.message && (
                                                 <p className={`dt-settings-help-text dt-settings-help-text--${s.identityStatus.status}`}
@@ -237,18 +262,23 @@ export default function SettingsPage({ user: propUser }) {
                                                 </p>
                                             )}
 
-                                            <button
-                                                type="button"
-                                                className="dt-settings-save-btn"
-                                                disabled={s.savingIdentity}
-                                                onClick={() => s.saveIdentity()}
-                                                style={{ marginTop: "1.25rem" }}
-                                            >
-                                                {s.savingIdentity
-                                                    ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>
-                                                    : <><Check size={15} /> Save Changes</>
-                                                }
-                                            </button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: "1.25rem" }}>
+                                                <button
+                                                    type="button"
+                                                    className="dt-settings-save-btn"
+                                                    disabled={s.savingIdentity}
+                                                    onClick={() => s.saveIdentity()}
+                                                    style={{ width: 'auto', padding: '0 1.5rem' }}
+                                                >
+                                                    {s.savingIdentity
+                                                        ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>
+                                                        : <>Save Changes</>
+                                                    }
+                                                </button>
+                                                <span className="dt-settings-help-text" style={{ margin: 0, fontSize: '0.75rem' }}>
+                                                    You can change your Emotional Identity whenever you want.
+                                                </span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

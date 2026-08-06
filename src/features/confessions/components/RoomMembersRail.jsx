@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 
 export default function RoomMembersRail({ activeRoom, roomMembers }) {
     if (!activeRoom) return null;
@@ -37,9 +38,7 @@ export default function RoomMembersRail({ activeRoom, roomMembers }) {
                                 onClick={handleMemberClick}
                                 style={{ cursor: alias || member.userId ? 'pointer' : 'default' }}
                             >
-                                <div className={`confession-room-rail__avatar confession-room-rail__avatar--${getAliasTone(alias)}`}>
-                                    {member.avatar ? member.avatar : getInitial(alias)}
-                                </div>
+                                <UserAvatar avatarId={member.avatar} className="confession-room-rail__avatar" />
                                 <div className="confession-room-rail__member-copy">
                                     <strong>{alias || "Anonymous"}</strong>
                                     <span>{formatRelativeTime(member.joinedAt, { short: true, nowLabel: "now" })}</span>

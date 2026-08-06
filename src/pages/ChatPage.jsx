@@ -21,6 +21,7 @@ import ConversationEndedPanel from "../features/chats/components/ConversationEnd
 import { waitForSocketConnection } from "../services/socket.js";
 import { getJoinedRooms } from "../services/confession.service";
 import { getInitial } from "../utils/presentation.js";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 import {
     listChatRequests,
     listConversationMessages,
@@ -262,6 +263,7 @@ export default function ChatPage({ user }) {
             const preview = previewByConversation[conversation.id] || null;
             const timeLabel = formatListTime((preview && preview.createdAt) || conversation.created_at);
             const desktopDateLabel = formatDesktopDateLabel((preview && preview.createdAt) || conversation.created_at);
+            const avatar = conversation.participantAvatars?.[otherUserId] || null;
 
             return {
                 ...conversation,
@@ -279,7 +281,8 @@ export default function ChatPage({ user }) {
                 avatar: conversation?.participantAvatars?.[String(otherUserId)] || null,
                 avatarTone: getAvatarTone(rawTitle),
                 status: conversationStatusOverrides[conversation.id] || conversation.status,
-                isArchivedForMe: Boolean(conversation.isArchivedForMe)
+                isArchivedForMe: Boolean(conversation.isArchivedForMe),
+                avatar
             };
         });
     }, [acceptedRequestLabelsByConversation, connected, conversationStatusOverrides, conversations, onlineUsers, previewByConversation, unreadByConversation, userId, usersById]);
@@ -965,8 +968,8 @@ export default function ChatPage({ user }) {
                                                 className={`desktop-chat-list__item${Number(conversation.id) === activeConversationId ? " is-active" : ""}`}
                                                 onClick={() => openConversation(conversation.id)}
                                             >
-                                                <div className={`desktop-chat-avatar desktop-chat-avatar--${conversation.avatarTone}`}>
-                                                    <span>{conversation.avatar ? conversation.avatar : getInitial(conversation.title)}</span>
+                                                <UserAvatar avatarId={conversation.avatar} className="desktop-chat-avatar" />
+                                                <div style={{ position: 'absolute', top: 0, right: 0 }}>
                                                     {conversation.unreadCount > 0 && (
                                                         <b>{conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}</b>
                                                     )}
@@ -1110,9 +1113,7 @@ export default function ChatPage({ user }) {
                                                         role="button"
                                                         tabIndex={0}
                                                     >
-                                                        <div className={`desktop-chat-avatar desktop-chat-avatar--${activeConversation.avatarTone}`}>
-                                                            <span>{activeConversation.avatar ? activeConversation.avatar : getInitial(activeConversation.title)}</span>
-                                                        </div>
+                                                        <UserAvatar avatarId={activeConversation.avatar} className="desktop-chat-avatar" />
                                                         <div>
                                                             <strong>{activeConversation.title}</strong>
                                                             <small style={isPaused ? { color: "#806b78" } : undefined}>
@@ -1161,7 +1162,6 @@ export default function ChatPage({ user }) {
                                                                             isMine={isMine}
                                                                             title={activeConversation.title}
                                                                             avatar={activeConversation.avatar}
-                                                                            avatarTone={activeConversation.avatarTone}
                                                                             isDesktop={true}
                                                                         />
                                                                     );
@@ -1324,9 +1324,7 @@ export default function ChatPage({ user }) {
                                         className="chat-conversation-card"
                                         onClick={() => openConversation(conversation.id)}
                                     >
-                                        <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${conversation.avatarTone}`}>
-                                            <span>{conversation.avatar ? conversation.avatar : conversation.avatarLabel}</span>
-                                        </div>
+                                        <UserAvatar avatarId={conversation.avatar} className="chat-conversation-card__avatar" />
 
                                         <div className="chat-conversation-card__body">
                                             <h2>{conversation.title}</h2>
@@ -1529,10 +1527,8 @@ export default function ChatPage({ user }) {
                                             if (uid) navigate(`/user/${uid}`, { state: { profileUser: { id: uid, username: activeConversation.title } } });
                                         }}
                                     >
-                                        <div className={`chat-conversation-card__avatar chat-conversation-card__avatar--${activeConversation.avatarTone}`}>
-                                            <span>{activeConversation.avatar ? activeConversation.avatar : activeConversation.avatarLabel}</span>
-                                        </div>
-                                        <div>
+                                        <UserAvatar avatarId={activeConversation.avatar} className="chat-conversation-card__avatar" />
+                                        <div className="chat-mobile-header__titles">
                                             <strong>{activeConversation.title}</strong>
                                             <small style={isPaused ? { color: "#806b78" } : undefined}>
                                                 {isPaused ? "• Conversation paused" : statusText}

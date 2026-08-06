@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { CommentSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
+import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { formatRelativeTime } from "../../../utils/time.js";
 
 import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
@@ -181,9 +182,7 @@ export default function ConfessionDetailView({
                 role="button"
                 tabIndex={0}
             >
-                <div className={`confession-detail-card__avatar confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
-                    {selectedConfession.authorAvatar ? selectedConfession.authorAvatar : getInitial(selectedConfession.alias)}
-                </div>
+                <UserAvatar avatarId={selectedConfession.avatar} className="confession-detail-card__avatar" />
                 <div className="confession-detail-card__author-copy">
                     <strong>{selectedConfession.alias}</strong>
                     <span>{formatRelativeTime(selectedConfession.createdAt)}</span>
@@ -342,9 +341,7 @@ export default function ConfessionDetailView({
                 >
                     {/* Embedded Confession Post Brief Summary Card */}
                     <div className="confession-comment-sheet__post-summary">
-                        <div className={`confession-detail-card__avatar confession-detail-card__avatar--small confession-detail-card__avatar--${getAliasTone(selectedConfession.alias)}`}>
-                            {selectedConfession.authorAvatar ? selectedConfession.authorAvatar : getInitial(selectedConfession.alias)}
-                        </div>
+                        <UserAvatar avatarId={selectedConfession.avatar} className="confession-detail-card__avatar confession-detail-card__avatar--small" />
                         <div className="confession-comment-sheet__post-summary-copy">
                             <strong>{selectedConfession.alias}</strong>
                             <p>{selectedConfession.content || "Confession post"}</p>
@@ -362,6 +359,7 @@ export default function ConfessionDetailView({
                 {/* Fixed Bottom Reply Bar */}
                 <ConfessionReplyComposer
                     userLabel={user && user.username ? user.username : "you"}
+                    avatar={user?.preferences?.avatar}
                     value={replyDraft}
                     posting={isPostingReply}
                     disabled={replyDisabled}
