@@ -268,7 +268,7 @@ export default function SettingsPage({ user: propUser }) {
                                                     className="dt-settings-save-btn"
                                                     disabled={s.savingIdentity}
                                                     onClick={() => s.saveIdentity()}
-                                                    style={{ width: 'auto', padding: '0 1.5rem' }}
+                                                    style={{ width: 'auto' }}
                                                 >
                                                     {s.savingIdentity
                                                         ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>

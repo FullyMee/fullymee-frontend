@@ -11,7 +11,7 @@ import { logout } from "../../../services/auth.service.js";
 import { disconnectSocket } from "../../../services/socket.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import AvatarPicker from "../../../components/common/AvatarPicker.jsx";
-
+import { AVATAR_OPTIONS } from "../../../constants/avatars.js";
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared atomic helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -290,6 +290,19 @@ function IdentityPage({ s, onBack, onClose, animDir }) {
                         Choose Avatar
                     </div>
                     <AvatarPicker selectedAvatar={s.avatarDraft} onSelect={s.setAvatarDraft} />
+                    
+                    {s.avatarDraft && (() => {
+                        const sel = AVATAR_OPTIONS.find(a => a.id === s.avatarDraft);
+                        if (sel) {
+                            return (
+                                <div className="sd-emotional-desc-box">
+                                    <h5 className="sd-emotional-desc-title">{sel.name}</h5>
+                                    <p className="sd-emotional-desc-text">{sel.quote}</p>
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()}
                 </div>
 
                 {/* Username input */}
