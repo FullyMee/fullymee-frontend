@@ -278,6 +278,7 @@ export default function ChatPage({ user }) {
                 desktopMetaLabel: connected && isOtherUserOnline ? "Active now" : (desktopDateLabel || timeLabel),
                 unreadCount: Number(unreadByConversation[conversation.id]) || 0,
                 avatarLabel: getChatAvatarGlyph(rawTitle),
+                avatar: conversation?.participantAvatars?.[String(otherUserId)] || null,
                 avatarTone: getAvatarTone(rawTitle),
                 status: conversationStatusOverrides[conversation.id] || conversation.status,
                 isArchivedForMe: Boolean(conversation.isArchivedForMe),
