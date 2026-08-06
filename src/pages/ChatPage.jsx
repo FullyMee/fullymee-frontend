@@ -995,9 +995,7 @@ export default function ChatPage({ user }) {
                                                     className="chat-tabbed-card__head"
                                                     onClick={() => openConversation(conversation.id)}
                                                 >
-                                                    <div className="chat-tabbed-card__avatar">
-                                                        <Star size={16} fill="#7A685D" color="#7A685D" />
-                                                    </div>
+                                                    <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
                                                     <div className="chat-tabbed-card__body">
                                                         <h2>{conversation.title}</h2>
                                                         <p>Conversation ended</p>
@@ -1043,9 +1041,7 @@ export default function ChatPage({ user }) {
                                                         className="chat-tabbed-card__head"
                                                         onClick={() => openConversation(conversation.id)}
                                                     >
-                                                        <div className="chat-tabbed-card__avatar">
-                                                            <Star size={16} fill="#7A685D" color="#7A685D" />
-                                                        </div>
+                                                        <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
                                                         <div className="chat-tabbed-card__body">
                                                             <h2>{conversation.title}</h2>
                                                             <p>{subtitleText}</p>
@@ -1351,9 +1347,7 @@ export default function ChatPage({ user }) {
                                             className="chat-tabbed-card__head"
                                             onClick={() => openConversation(conversation.id)}
                                         >
-                                            <div className="chat-tabbed-card__avatar">
-                                                <Star size={16} fill="#7A685D" color="#7A685D" />
-                                            </div>
+                                            <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
                                             <div className="chat-tabbed-card__body">
                                                 <h2>{conversation.title}</h2>
                                                 <p>Conversation ended</p>
@@ -1399,9 +1393,7 @@ export default function ChatPage({ user }) {
                                                 className="chat-tabbed-card__head"
                                                 onClick={() => openConversation(conversation.id)}
                                             >
-                                                <div className="chat-tabbed-card__avatar">
-                                                    <Star size={16} fill="#7A685D" color="#7A685D" />
-                                                </div>
+                                                <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
                                                 <div className="chat-tabbed-card__body">
                                                     <h2>{conversation.title}</h2>
                                                     <p>{subtitleText}</p>
