@@ -727,6 +727,16 @@ export default function SettingsDrawer({ user, onClose, onUserUpdated, onLogout 
 
     const s = useSettingsDrawer(user, onUserUpdated);
 
+    function navigate(target) {
+        setAnimDir("forward");
+        setPage(target);
+    }
+
+    function goBack() {
+        setAnimDir("back");
+        setPage("main");
+    }
+
     // Escape key
     useEffect(() => {
         function handleKey(e) {
@@ -738,16 +748,6 @@ export default function SettingsDrawer({ user, onClose, onUserUpdated, onLogout 
         document.addEventListener("keydown", handleKey);
         return () => document.removeEventListener("keydown", handleKey);
     }, [page, onClose]);
-
-    function navigate(target) {
-        setAnimDir("forward");
-        setPage(target);
-    }
-
-    function goBack() {
-        setAnimDir("back");
-        setPage("main");
-    }
 
     // ── Render ──────────────────────────────────────────────────────────────
     let pageNode;

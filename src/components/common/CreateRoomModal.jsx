@@ -1,14 +1,38 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import InlineError from "./InlineError.jsx";
 import { InlineSpinner } from "./LoadingStates.jsx";
-import { ArrowLeft, Check, Globe, Lock, RefreshCcw } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Globe, Lock, RefreshCcw, ImageIcon } from "lucide-react";
+import { getAmbiencesForCategory } from "../../config/ambienceLibrary.js";
+
+const ROOM_CATEGORIES = [
+    "Late Night",
+    "Heartbreak",
+    "Anxiety",
+    "Relationships",
+    "Family",
+    "College",
+    "Career",
+    "Tech and Coding",
+    "Casual Chats",
+    "Confessions",
+    "Gaming",
+    "Entertainment",
+    "Fitness",
+    "Finance",
+    "Politics",
+    "Startup",
+    "Travel",
+    "Books",
+    "Advice"
+];
 
 export default function CreateRoomModal({
     open,
     roomType,
     roomTitle,
     roomDescription,
+    roomCategory,
     joinCode,
     createErrors,
     submitting,
@@ -19,16 +43,50 @@ export default function CreateRoomModal({
     onSubmit,
     onRoomTitleChange,
     onRoomDescriptionChange,
+    onRoomCategoryChange,
     onRoomTypeChange,
     onJoinCodeChange,
     onGenerateJoinCode
 }) {
+    const [selectedAmbienceId, setSelectedAmbienceId] = useState(null);
+    const [categoryOpen, setCategoryOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Auto pre-select the first image when category changes or modal opens
+    useEffect(() => {
+        if (!open) return;
+        const images = getAmbiencesForCategory(roomCategory);
+        if (images.length > 0) {
+            setSelectedAmbienceId((prev) => {
+                const stillValid = images.some((img) => img.id === prev);
+                return stillValid ? prev : images[0].id;
+            });
+        } else {
+            setSelectedAmbienceId(null);
+        }
+    }, [open, roomCategory]);
+
+    // Click-outside closes category dropdown
+    useEffect(() => {
+        if (!categoryOpen) return undefined;
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setCategoryOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [categoryOpen]);
+
+    // Lock body scroll while modal is open
     useEffect(() => {
         if (!open || typeof document === "undefined") return undefined;
-
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-
         return () => {
             document.body.style.overflow = previousOverflow;
         };
@@ -36,9 +94,16 @@ export default function CreateRoomModal({
 
     if (!open || typeof document === "undefined") return null;
 
+    const handleSubmitForm = (event) => {
+        event.preventDefault();
+        onSubmit(event, selectedAmbienceId);
+    };
+
+    const categoryImages = getAmbiencesForCategory(roomCategory);
+
     return createPortal(
         <div className="discover-create-screen" role="dialog" aria-modal="true" aria-labelledby="create-room-title">
-            <form className="discover-create-screen__shell" onSubmit={onSubmit}>
+            <form className="discover-create-screen__shell" onSubmit={handleSubmitForm}>
                 <header className="discover-create-screen__header">
                     <button type="button" className="discover-create-screen__back" onClick={onClose}>
                         <ArrowLeft size={20} strokeWidth={2} />
@@ -66,6 +131,7 @@ export default function CreateRoomModal({
                         </h3>
                     </section>
 
+                    {/* Room Title */}
                     <label className="discover-create-screen__field">
                         <div className="discover-create-screen__field-head">
                             <span>Room title</span>
@@ -86,6 +152,7 @@ export default function CreateRoomModal({
                         </div>
                     </label>
 
+                    {/* Description */}
                     <label className="discover-create-screen__field">
                         <div className="discover-create-screen__field-head">
                             <span>Description</span>
@@ -103,10 +170,95 @@ export default function CreateRoomModal({
                         </div>
                     </label>
 
+                    {/* Category */}
+                    <div className="discover-create-screen__field" ref={dropdownRef}>
+                        <div className="discover-create-screen__field-head">
+                            <span>Category</span>
+                            <small>Choose one</small>
+                        </div>
+                        <div className="discover-create-screen__custom-select">
+                            <button
+                                type="button"
+                                className={`discover-create-screen__select-trigger${categoryOpen ? " is-open" : ""}`}
+                                onClick={() => setCategoryOpen((prev) => !prev)}
+                                aria-haspopup="listbox"
+                                aria-expanded={categoryOpen}
+                            >
+                                <span className={roomCategory ? "is-selected" : "is-placeholder"}>
+                                    {roomCategory || "Select a category"}
+                                </span>
+                                <ChevronDown size={18} className={`discover-create-screen__chevron${categoryOpen ? " is-open" : ""}`} />
+                            </button>
+
+                            {categoryOpen && (
+                                <div className="discover-create-screen__dropdown" role="listbox">
+                                    {ROOM_CATEGORIES.map((category) => (
+                                        <button
+                                            key={category}
+                                            type="button"
+                                            role="option"
+                                            aria-selected={roomCategory === category}
+                                            className={`discover-create-screen__dropdown-item${roomCategory === category ? " is-active" : ""}`}
+                                            onClick={() => {
+                                                onRoomCategoryChange(category);
+                                                setCategoryOpen(false);
+                                            }}
+                                        >
+                                            <span>{category}</span>
+                                            {roomCategory === category && <Check size={16} strokeWidth={2.5} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <InlineError error={createErrors.roomCategory} className="discover-create-screen__error" />
+                    </div>
+
+                    {/* Cover Image Picker — appears after category is chosen */}
+                    {roomCategory && categoryImages.length > 0 && (
+                        <div className="discover-create-screen__image-picker">
+                            <div className="discover-create-screen__image-picker-head">
+                                <ImageIcon size={14} className="discover-create-screen__image-picker-icon" />
+                                <span>Pick a cover image</span>
+                                {selectedAmbienceId && (
+                                    <span className="discover-create-screen__image-picker-badge">Selected</span>
+                                )}
+                            </div>
+                            <div className="discover-create-screen__image-strip">
+                                {categoryImages.map((item) => {
+                                    const isSelected = selectedAmbienceId === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            className={`discover-create-screen__image-tile${isSelected ? " is-selected" : ""}`}
+                                            onClick={() => setSelectedAmbienceId(item.id)}
+                                            aria-label={`Select ${item.label}`}
+                                            aria-pressed={isSelected}
+                                        >
+                                            <img
+                                                src={item.image}
+                                                alt={item.label}
+                                                className="discover-create-screen__image-tile-img"
+                                                loading="lazy"
+                                            />
+                                            {isSelected && (
+                                                <span className="discover-create-screen__image-tile-check">
+                                                    <Check size={14} strokeWidth={3} />
+                                                </span>
+                                            )}
+                                            <span className="discover-create-screen__image-tile-label">{item.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Privacy */}
                     <section className="discover-create-screen__section">
                         <div className="discover-create-screen__section-head">
                             <h3>Privacy</h3>
-                            <p>Choose who can join.</p>
                         </div>
                         <div className="discover-create-screen__privacy-list">
                             <button
@@ -149,6 +301,7 @@ export default function CreateRoomModal({
                         </div>
                     </section>
 
+                    {/* Join Code (private only) */}
                     {roomType === "private" && (
                         <label className="discover-create-screen__field">
                             <div className="discover-create-screen__field-head">

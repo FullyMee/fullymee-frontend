@@ -27,8 +27,8 @@
 }
 
 .desktop-search-content .search-page-container {
-    width: min(100%, 64rem);
-    max-width: 64rem;
+    width: 100%;
+    max-width: 100%;
     margin: 0;
 }
 
@@ -60,20 +60,34 @@
 }
 
 .desktop-search-content .search-results-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
     padding-bottom: 6rem;
+    align-items: start;
 }
 
-.desktop-search-content .search-room-card,
-.desktop-search-content .search-person-card {
+.desktop-search-content .ambience-room-card {
+    width: 100% !important;
+    flex: none !important;
+}
+
+.desktop-search-content .search-results-list--people {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.desktop-search-content .search-results-list .search-show-more {
+    grid-column: 1 / -1;
+}
+
+.desktop-search-content .search-room-card {
     width: 100%;
 }
 
-@media (min-width: 1400px) {
-    .desktop-search-content .search-page-container {
-        width: min(100%, 68rem);
-        max-width: 68rem;
-    }
+.desktop-search-content .search-person-card {
+    width: 100%;
 }
 
 .search-input {
@@ -215,13 +229,77 @@
 }
 
 .search-results-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.search-results-list--people {
     display: flex;
     flex-direction: column;
     gap: 0;
 }
 
-.search-results-list--people {
-    gap: 0;
+.search-results-list .search-show-more {
+    grid-column: 1 / -1;
+}
+
+/* Tablet: 2 columns */
+@media (max-width: 900px) {
+    .search-results-list:not(.search-results-list--people) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    /* Match home page trending room card sizing on mobile */
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        flex: none;
+        width: 100%;
+        height: clamp(140px, 40vw, 190px);
+        border-radius: 16px;
+        padding: 0.75rem 0.8rem 0.7rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__title {
+        font-size: clamp(14px, 4vw, 18px);
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__badge {
+        font-size: 0.62rem;
+        padding: 0.22rem 0.5rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__glyph {
+        font-size: 0.9rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__meta {
+        font-size: 0.65rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__cta {
+        font-size: 0.68rem;
+        padding: 0.28rem 0.65rem;
+    }
+}
+
+/* Larger phones (480px+): taller cards */
+@media (min-width: 480px) and (max-width: 900px) {
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        height: clamp(170px, 36vw, 210px);
+    }
+}
+
+/* Tablet (640px+): 3 columns */
+@media (min-width: 640px) and (max-width: 900px) {
+    .search-results-list:not(.search-results-list--people) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        height: clamp(160px, 28vw, 200px);
+    }
 }
 
 .search-results-list .search-room-card:last-child,
@@ -661,13 +739,47 @@
 }
 
 .search-results-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.search-results-list--people {
     display: flex;
     flex-direction: column;
     gap: 0.95rem;
 }
 
-.search-results-list--people {
-    gap: 0.95rem;
+.search-results-list .search-show-more {
+    grid-column: 1 / -1;
+}
+
+/* Mobile: 2 columns */
+@media (max-width: 900px) {
+    .search-results-list:not(.search-results-list--people) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        flex: none;
+        width: 100%;
+        height: clamp(140px, 40vw, 190px);
+        border-radius: 16px;
+        padding: 0.75rem 0.8rem 0.7rem;
+    }
+}
+
+/* Tablet: 3 columns */
+@media (min-width: 640px) and (max-width: 900px) {
+    .search-results-list:not(.search-results-list--people) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        height: clamp(160px, 28vw, 200px);
+    }
 }
 
 .search-results-list .search-room-card:last-child,
@@ -678,15 +790,6 @@
 .search-results-list .search-room-card,
 .search-results-list .search-person-card {
     width: 100%;
-}
-
-.search-results-list .search-room-card:last-child,
-.search-results-list--people .search-person-card:last-child {
-    margin-bottom: 0;
-}
-
-.search-results-list .search-room-card,
-.search-results-list .search-person-card {
     margin: 0;
 }
 
@@ -812,12 +915,48 @@
         padding: 0 1rem;
     }
 
-    .search-results-list,
+    /* Rooms: 2-column grid on mobile matching home page trending rooms */
+    .search-results-list:not(.search-results-list--people) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card {
+        flex: none;
+        width: 100%;
+        height: clamp(140px, 40vw, 190px);
+        border-radius: 16px;
+        padding: 0.75rem 0.8rem 0.7rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__title {
+        font-size: clamp(14px, 4vw, 18px);
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__badge {
+        font-size: 0.62rem;
+        padding: 0.22rem 0.5rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__meta {
+        font-size: 0.65rem;
+    }
+
+    .search-results-list:not(.search-results-list--people) .ambience-room-card__cta {
+        font-size: 0.68rem;
+        padding: 0.28rem 0.65rem;
+    }
+
+    /* People list stays as flex column */
     .search-results-list--people {
         display: flex;
         flex-direction: column;
         gap: 0;
     }
+
+
 
     .search-room-card,
     .search-person-card {

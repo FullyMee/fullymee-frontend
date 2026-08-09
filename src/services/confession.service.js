@@ -46,6 +46,7 @@ export function joinConfessionRoom(payload) {
     });
 }
 
+
 export function createConfessionRoom(payload) {
     return apiRequest("/confessions/rooms", {
         method: "POST",

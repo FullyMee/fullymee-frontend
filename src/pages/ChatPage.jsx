@@ -281,8 +281,7 @@ export default function ChatPage({ user }) {
                 avatar: conversation?.participantAvatars?.[String(otherUserId)] || null,
                 avatarTone: getAvatarTone(rawTitle),
                 status: conversationStatusOverrides[conversation.id] || conversation.status,
-                isArchivedForMe: Boolean(conversation.isArchivedForMe),
-                avatar
+                isArchivedForMe: Boolean(conversation.isArchivedForMe)
             };
         });
     }, [acceptedRequestLabelsByConversation, connected, conversationStatusOverrides, conversations, onlineUsers, previewByConversation, unreadByConversation, userId, usersById]);

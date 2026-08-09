@@ -18,6 +18,7 @@ import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.
 import { getAliasTone, getInitial } from "../utils/presentation.js";
 import { formatRelativeTime } from "../utils/time.js";
 import {
+    AmbienceRoomCard,
     getRoomTone,
     RoomGlyphIcon
 } from "../components/common/MobileRoomVisuals.jsx";
@@ -591,55 +592,43 @@ export default function ConfessionRoomPage({ user }) {
                                 )}
 
                                 {!loadingRooms && mobileFilteredRooms.length === 0 && (
-                                    <div className="confide-confessions-mobile__empty">
-                                        <h3>{mobileSearchTerm ? "No rooms match your search" : "No joined rooms yet"}</h3>
-                                        <p>{mobileSearchTerm ? "Try a different keyword." : "Discover and join rooms from the home screen to start posting."}</p>
+                                    <div className="confide-rooms-empty">
+                                        <div className="confide-rooms-empty__icon-wrap">
+                                            <MobileSearchIcon />
+                                        </div>
+                                        <h3 className="confide-rooms-empty__title">
+                                            {mobileSearchTerm ? "No rooms match your search" : "No joined rooms yet"}
+                                        </h3>
+                                        <p className="confide-rooms-empty__sub">
+                                            {mobileSearchTerm
+                                                ? "Try a different keyword or clear the search bar."
+                                                : "Discover and join rooms from the home screen to start posting."}
+                                        </p>
+                                        {!mobileSearchTerm && (
+                                            <button
+                                                type="button"
+                                                className="confide-rooms-empty__cta"
+                                                onClick={() => navigate("/")}
+                                            >
+                                                <MobileSparkIcon />
+                                                Explore Rooms
+                                            </button>
+                                        )}
                                     </div>
                                 )}
 
-                                {!loadingRooms && mobileFilteredRooms.length > 0 && mobileFilteredRooms.map((room) => {
-                                    const tone = getRoomTone(room);
-                                    const memberCount = Number(room.currentUserCount) || 0;
-                                    const description = room.description || "A quiet space for honest conversations.";
-                                    const roomAccess = room.roomType === "private" ? "PRIVATE" : "PUBLIC";
-
-                                    return (
-                                        <button
-                                            key={room.roomId}
-                                            type="button"
-                                            className="confide-room-card"
-                                            onClick={() => openRoomView(room.roomId)}
-                                        >
-                                            <div className="confide-room-card__hero">
-                                                <div className={`confide-room-card__icon confide-room-card__icon--${tone}`} aria-hidden="true">
-                                                    <RoomGlyphIcon tone={tone} />
-                                                </div>
-                                                <div className="confide-room-card__tags">
-                                                    <span className="confide-room-card__tag">ROOM</span>
-                                                    <span className="confide-room-card__tag">{roomAccess}</span>
-                                                </div>
-                                                <span className="confide-room-card__joined-badge">JOINED</span>
-                                            </div>
-
-                                            <div className="confide-room-card__body">
-                                                <h3>{room.title}</h3>
-                                                <p>{description}</p>
-                                            </div>
-
-                                            <div className="confide-room-card__footer">
-                                                <span className="confide-room-card__dot" aria-hidden="true" />
-                                                <span className="confide-room-card__chatting">{memberCount} chatting now</span>
-                                                <span className="confide-room-card__sep" aria-hidden="true">·</span>
-                                                <svg className="confide-room-card__members-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                                <span className="confide-room-card__members">{memberCount}</span>
-                                                <span className="confide-room-card__open">
-                                                    <span>Open room</span>
-                                                    <MobileArrowRightIcon />
-                                                </span>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
+                                {!loadingRooms && mobileFilteredRooms.length > 0 && (
+                                    <div className="confide-rooms-grid">
+                                        {mobileFilteredRooms.map((room) => (
+                                            <AmbienceRoomCard
+                                                key={room.roomId}
+                                                room={room}
+                                                isJoined={true}
+                                                onAction={() => openRoomView(room.roomId)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </section>
 
                             {/* Safety First banner */}

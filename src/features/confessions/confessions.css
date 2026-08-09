@@ -29,7 +29,112 @@
 
 .my-confessions-room-list {
     display: grid;
-    gap: 1.2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+}
+
+/* ── Empty Rooms State Card (matches chat "No conversations found" style) ── */
+.confide-rooms-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1.25rem;
+    border-radius: 1.2rem;
+    background: linear-gradient(145deg, #ffffff 0%, #fcf7f3 100%);
+    border: 1px solid rgba(59, 31, 67, 0.08);
+    box-shadow: 0 4px 14px rgba(59, 31, 67, 0.04);
+    text-align: center;
+}
+
+.confide-rooms-empty__icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(76, 33, 69, 0.08);
+    color: #4c2145;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.55rem;
+}
+
+.confide-rooms-empty__icon-wrap svg {
+    width: 18px;
+    height: 18px;
+}
+
+.confide-rooms-empty__title {
+    font-family: var(--font-display, "Playfair Display", serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #3B1F43;
+    margin: 0 0 0.3rem 0;
+    letter-spacing: -0.01em;
+}
+
+.confide-rooms-empty__sub {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #6C5972;
+    margin: 0 0 0.85rem 0;
+    max-width: 240px;
+}
+
+.confide-rooms-empty__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.52rem 1.3rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(180deg, #4c2145 0%, #3a1737 100%);
+    color: #fff3ef;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(76, 33, 69, 0.28);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.confide-rooms-empty__cta:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #5b2853 0%, #461d42 100%);
+    box-shadow: 0 6px 18px rgba(76, 33, 69, 0.38);
+}
+
+.confide-rooms-empty__cta:active {
+    transform: scale(0.96);
+}
+
+.my-confessions-room-list .ambience-room-card {
+    flex: none;
+    width: 100%;
+    height: clamp(140px, 40vw, 190px);
+    border-radius: 16px;
+    padding: 0.75rem 0.8rem 0.7rem;
+}
+
+.my-confessions-room-list .ambience-room-card__title {
+    font-size: clamp(14px, 4vw, 18px);
+}
+
+.my-confessions-room-list .ambience-room-card__badge {
+    font-size: 0.62rem;
+    padding: 0.22rem 0.5rem;
+}
+
+.my-confessions-room-list .ambience-room-card__glyph {
+    font-size: 0.9rem;
+}
+
+.my-confessions-room-list .ambience-room-card__meta {
+    font-size: 0.65rem;
+}
+
+.my-confessions-room-list .ambience-room-card__cta {
+    font-size: 0.68rem;
+    padding: 0.28rem 0.65rem;
 }
 
 .my-confessions-room-card {
@@ -4795,7 +4900,7 @@
 }
 
 /* ==========================================================================
-   INSTAGRAM-STYLE NESTED REPLY THREADS
+   FULLYMEE NESTED REPLY THREADS
    ========================================================================== */
 
 /* Thread container per top-level comment */
@@ -4845,7 +4950,7 @@
     }
 }
 
-/* "View X more replies" toggle button — Instagram style */
+/* "View X more replies" toggle button — FullyMee style */
 .confession-reply-toggle-btn {
     display: inline-flex;
     align-items: center;

@@ -1,4 +1,5 @@
 import { Circle, Lightbulb, Smile, Sparkles } from "lucide-react";
+import { getImageForAmbienceId } from "../../config/ambienceLibrary.js";
 
 function normalizeSource(roomLike) {
     return `${roomLike && roomLike.category ? roomLike.category : ""} ${roomLike && roomLike.roomCategory ? roomLike.roomCategory : ""} ${roomLike && roomLike.title ? roomLike.title : ""} ${roomLike && roomLike.roomTitle ? roomLike.roomTitle : ""} ${roomLike && roomLike.description ? roomLike.description : ""}`
@@ -64,4 +65,72 @@ export function RoomGlyphIcon({ tone }) {
     }
 
     return <Circle size={18} strokeWidth={2} />;
+}
+
+
+export function getRoomAmbienceUrl(room) {
+    if (!room) return '/ambience/late_night/moonlit_window.png';
+    return getImageForAmbienceId(room.ambienceId);
+}
+
+export function AmbienceRoomCard({
+    room,
+    isJoined = false,
+    isBusy = false,
+    onAction,
+    className = ""
+}) {
+    const imageUrl = getRoomAmbienceUrl(room);
+    const title = room?.title || room?.roomTitle || "Untitled Room";
+    const isPrivate = room?.roomType === "private";
+    const memberCount = Number(room?.currentUserCount) || 0;
+    const tone = getRoomTone(room);
+
+    const glyphsByTone = {
+        advice: "☀️",
+        chill: "🔮",
+        daily: "🌙",
+        general: "✨"
+    };
+    const cornerGlyph = glyphsByTone[tone] || "🌙";
+
+    const memberLabel = memberCount > 0 
+        ? `${memberCount.toLocaleString()} ${memberCount === 1 ? 'Person' : 'People'} Sharing`
+        : 'Active space';
+
+    return (
+        <button
+            type="button"
+            className={`ambience-room-card ${className}`}
+            onClick={() => onAction && onAction(room)}
+            disabled={isBusy}
+            aria-label={`${isJoined ? "Open" : "Join"} ${title}`}
+        >
+            <div 
+                className="ambience-room-card__image" 
+                style={{ backgroundImage: `url('${imageUrl}')` }} 
+            />
+            <div className="ambience-room-card__tint" />
+            <div className="ambience-room-card__overlay" />
+            <div className="ambience-room-card__content">
+                <div className="ambience-room-card__top">
+                    <span className="ambience-room-card__badge">
+                        {isPrivate ? "🔒 Private" : "🌐 Public"}
+                    </span>
+                    <span className="ambience-room-card__glyph">{cornerGlyph}</span>
+                </div>
+
+                <div className="ambience-room-card__bottom">
+                    <h3 className="ambience-room-card__title" title={title}>{title}</h3>
+                    <div className="ambience-room-card__footer">
+                        <span className="ambience-room-card__meta">{memberLabel}</span>
+                        <span className="ambience-room-card__cta">
+                            <span>{isJoined ? "Open" : "Join"}</span>
+                            <span className="ambience-room-card__arrow">→</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </button>
+    );
 }
