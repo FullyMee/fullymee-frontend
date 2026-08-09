@@ -6,11 +6,15 @@ import { InfiniteScrollLoader, InlineSpinner, RoomCardSkeletonList } from "../co
 import UnifiedSidebar from "../components/layout/UnifiedSidebar.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
 import {
+    AmbienceRoomCard,
     getRoomTone,
     RoomGlyphIcon
 } from "../components/common/MobileRoomVisuals.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
+import useIsDesktop from "../hooks/useIsDesktop";
+import useBodyClass from "../hooks/useBodyClass.js";
+import useSocket from "../hooks/useSocket";
 import {
     createConfessionRoom,
     getJoinedRooms,
@@ -23,9 +27,6 @@ import {
     sendConfessionChatRequest
 } from "../services/confession.service";
 import { listChatRequests } from "../services/chat.service";
-import useIsDesktop from "../hooks/useIsDesktop";
-import useBodyClass from "../hooks/useBodyClass.js";
-import useSocket from "../hooks/useSocket";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { formatRelativeTime } from "../utils/time.js";
@@ -66,6 +67,27 @@ const DISCOVER_PAGE_SIZE = 8;
 const TRENDING_PAGE_SIZE = 6;
 const ROOM_TITLE_LIMIT = 50;
 const ROOM_DESCRIPTION_LIMIT = 50;
+const ROOM_CATEGORIES = [
+    "Late Night",
+    "Heartbreak",
+    "Anxiety",
+    "Relationships",
+    "Family",
+    "College",
+    "Career",
+    "Tech and Coding",
+    "Casual Chats",
+    "Confessions",
+    "Gaming",
+    "Entertainment",
+    "Fitness",
+    "Finance",
+    "Politics",
+    "Startup",
+    "Travel",
+    "Books",
+    "Advice"
+];
 const HOME_FEED_PAGE_SIZE = 4;
 const HOME_TOP_ROOMS_LIMIT = 4;
 const HOME_SUGGESTION_LIMIT = 4;
@@ -131,8 +153,9 @@ export default function HomeDiscoverPage() {
     const [roomType, setRoomType] = useState("public");
     const [roomTitle, setRoomTitle] = useState("");
     const [roomDescription, setRoomDescription] = useState("");
+    const [roomCategory, setRoomCategory] = useState("");
     const [joinCode, setJoinCode] = useState("");
-    const [createErrors, setCreateErrors] = useState({ roomTitle: "", joinCode: "" });
+    const [createErrors, setCreateErrors] = useState({ roomTitle: "", roomCategory: "", joinCode: "" });
     const [submitting, setSubmitting] = useState(false);
     const [pulseRoomCounts, setPulseRoomCounts] = useState(new Map());
     const [pulseActivityActors, setPulseActivityActors] = useState([]);
@@ -492,7 +515,7 @@ export default function HomeDiscoverPage() {
     const mobilePulseConfessions = formatCompactPulseCount(desktopStats.confessionsToday);
     const mobilePulseSupport = formatCompactPulseCount(desktopStats.supportGiven);
 
-    const createDisabled = submitting || String(roomTitle || "").trim().length < 3;
+    const createDisabled = submitting || String(roomTitle || "").trim().length < 3 || !String(roomCategory || "").trim();
 
     async function handleOpenRoom(room) {
         const roomId = Number(room && room.roomId);
@@ -665,8 +688,9 @@ export default function HomeDiscoverPage() {
         setRoomType("public");
         setRoomTitle("");
         setRoomDescription("");
+        setRoomCategory("");
         setJoinCode("");
-        setCreateErrors({ roomTitle: "", joinCode: "" });
+        setCreateErrors({ roomTitle: "", roomCategory: "", joinCode: "" });
         setModal("");
         if (isCreateRoomRoute) {
             navigate("/", { replace: true });
@@ -679,14 +703,26 @@ export default function HomeDiscoverPage() {
         setCreateErrors((prev) => ({ ...prev, joinCode: "" }));
     }
 
-    async function handleCreateRoom(event) {
-        event.preventDefault();
+    async function handleCreateRoom(event, ambienceId = null) {
+        if (event && event.preventDefault) event.preventDefault();
 
         const title = String(roomTitle || "").trim();
         const description = String(roomDescription || "").trim().slice(0, ROOM_DESCRIPTION_LIMIT);
+        const category = String(roomCategory || "").trim();
 
         if (!title) {
             setCreateErrors((prev) => ({ ...prev, roomTitle: "Enter the room name." }));
+            return;
+        }
+
+        if (!category) {
+            setCreateErrors((prev) => ({ ...prev, roomCategory: "Select a category." }));
+            return;
+        }
+
+        const matchedCategory = ROOM_CATEGORIES.find((item) => item.toLowerCase() === category.toLowerCase());
+        if (!matchedCategory) {
+            setCreateErrors((prev) => ({ ...prev, roomCategory: "Select a valid category." }));
             return;
         }
 
@@ -698,19 +734,19 @@ export default function HomeDiscoverPage() {
 
         try {
             setSubmitting(true);
-            setCreateErrors({ roomTitle: "", joinCode: "" });
+            setCreateErrors({ roomTitle: "", roomCategory: "", joinCode: "" });
             dismissError();
             const createdRoom = await createConfessionRoom({
                 title,
                 description,
                 roomType,
-                category: "general",
-                joinCode: roomType === "private" && code ? code : undefined
+                category: matchedCategory,
+                joinCode: roomType === "private" && code ? code : undefined,
+                ambienceId: ambienceId || undefined
             });
 
             setNotice(roomType === "private" ? "Private room created successfully." : "Public room created successfully.");
             resetModalState();
-            
             // Invalidate queries to fetch fresh lists, but immediately optimistic insert
             const roomId = Number(createdRoom && createdRoom.roomId);
             if (roomId) {
@@ -748,6 +784,7 @@ export default function HomeDiscoverPage() {
             roomType={roomType}
             roomTitle={roomTitle}
             roomDescription={roomDescription}
+            roomCategory={roomCategory}
             joinCode={joinCode}
             createErrors={createErrors}
             submitting={submitting}
@@ -763,6 +800,12 @@ export default function HomeDiscoverPage() {
                 }
             }}
             onRoomDescriptionChange={(value) => setRoomDescription(String(value || "").slice(0, ROOM_DESCRIPTION_LIMIT))}
+            onRoomCategoryChange={(value) => {
+                setRoomCategory(String(value || ""));
+                if (createErrors.roomCategory) {
+                    setCreateErrors((prev) => ({ ...prev, roomCategory: "" }));
+                }
+            }}
             onRoomTypeChange={setRoomType}
             onJoinCodeChange={(value) => {
                 setJoinCode(String(value || "").replace(/\D+/g, "").slice(0, 6));
@@ -830,62 +873,20 @@ export default function HomeDiscoverPage() {
                                     </div>
 
                                     <div className="home-trending-grid">
-                                        {filteredTrendingRooms.length > 0 ? filteredTrendingRooms.map((room, index) => {
-                                            const tone = getRoomTone(room);
-                                            const title = room.title || "Untitled room";
-                                            const description = String(room.description || "Anonymous conversations start here.").trim();
-                                            const quote = String(room.previewText || room.highlight || "").trim();
-                                            const normalizedDescription = description.toLowerCase();
-                                            const normalizedQuote = quote.toLowerCase();
-                                            const showQuote = Boolean(quote) && normalizedQuote !== normalizedDescription;
-                                            const memberCount = Number(room.currentUserCount) || 0;
-                                            const isActive = memberCount > 0;
-                                            const accentTone = tone === "advice" ? "advice" : tone === "chill" ? "chill" : tone === "general" ? "general" : "daily";
-
-                                            return (
-                                                <article
-                                                    key={room.roomId || `${room.title}-${index}`}
-                                                    className={`home-trending-card home-trending-card--${accentTone}`}
-                                                    role="link"
-                                                    tabIndex={0}
-                                                    aria-label={`Open ${title}`}
-                                                    onClick={() => handleOpenRoom(room)}
-                                                    onKeyDown={(event) => {
-                                                        if (event.key === "Enter" || event.key === " ") {
-                                                            event.preventDefault();
-                                                            handleOpenRoom(room);
-                                                        }
-                                                    }}
-                                                >
-                                                    <div className="home-trending-card__top">
-                                                        <div className="home-trending-card__title-wrap">
-                                                            <h3>{title}</h3>
-                                                            <span className="home-trending-card__tag">Public</span>
-                                                        </div>
-                                                        <p className="home-trending-card__description">{description}</p>
-                                                    </div>
-
-                                                    {showQuote && (
-                                                        <div className="home-trending-card__quote">
-                                                            <p>{quote}</p>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="home-trending-card__footer">
-                                                        <div className="home-trending-card__icons" aria-hidden="true">
-                                                            <span className="home-trending-card__icon home-trending-card__icon--one"><RoomGlyphIcon tone={tone} /></span>
-                                                            <span className="home-trending-card__icon home-trending-card__icon--two"><SparkIcon /></span>
-                                                            <span className="home-trending-card__icon home-trending-card__icon--three"><TrendingIcon /></span>
-                                                        </div>
-                                                        <div className="home-trending-card__meta">
-                                                            <span>{formatCompactPulseCount(memberCount)} members</span>
-                                                            <i aria-hidden="true">•</i>
-                                                            <span className={isActive ? "is-active" : ""}>{isActive ? "active" : "quiet"}</span>
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            );
-                                        }) : (
+                                        {filteredTrendingRooms.length > 0 ? (
+                                            filteredTrendingRooms.map((room, index) => {
+                                                const roomId = Number(room.roomId);
+                                                return (
+                                                    <AmbienceRoomCard
+                                                        key={room.roomId || `${room.title}-${index}`}
+                                                        room={room}
+                                                        isJoined={joinedRoomIds.has(roomId)}
+                                                        isBusy={busyRoomId === roomId}
+                                                        onAction={handleOpenRoom}
+                                                    />
+                                                );
+                                            })
+                                        ) : (
                                             <div className="home-trending-empty">
                                                 {homeSearchTerm
                                                     ? "No trending rooms match your search."
@@ -974,31 +975,31 @@ export default function HomeDiscoverPage() {
                                                 </button>
 
                                                 <div className="room-confession-card__actions home-feed-card__actions">
-                                                        <button
-                                                            type="button"
-                                                            className={`room-confession-card__stat home-feed-card__action${isLiked ? " is-liked" : ""}`}
-                                                            onClick={() => handleLikeHomeConfession(card)}
-                                                            disabled={isReacting}
-                                                        >
-                                                            <HeartIcon filled={isLiked} />
-                                                            <span>{Number(card.reactionCount) || 0}</span>
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="room-confession-card__stat home-feed-card__action"
-                                                            onClick={() => openHomeConfession(roomId, confessionId)}
-                                                        >
-                                                            <CommentIcon />
-                                                            <span>{Number(card.replyCount) || 0}</span>
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className={`room-confession-card__request home-feed-card__action home-feed-card__action--accent${isSentRequest ? " is-sent" : ""}`}
-                                                            onClick={() => handleSendHomeChatRequest(card)}
-                                                            disabled={isSentRequest || isSendingRequest}
-                                                        >
-                                                            <span>{isSendingRequest ? "Sending..." : isSentRequest ? "Sent" : "Send request"}</span>
-                                                        </button>
+                                                    <button
+                                                        type="button"
+                                                        className={`room-confession-card__stat home-feed-card__action${isLiked ? " is-liked" : ""}`}
+                                                        onClick={() => handleLikeHomeConfession(card)}
+                                                        disabled={isReacting}
+                                                    >
+                                                        <HeartIcon filled={isLiked} />
+                                                        <span>{Number(card.reactionCount) || 0}</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="room-confession-card__stat home-feed-card__action"
+                                                        onClick={() => openHomeConfession(roomId, confessionId)}
+                                                    >
+                                                        <CommentIcon />
+                                                        <span>{Number(card.replyCount) || 0}</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className={`room-confession-card__request home-feed-card__action home-feed-card__action--accent${isSentRequest ? " is-sent" : ""}`}
+                                                        onClick={() => handleSendHomeChatRequest(card)}
+                                                        disabled={isSentRequest || isSendingRequest}
+                                                    >
+                                                        <span>{isSendingRequest ? "Sending..." : isSentRequest ? "Sent" : "Send request"}</span>
+                                                    </button>
                                                 </div>
                                             </article>
                                         );
@@ -1078,37 +1079,15 @@ export default function HomeDiscoverPage() {
                         {mobileTrendingRooms.length > 0 ? (
                             <div className="home-mobile-trending-grid">
                                 {mobileTrendingRooms.map((room, index) => {
-                                    const tone = getRoomTone(room);
-                                    const title = room.title || "Untitled room";
-                                    const description = String(room.description || "Anonymous conversations start here.").trim();
-                                    const memberCount = Number(room.currentUserCount) || 0;
-                                    const accentTone = tone === "advice" ? "advice" : tone === "chill" ? "chill" : tone === "general" ? "general" : "daily";
                                     const roomId = Number(room.roomId);
-                                    const alreadyJoined = joinedRoomIds.has(roomId);
-
                                     return (
-                                        <button
+                                        <AmbienceRoomCard
                                             key={room.roomId || `${room.title}-${index}`}
-                                            type="button"
-                                            className={`home-trending-card home-trending-card--${accentTone} home-mobile-trending-card`}
-                                            onClick={() => handleOpenRoom(room)}
-                                            disabled={busyRoomId === roomId}
-                                            aria-label={`${alreadyJoined ? "Open" : "Join"} ${title}`}
-                                        >
-                                            <div className="home-trending-card__top">
-                                                <div className="home-trending-card__title-wrap">
-                                                    <h3>{title}</h3>
-                                                    <span className="home-trending-card__tag">{formatRoomAccess(room)}</span>
-                                                </div>
-                                                <p className="home-trending-card__description">{description}</p>
-                                            </div>
-
-                                            <div className="home-trending-card__footer">
-                                                <div className="home-trending-card__meta">
-                                                    <span>{`${memberCount.toLocaleString()} members`}</span>
-                                                </div>
-                                            </div>
-                                        </button>
+                                            room={room}
+                                            isJoined={joinedRoomIds.has(roomId)}
+                                            isBusy={busyRoomId === roomId}
+                                            onAction={handleOpenRoom}
+                                        />
                                     );
                                 })}
                             </div>
@@ -1119,113 +1098,6 @@ export default function HomeDiscoverPage() {
                                     : "Join a few rooms to see trending highlights here."}
                             </div>
                         )}
-                    </section>
-
-                    <section className="home-mobile-section">
-                        <div className="home-mobile-section__head home-mobile-section__head--feed">
-                            <h2>Latest Confessions</h2>
-                            <div className="home-feed-toggle" role="tablist" aria-label="Feed sort">
-                                <button
-                                    type="button"
-                                    className={`home-feed-toggle__item${homeFeedSort === "recent" ? " is-active" : ""}`}
-                                    onClick={() => setHomeFeedSort("recent")}
-                                >
-                                    Recent
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`home-feed-toggle__item${homeFeedSort === "top" ? " is-active" : ""}`}
-                                    onClick={() => setHomeFeedSort("top")}
-                                >
-                                    Top
-                                </button>
-                            </div>
-                        </div>
-
-                        {loading && (
-                            <div className="home-feed-skeleton-list">
-                                <RoomCardSkeletonList count={2} />
-                            </div>
-                        )}
-
-                        {!loading && !hasFeedItems && (
-                            <div className="home-feed-empty">
-                                <h3>{homeSearchTerm ? "No confessions match your search" : "No confession feed yet"}</h3>
-                                <p>
-                                    {homeSearchTerm
-                                        ? "Try a different keyword or clear the search bar to see more confessions."
-                                        : "Join a room to start seeing real conversations here."}
-                                </p>
-                            </div>
-                        )}
-
-                        {!loading && hasFeedItems && filteredFeedCardsSorted.map((card) => {
-                            const roomId = Number(card.roomId);
-                            const confessionId = Number(card.confessionId);
-                            const tone = getRoomTone(card);
-                            const isLiked = likedFeedConfessionIds.has(confessionId) || !!card.likedByViewer;
-                            const isReacting = reactingFeedConfessionIds.has(confessionId);
-                            const isSentRequest = sentFeedChatRequestIds.has(confessionId) || ["pending", "accepted"].includes(String(card.viewerChatRequestStatus || "").trim());
-                            const isSendingRequest = sendingFeedChatRequestIds.has(confessionId);
-                            return (
-                                <article key={`${roomId}-${confessionId}`} className={`home-feed-card home-feed-card--${tone} home-mobile-feed-card`}>
-                                    <button
-                                        type="button"
-                                        className="home-feed-card__main"
-                                        onClick={() => openHomeConfession(roomId, confessionId)}
-                                    >
-                                        <div className="home-feed-card__header">
-                                            <div className={`home-feed-card__avatar home-feed-card__avatar--${getAliasTone(card.alias || card.roomTitle || tone)}`}>
-                                                <RoomGlyphIcon tone={tone} />
-                                            </div>
-                                            <div className="home-feed-card__author">
-                                                <strong>{card.alias || "Wandering Soul"}</strong>
-                                                <span>
-                                                    <em>in {card.roomTitle || "Anonymous Room"}</em>
-                                                    <i>&bull;</i>
-                                                    <time>{formatRelativeTime(card.createdAt, { short: true, nowLabel: "now" })}</time>
-                                                </span>
-                                            </div>
-                                            <span className="home-feed-card__menu" aria-hidden="true">
-                                                <MoreIcon />
-                                            </span>
-                                        </div>
-
-                                        <p className="home-feed-card__content">
-                                            {card.content || "Share freely. Your identity stays anonymous."}
-                                        </p>
-                                    </button>
-
-                                    <div className="room-confession-card__actions home-feed-card__actions">
-                                            <button
-                                                type="button"
-                                                className={`room-confession-card__stat home-feed-card__action${isLiked ? " is-liked" : ""}`}
-                                                onClick={() => handleLikeHomeConfession(card)}
-                                                disabled={isReacting}
-                                            >
-                                                <HeartIcon filled={isLiked} />
-                                                <span>{Number(card.reactionCount) || 0}</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="room-confession-card__stat home-feed-card__action"
-                                                onClick={() => openHomeConfession(roomId, confessionId)}
-                                            >
-                                                <CommentIcon />
-                                                <span>{Number(card.replyCount) || 0}</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className={`room-confession-card__request home-feed-card__action home-feed-card__action--accent${isSentRequest ? " is-sent" : ""}`}
-                                                onClick={() => handleSendHomeChatRequest(card)}
-                                                disabled={isSentRequest || isSendingRequest}
-                                            >
-                                                <span>{isSendingRequest ? "Sending..." : isSentRequest ? "Sent" : "Send request"}</span>
-                                            </button>
-                                    </div>
-                                </article>
-                            );
-                        })}
                     </section>
 
                     <section className="home-mobile-section">

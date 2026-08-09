@@ -96,7 +96,7 @@ export default function ConfessionDetailView({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [onBack]);
 
-    // Handle reply-to-user click (Instagram style) — receives { alias, replyId }
+    // Handle reply-to-user click (FullyMee style) — receives { alias, replyId }
     const handleReplyToUser = useCallback((alias, replyId = null) => {
         setReplyingTo({ alias, replyId });
         const current = replyDraft || "";
@@ -126,7 +126,7 @@ export default function ConfessionDetailView({
         setReplyingTo(null);
     }, [replyingTo, onPostReply, selectedConfession]);
 
-    // Instagram feature: Auto-dismiss keyboard when scrolling comments list
+    // FullyMee feature: Auto-dismiss keyboard when scrolling comments list
     const handleCommentsScroll = useCallback(() => {
         if (inputRef.current && document.activeElement === inputRef.current) {
             inputRef.current.blur();
@@ -332,7 +332,7 @@ export default function ConfessionDetailView({
                     <h2 className="confession-comment-sheet__title">Comments</h2>
                 </div>
 
-                {/* Main Scrollable Comments Area - Auto-dismisses keyboard on scroll (Instagram behavior) */}
+                {/* Main Scrollable Comments Area - Auto-dismisses keyboard on scroll (FullyMee behavior) */}
                 <div
                     ref={scrollContentRef}
                     className="confession-comment-sheet__scroll-content"

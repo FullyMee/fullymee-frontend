@@ -33,7 +33,7 @@ function rewriteUrlHostname(rawUrl, fallbackPort) {
 function resolveApiUrl() {
     const env = (typeof import.meta !== 'undefined' && import.meta.env)
         ? import.meta.env
-        : process.env;
+        : (typeof process !== 'undefined' ? process.env : {});
 
     const raw = rewriteUrlHostname(env.VITE_API_URL || env.API_URL || "http://localhost:5000", 5000);
     if (!raw) {

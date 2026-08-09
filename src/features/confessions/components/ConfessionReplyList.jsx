@@ -121,7 +121,7 @@ function ReplyThread({
                 onReplyToUser={onReplyToUser}
             />
 
-            {/* "View X more replies" toggle button — Instagram style */}
+            {/* "View X more replies" toggle button — FullyMee style */}
             {hasChildren && (
                 <button
                     type="button"

@@ -370,7 +370,11 @@ export default function ActiveRoomFeed({
                     {loadingConfessions && confessions.length === 0 && <FeedSkeletonList count={3} />}
 
                     {!loadingConfessions && confessions.length === 0 && (
-                        <div className="room-feed-empty">No confessions yet. Be the first to post in this room.</div>
+                        <DesktopEmptyState
+                            compact
+                            title="No confessions yet"
+                            description="Be the first to post in this room."
+                        />
                     )}
 
                     {confessionList}

@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getInitial } from "../../../utils/presentation.js";
 import { X } from "lucide-react";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 
