@@ -93,12 +93,14 @@ function PageShell({ title, onBack, onClose, notice, children, animDir }) {
 // Main List — root settings page
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, onClick, isLast, titleColor, hideChevron }) {
+function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, onClick, isLast, titleColor, hideChevron, disabled }) {
     return (
         <button
             type="button"
+            disabled={disabled}
             className={`sd-list-row${isLast ? " sd-list-row--last" : ""}`}
-            onClick={onClick}
+            onClick={disabled ? undefined : onClick}
+            style={disabled ? { opacity: 0.65, cursor: "not-allowed" } : undefined}
         >
             <div className="sd-list-row__icon-wrap" style={{ background: iconColor + "18", color: iconColor }}>
                 <Icon size={16} strokeWidth={2} />
@@ -109,8 +111,23 @@ function ListRow({ icon: Icon, iconColor, title, subtitle, value, valueEmoji, on
             </div>
             <div className="sd-list-row__right">
                 {valueEmoji && <span className="sd-list-row__emoji">{valueEmoji}</span>}
-                {value && <span className="sd-list-row__value">{value}</span>}
-                {!hideChevron && <ChevronRight size={15} className="sd-list-row__chevron" />}
+                {value && (
+                    <span
+                        className="sd-list-row__value"
+                        style={disabled ? {
+                            background: "rgba(99, 102, 241, 0.12)",
+                            color: "#6366F1",
+                            padding: "0.15rem 0.5rem",
+                            borderRadius: "999px",
+                            fontSize: "0.7rem",
+                            fontWeight: 700,
+                            textTransform: "uppercase"
+                        } : undefined}
+                    >
+                        {value}
+                    </span>
+                )}
+                {!hideChevron && !disabled && <ChevronRight size={15} className="sd-list-row__chevron" />}
             </div>
         </button>
     );
@@ -209,8 +226,8 @@ function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
                         iconColor="#6366F1"
                         title="Limit Night-time Requests"
                         subtitle="Quiet hours: 11 PM – 7 AM"
-                        value={s.nighttimeLimit ? "On" : "Off"}
-                        onClick={() => onNavigate("nighttime")}
+                        value="Coming Soon"
+                        disabled={true}
                         isLast
                     />
                 </SectionGroup>
@@ -538,30 +555,31 @@ function NighttimePage({ s, onBack, onClose, animDir }) {
     return (
         <PageShell title="Night-time Requests" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
             <div className="sd-subpage-form">
-                <div className="sd-toggle-hero">
+                <div className="sd-toggle-hero" style={{ opacity: 0.7 }}>
                     <div className="sd-toggle-hero__icon" style={{ background: "#6366F115", color: "#6366F1" }}>
                         <Moon size={28} strokeWidth={1.5} />
                     </div>
                     <h3 className="sd-toggle-hero__title">Quiet Hours</h3>
                     <p className="sd-toggle-hero__desc">
-                        When enabled, no chat requests will be delivered between <strong>11 PM</strong> and <strong>7 AM</strong>. Perfect for protecting your rest.
+                        This feature is preserved for future implementation and is currently disabled.
                     </p>
 
                     <div className="sd-toggle-hero__control">
-                        <span className="sd-toggle-hero__status">
-                            {s.nighttimeLimit ? "Enabled" : "Disabled"}
+                        <span className="sd-toggle-hero__status" style={{ color: "#6366F1", fontWeight: 700 }}>
+                            Coming Soon
                         </span>
                         <ToggleSwitch
                             id="sd-nighttime-toggle"
-                            checked={s.nighttimeLimit}
-                            onChange={s.handleNighttimeLimit}
+                            checked={false}
+                            disabled={true}
+                            onChange={() => {}}
                         />
                     </div>
                 </div>
 
                 <div className="sd-info-card">
                     <span className="sd-info-card__icon">🌙</span>
-                    <span>Requests sent during quiet hours are held and delivered after 7 AM.</span>
+                    <span>Limit Night-time Requests is currently disabled for future implementation.</span>
                 </div>
             </div>
         </PageShell>

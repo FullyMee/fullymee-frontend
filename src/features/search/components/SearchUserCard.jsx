@@ -12,7 +12,7 @@ export default function SearchUserCard({ person, isBusy, onRemove, onClickCard }
                 className="search-person-card__avatar"
                 onClick={() => {
                     if (onClickCard) onClickCard(person);
-                    navigate(`/user/${person.userId || person.id}`, { state: { profileUser: person } });
+                    navigate(`/user/${person.username || person.userId || person.id}`, { state: { profileUser: person } });
                 }}
                 style={{ cursor: "pointer", display: "block" }}
                 role="button"
@@ -25,7 +25,7 @@ export default function SearchUserCard({ person, isBusy, onRemove, onClickCard }
                         <h3
                             onClick={() => {
                                 if (onClickCard) onClickCard(person);
-                                navigate(`/user/${person.userId || person.id}`, { state: { profileUser: person } });
+                                navigate(`/user/${person.username || person.userId || person.id}`, { state: { profileUser: person } });
                             }}
                             style={{ cursor: "pointer", margin: 0 }}
                         >

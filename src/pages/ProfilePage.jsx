@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, Settings, Shield, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Lock, ShieldCheck, Menu, X } from "lucide-react";
+import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, Settings, Shield, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Lock, ShieldCheck, Menu, X, EyeOff } from "lucide-react";
+import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import DesktopIconStatCard from "../components/common/DesktopIconStatCard.jsx";
 import { InlineSpinner, ProfileSkeleton } from "../components/common/LoadingStates.jsx";
@@ -253,56 +254,34 @@ export default function ProfilePage({ user }) {
 
                                 <section className="desktop-profile-section-card">
                                     <div className="desktop-profile-section-card__head">
-                                        <h2>Joined Rooms</h2>
+                                        <h2>Joined Rooms ({joinedRooms.length})</h2>
                                     </div>
 
-                                    {joinedRooms.length === 0 && (
+                                    {profileUser?.preferences?.hideJoinedRooms ? (
+                                        <div className="uprofile-rooms-hidden-card">
+                                            <EyeOff size={22} color="#8c6f8e" />
+                                            <div>
+                                                <h4>Room History Hidden</h4>
+                                                <p>You have enabled "Hide Room History". Your joined rooms are hidden when other users view your profile.</p>
+                                            </div>
+                                        </div>
+                                    ) : joinedRooms.length === 0 ? (
                                         <DesktopEmptyState
                                             compact
                                             title="No rooms joined yet"
                                             description="Discover rooms from Home and they will appear here."
                                         />
-                                    )}
-
-                                    {visibleRooms.length > 0 && (
-                                        <div className="desktop-profile-room-list">
-                                            {visibleRooms.map((room) => (
-                                                <button
+                                    ) : (
+                                        <div className="uprofile-rooms-scroll-container">
+                                            {joinedRooms.map((room) => (
+                                                <AmbienceRoomCard
                                                     key={room.roomId}
-                                                    type="button"
-                                                    className="desktop-profile-room-card-v2"
-                                                    onClick={() => navigate(`/confessions?roomId=${room.roomId}`)}
-                                                >
-                                                    <div className="desktop-profile-room-card-v2__avatar" aria-hidden="true">
-                                                        {getInitial(room.title || "R")}
-                                                    </div>
-                                                    <div className="desktop-profile-room-card-v2__main">
-                                                        <h4>{room.title}</h4>
-                                                        <p>{room.description || "Quietly connect with others"}</p>
-                                                        <div className="desktop-profile-room-card-v2__meta">
-                                                            <PeopleIcon />
-                                                            <span>{Number(room.currentUserCount || 0).toLocaleString()}</span>
-                                                            {Number(room.currentUserCount || 0) > 0 && (
-                                                                <>
-                                                                    <span className="desktop-profile-room-card-v2__dot" aria-hidden="true"></span>
-                                                                    <span className="desktop-profile-room-card-v2__status">active</span>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </button>
+                                                    room={room}
+                                                    isJoined={true}
+                                                    onAction={(r) => navigate(`/confessions?roomId=${r.roomId}`)}
+                                                />
                                             ))}
                                         </div>
-                                    )}
-
-                                    {hasMoreRooms && (
-                                        <button
-                                            type="button"
-                                            className="desktop-link-button profile-view-all"
-                                            onClick={() => setExpandedRooms((prev) => !prev)}
-                                        >
-                                            {expandedRooms ? "Show fewer rooms" : `View all ${joinedRooms.length} rooms`}
-                                        </button>
                                     )}
                                 </section>
 

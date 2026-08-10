@@ -457,7 +457,7 @@ export default function SettingsPage({ user: propUser }) {
                                     )}
                                 </div>
 
-                                {/* Accordion 5: Limit Night-time Requests */}
+                                {/* Accordion 5: Limit Night-time Requests (Disabled for future implementation) */}
                                 <div className={`dt-settings-accordion-item${openAccordion === "nighttime" ? " is-expanded" : ""}`}>
                                     <button
                                         type="button"
@@ -465,47 +465,61 @@ export default function SettingsPage({ user: propUser }) {
                                         onClick={() => toggleAccordion("nighttime")}
                                     >
                                         <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--indigo">
+                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--indigo" style={{ opacity: 0.7 }}>
                                                 <Moon size={18} />
                                             </span>
                                             <div>
-                                                <h4 className="dt-settings-accordion-title">Limit Night-time Requests</h4>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                                    <h4 className="dt-settings-accordion-title">Limit Night-time Requests</h4>
+                                                    <span style={{
+                                                        fontSize: "0.68rem",
+                                                        fontWeight: 700,
+                                                        textTransform: "uppercase",
+                                                        letterSpacing: "0.04em",
+                                                        background: "rgba(99, 102, 241, 0.12)",
+                                                        color: "#6366F1",
+                                                        padding: "0.15rem 0.5rem",
+                                                        borderRadius: "999px"
+                                                    }}>
+                                                        Coming Soon
+                                                    </span>
+                                                </div>
                                                 <p className="dt-settings-accordion-subtitle">Quiet hours: 11:00 PM – 7:00 AM</p>
                                             </div>
                                         </div>
                                         <div className="dt-settings-accordion-right">
-                                            <span>{s.nighttimeLimit ? `${quietFrom} – ${quietUntil}` : "Off"}</span>
+                                            <span style={{ color: "#9c829e", fontSize: "0.85rem", fontWeight: 600 }}>Disabled</span>
                                             {openAccordion === "nighttime" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                                         </div>
                                     </button>
 
                                     {openAccordion === "nighttime" && (
                                         <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-switch-row dt-settings-switch-row--card">
+                                            <div className="dt-settings-switch-row dt-settings-switch-row--card" style={{ opacity: 0.6, cursor: "not-allowed" }}>
                                                 <div>
                                                     <span className="dt-settings-field-label" style={{ margin: 0 }}>Mute requests during quiet hours</span>
                                                     <p className="dt-settings-help-text" style={{ margin: 0 }}>
-                                                        Requests still arrive, they just stay silent until morning.
+                                                        This feature is preserved for future implementation and is currently disabled.
                                                     </p>
                                                 </div>
                                                 <button
                                                     type="button"
                                                     role="switch"
-                                                    aria-checked={s.nighttimeLimit}
-                                                    className={`dt-settings-toggle${s.nighttimeLimit ? " dt-settings-toggle--on" : ""}`}
-                                                    onClick={() => s.handleNighttimeLimit(!s.nighttimeLimit)}
+                                                    aria-checked={false}
+                                                    disabled={true}
+                                                    className="dt-settings-toggle"
+                                                    style={{ cursor: "not-allowed", opacity: 0.5 }}
                                                 >
                                                     <span className="dt-settings-toggle__thumb" />
                                                 </button>
                                             </div>
-                                            <div className={`dt-settings-quiet-hours-row${!s.nighttimeLimit ? " is-disabled" : ""}`}>
+                                            <div className="dt-settings-quiet-hours-row is-disabled" style={{ opacity: 0.5 }}>
                                                 <div className="dt-settings-quiet-hours-field">
                                                     <label className="dt-settings-quiet-hours-label">From</label>
                                                     <select
                                                         className="dt-settings-select dt-settings-select--time"
                                                         value={quietFrom}
-                                                        disabled={!s.nighttimeLimit}
-                                                        onChange={(e) => setQuietFrom(e.target.value)}
+                                                        disabled={true}
                                                     >
                                                         {QUIET_HOURS_FROM.map((t) => (
                                                             <option key={t} value={t}>{t}</option>
@@ -517,8 +531,7 @@ export default function SettingsPage({ user: propUser }) {
                                                     <select
                                                         className="dt-settings-select dt-settings-select--time"
                                                         value={quietUntil}
-                                                        disabled={!s.nighttimeLimit}
-                                                        onChange={(e) => setQuietUntil(e.target.value)}
+                                                        disabled={true}
                                                     >
                                                         {QUIET_HOURS_UNTIL.map((t) => (
                                                             <option key={t} value={t}>{t}</option>
