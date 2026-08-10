@@ -1156,8 +1156,8 @@ export default function ChatPage({ user }) {
                                                     <div
                                                         className="desktop-chat-thread__identity"
                                                         onClick={() => {
-                                                            const uid = Number(activeConversation.otherUserId);
-                                                            if (uid) navigate(`/user/${uid}`, { state: { profileUser: { id: uid, username: activeConversation.title } } });
+                                                            const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
+                                                            if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
                                                         }}
                                                         style={{ cursor: "pointer" }}
                                                         role="button"
@@ -1571,8 +1571,8 @@ export default function ChatPage({ user }) {
                                         type="button"
                                         className="chat-thread-header__identity"
                                         onClick={() => {
-                                            const uid = Number(activeConversation.otherUserId);
-                                            if (uid) navigate(`/user/${uid}`, { state: { profileUser: { id: uid, username: activeConversation.title } } });
+                                            const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
+                                            if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
                                         }}
                                     >
                                         <UserAvatar avatarId={activeConversation.avatar} className="chat-conversation-card__avatar" />

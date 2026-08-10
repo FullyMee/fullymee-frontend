@@ -78,8 +78,9 @@ export default function UserProfilePage({ user: currentUser }) {
     const [conversationId, setConversationId] = useState(null);
     const [isProfileHidden, setIsProfileHidden] = useState(false);
     const [loading, setLoading]             = useState(true);
-    const [joinedRooms, setJoinedRooms]     = useState([]);
     const [targetJoinedRooms, setTargetJoinedRooms] = useState([]);
+    const [isTargetRoomsHidden, setIsTargetRoomsHidden] = useState(false);
+    const [joinedRooms, setJoinedRooms]     = useState([]);
 
     useBodyClass("confessions-scroll-unlocked");
 
@@ -116,6 +117,11 @@ export default function UserProfilePage({ user: currentUser }) {
                 }
 
                 if (data && !data.error) {
+                    const canonicalName = data.username || String(data.userId || rawUserId);
+                    if (canonicalName && rawUserId !== canonicalName && /^\d+$/.test(rawUserId)) {
+                        navigate(`/user/${canonicalName}`, { replace: true, state: location.state });
+                    }
+
                     setProfileUser({
                         ...passedUser,
                         userId: data.userId,
@@ -127,12 +133,13 @@ export default function UserProfilePage({ user: currentUser }) {
                     setConversationId(data.conversationId || null);
                     setProfileStats(data.stats);
                     setTargetJoinedRooms(Array.isArray(data.joinedRooms) ? data.joinedRooms : []);
+                    setIsTargetRoomsHidden(!!data.isRoomsHidden);
                 } else {
-                    showError(data?.error || "User not found.");
+                    setProfileUser(null);
                 }
             } catch (err) {
                 if (!cancelled) {
-                    showError(err?.message || "Unable to load user profile.");
+                    setProfileUser(null);
                 }
             } finally {
                 if (!cancelled) setLoading(false);
@@ -268,7 +275,21 @@ export default function UserProfilePage({ user: currentUser }) {
                                      )}
                                  </section>
 
-                                 {targetJoinedRooms && targetJoinedRooms.length > 0 && (
+                                 {isTargetRoomsHidden ? (
+                                     <section className="desktop-profile-rooms-section">
+                                         <div className="desktop-profile-rooms-head">
+                                             <Users size={18} strokeWidth={2.2} color="#4A2545" />
+                                             <h3>Joined Rooms</h3>
+                                         </div>
+                                         <div className="uprofile-rooms-hidden-card">
+                                             <EyeOff size={22} color="#8c6f8e" />
+                                             <div>
+                                                 <h4>Room Activity Hidden</h4>
+                                                 <p>This user has chosen to hide their joined rooms on their profile.</p>
+                                             </div>
+                                         </div>
+                                     </section>
+                                 ) : targetJoinedRooms && targetJoinedRooms.length > 0 ? (
                                      <section className="desktop-profile-rooms-section">
                                          <div className="desktop-profile-rooms-head">
                                              <Users size={18} strokeWidth={2.2} color="#4A2545" />
@@ -288,7 +309,7 @@ export default function UserProfilePage({ user: currentUser }) {
                                              })}
                                          </div>
                                      </section>
-                                 )}
+                                 ) : null}
                             </div>
                         )}
 
@@ -444,7 +465,21 @@ export default function UserProfilePage({ user: currentUser }) {
                         </div>
                     </section>
 
-                    {targetJoinedRooms && targetJoinedRooms.length > 0 && (
+                    {isTargetRoomsHidden ? (
+                        <section className="mobile-profile-rooms-section">
+                            <div className="mobile-profile-rooms-head">
+                                <Users size={18} strokeWidth={2.2} color="#3B1F43" />
+                                <h3>Joined Rooms</h3>
+                            </div>
+                            <div className="uprofile-rooms-hidden-card">
+                                <EyeOff size={20} color="#8c6f8e" />
+                                <div>
+                                    <h4>Room Activity Hidden</h4>
+                                    <p>This user has chosen to hide their joined rooms on their profile.</p>
+                                </div>
+                            </div>
+                        </section>
+                    ) : targetJoinedRooms && targetJoinedRooms.length > 0 ? (
                         <section className="mobile-profile-rooms-section">
                             <div className="mobile-profile-rooms-head">
                                 <Users size={18} strokeWidth={2.2} color="#3B1F43" />
@@ -464,7 +499,7 @@ export default function UserProfilePage({ user: currentUser }) {
                                 })}
                             </div>
                         </section>
-                    )}
+                    ) : null}
 
                     {profileUser.createdAt && isConnected && (
                         <section className="uprofile-info-card">
