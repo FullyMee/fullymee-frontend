@@ -677,6 +677,14 @@
 }
 
 /* ── Card Grids ────────────────────────────────────────────────────────── */
+.dt-settings-card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    width: 100%;
+}
+
 .dt-settings-card-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -2711,11 +2711,18 @@
 }
 
 .conversation-ended__actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 0.75rem;
     width: 100%;
     margin-bottom: 1rem;
+}
+
+.conversation-ended__actions .conversation-ended__btn {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
 }
 
 .conversation-ended__btn {
@@ -3015,11 +3022,17 @@
 }
 
 .chat-tabbed-card__actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 0.75rem;
     padding-top: 0.85rem;
     border-top: 1px solid #EBE2D7;
+}
+
+.chat-tabbed-card__actions .chat-tabbed-card__btn {
+    width: 100%;
+    justify-content: center;
 }
 
 .chat-tabbed-card__btn {

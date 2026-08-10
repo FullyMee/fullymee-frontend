@@ -1,13 +1,10 @@
-import { Leaf, Archive, Trash2 } from "lucide-react";
+import { Leaf, Archive } from "lucide-react";
 import { DEFAULT_CLOSING_NOTE_TEXT } from "../constants/closingNotes.js";
 
 export default function ConversationEndedPanel({
     closingNoteText = DEFAULT_CLOSING_NOTE_TEXT,
     onArchive,
-    onDelete,
     archiving = false,
-    deleting = false,
-    showDelete = true,
     isInitiator = true
 }) {
     return (
@@ -19,10 +16,10 @@ export default function ConversationEndedPanel({
                 </div>
 
                 <h3 className="conversation-ended__title">
-                    {isInitiator ? "You closed this conversation" : "This conversation has ended"}
+                    {isInitiator ? "Conversation ended" : "This conversation has ended"}
                 </h3>
                 <p className="conversation-ended__subtext">
-                    It ended quietly. They were never told who closed it.
+                    It ended quietly.
                 </p>
 
                 {closingNoteText && (
@@ -36,22 +33,11 @@ export default function ConversationEndedPanel({
                         type="button"
                         className="conversation-ended__btn conversation-ended__btn--primary"
                         onClick={onArchive}
-                        disabled={archiving || deleting}
+                        disabled={archiving}
                     >
                         <Archive size={15} />
                         <span>{archiving ? "Archiving…" : "Archive"}</span>
                     </button>
-                    {showDelete && (
-                        <button
-                            type="button"
-                            className="conversation-ended__btn conversation-ended__btn--ghost"
-                            onClick={onDelete}
-                            disabled={archiving || deleting}
-                        >
-                            <Trash2 size={15} />
-                            <span>{deleting ? "Removing…" : "Delete"}</span>
-                        </button>
-                    )}
                 </div>
 
                 <div className="conversation-ended__reconnect-info">

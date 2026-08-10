@@ -343,7 +343,7 @@ export default function HomeDiscoverPage() {
 
         const roomIds = Array.from(new Set(homeRooms.map((room) => Number(room && room.roomId)).filter(Boolean)));
         roomIds.forEach((roomId) => {
-            subscribeConfessionRoom(roomId).catch(() => {});
+            subscribeConfessionRoom(roomId).catch(() => { });
         });
 
         const recordActivity = (payload) => {
@@ -374,7 +374,7 @@ export default function HomeDiscoverPage() {
 
         const handleConfessionCreated = (payload) => recordActivity(payload);
         const handleReplyCreated = (payload) => recordActivity(payload && payload.reply ? payload.reply : payload);
-        
+
         const handleLikesUpdated = (payload) => {
             const confessionId = Number(payload && payload.confessionId);
             const likesCount = Number(payload && payload.likesCount);
@@ -399,7 +399,7 @@ export default function HomeDiscoverPage() {
 
         return () => {
             roomIds.forEach((roomId) => {
-                unsubscribeConfessionRoom(roomId).catch(() => {});
+                unsubscribeConfessionRoom(roomId).catch(() => { });
             });
             socket.off("confession_room_stats", handleRoomStats);
             socket.off("confession_created", handleConfessionCreated);
@@ -573,7 +573,7 @@ export default function HomeDiscoverPage() {
         // 1. Keep snapshot of the current state for rollback
         const originalLikedIds = new Set(likedFeedConfessionIds);
         let originalCardState = null;
-        
+
         // Find existing card in queryData to back up its state
         queryClient.setQueryData(['homeRooms', DISCOVER_PAGE_SIZE, TRENDING_PAGE_SIZE], (oldData) => {
             if (!oldData || !Array.isArray(oldData.feedCards)) return oldData;
@@ -614,7 +614,7 @@ export default function HomeDiscoverPage() {
                 likesCount,
                 likedByViewer: liked
             }));
-            
+
             setLikedFeedConfessionIds((current) => {
                 const next = new Set(current);
                 if (liked) next.add(confessionId);
@@ -890,7 +890,7 @@ export default function HomeDiscoverPage() {
                                             <div className="home-trending-empty">
                                                 {homeSearchTerm
                                                     ? "No trending rooms match your search."
-                                                    : "Join a few rooms to see trending highlights here."}
+                                                    : "No Trending Rooms Available"}
                                             </div>
                                         )}
                                     </div>
@@ -1095,7 +1095,7 @@ export default function HomeDiscoverPage() {
                             <div className="home-trending-empty">
                                 {homeSearchTerm
                                     ? "No trending rooms match your search."
-                                    : "Join a few rooms to see trending highlights here."}
+                                    : "No Trending Rooms Available"}
                             </div>
                         )}
                     </section>

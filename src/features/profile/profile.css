@@ -2819,4 +2819,135 @@ body,
     margin: 0;
     line-height: 1.4;
 }
+
+/* ── Target User Joined Rooms Section ────────────────────────────────────────── */
+.desktop-profile-rooms-section {
+    background: #ffffff;
+    border-radius: 1.35rem;
+    padding: 1.35rem 1.6rem;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 10px 28px rgba(58, 34, 52, 0.06);
+    margin-top: 0.5rem;
+}
+
+.desktop-profile-rooms-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.1rem;
+}
+
+.desktop-profile-rooms-head h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #3f2540;
+    margin: 0;
+}
+
+/* ── Mobile Target User Joined Rooms ── */
+.mobile-profile-rooms-section {
+    background: #ffffff;
+    border-radius: 1.15rem;
+    padding: 1.1rem;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(59, 31, 67, 0.08);
+}
+
+.mobile-profile-rooms-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+}
+
+.mobile-profile-rooms-head h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3b1f43;
+    margin: 0;
+}
+
+/* ── Horizontal Scroll Container for Profile Rooms ── */
+.uprofile-rooms-scroll-container {
+    display: flex;
+    gap: 0.85rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 37, 64, 0.25) transparent;
+}
+
+.uprofile-rooms-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.uprofile-rooms-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.uprofile-rooms-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(63, 37, 64, 0.25);
+    border-radius: 999px;
+}
+
+.uprofile-rooms-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(63, 37, 64, 0.45);
+}
+
+.uprofile-rooms-scroll-container .ambience-room-card {
+    flex: 0 0 225px;
+    width: 225px;
+    height: 260px;
+    border-radius: 24px;
+    padding: 1.2rem 1.2rem 1.1rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 639px) {
+    .uprofile-rooms-scroll-container {
+        gap: 0.65rem;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card {
+        flex: 0 0 calc(50% - 0.35rem);
+        min-width: calc(50% - 0.35rem);
+        max-width: calc(50% - 0.35rem);
+        width: calc(50% - 0.35rem);
+        height: 165px;
+        border-radius: 18px;
+        padding: 0.75rem 0.75rem 0.65rem;
+        box-sizing: border-box;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card__title {
+        font-size: 0.92rem;
+        line-height: 1.25;
+        font-weight: 700;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card__badge {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.45rem;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card__glyph {
+        font-size: 0.85rem;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card__meta {
+        font-size: 0.62rem;
+    }
+
+    .uprofile-rooms-scroll-container .ambience-room-card__cta {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.55rem;
+    }
+}
 

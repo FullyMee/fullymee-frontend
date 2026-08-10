@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import useAuth from "../hooks/useAuth.js";
+import useIsDesktop from "../hooks/useIsDesktop.js";
+import SettingsDrawer from "../features/profile/components/SettingsDrawer.jsx";
 import useSettingsDrawer, {
     CHAT_PERMISSION_OPTIONS,
     AUDIO_EXPIRY_OPTIONS
@@ -13,6 +15,7 @@ import useSettingsDrawer, {
 import { AVATAR_OPTIONS } from "../constants/avatars.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
 import { logout } from "../services/auth.service.js";
+import { getJoinedRooms } from "../services/confession.service.js";
 import "../features/profile/settings-desktop.css";
 
 const PREDEFINED_MOOD_TAGS = [
@@ -38,19 +41,27 @@ const AUDIO_EXPIRY_CARD_OPTIONS = [
 ];
 
 const CHAT_PERMISSION_CARD_OPTIONS = [
-    { value: "everyone", label: "Everyone", desc: "Anyone on FullyMe can send you a chat request." },
     { value: "rooms", label: "People in my rooms", desc: "Only members of rooms you have joined can reach you." },
     { value: "nobody", label: "No one", desc: "Requests are turned off. You can still start chats yourself." }
 ];
 
 export default function SettingsPage({ user: propUser }) {
     const navigate = useNavigate();
+    const isDesktop = useIsDesktop();
     const { user: authUser, setUser } = useAuth();
     const currentUser = propUser || authUser;
 
     const s = useSettingsDrawer(currentUser, (updated) => {
         if (typeof setUser === "function") setUser(updated);
     });
+
+    const [joinedRooms, setJoinedRooms] = useState([]);
+
+    useEffect(() => {
+        getJoinedRooms()
+            .then((rooms) => setJoinedRooms(Array.isArray(rooms) ? rooms : []))
+            .catch(() => {});
+    }, []);
 
     // Single Accordion Expansion State — Default open: "username-avatar"
     const [openAccordion, setOpenAccordion] = useState("username-avatar");
@@ -79,8 +90,22 @@ export default function SettingsPage({ user: propUser }) {
         }
     };
 
+    if (!isDesktop) {
+        return (
+            <SettingsDrawer
+                isOpen={true}
+                onClose={() => navigate(-1)}
+                user={currentUser}
+            />
+        );
+    }
+
     return (
-        <DesktopAppShell hideStageHeader={true}>
+        <DesktopAppShell
+            sidebarRooms={joinedRooms}
+            onSelectSidebarRoom={(room) => navigate(`/confessions?roomId=${room.roomId}`)}
+            hideStageHeader={true}
+        >
             <div className="dt-settings-container">
                 {/* Header */}
                 <header className="dt-settings-header">
@@ -217,7 +242,7 @@ export default function SettingsPage({ user: propUser }) {
                                             <p className="dt-settings-help-text" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
                                                 Choose the symbol that feels closest to you today.
                                             </p>
-                                            
+
                                             <div className="dt-settings-emotional-grid">
                                                 {AVATAR_OPTIONS.map((avatarObj) => {
                                                     const isSelected = s.avatarDraft === avatarObj.id;
@@ -241,7 +266,7 @@ export default function SettingsPage({ user: propUser }) {
                                                     );
                                                 })}
                                             </div>
-                                            
+
                                             {s.avatarDraft && (() => {
                                                 const sel = AVATAR_OPTIONS.find(a => a.id === s.avatarDraft);
                                                 if (sel) {
@@ -257,7 +282,7 @@ export default function SettingsPage({ user: propUser }) {
 
                                             {s.identityStatus.message && (
                                                 <p className={`dt-settings-help-text dt-settings-help-text--${s.identityStatus.status}`}
-                                                   style={{ marginTop: "0.75rem" }}>
+                                                    style={{ marginTop: "0.75rem" }}>
                                                     {s.identityStatus.message}
                                                 </p>
                                             )}
@@ -308,7 +333,7 @@ export default function SettingsPage({ user: propUser }) {
                                     {openAccordion === "interests" && (
                                         <div className="dt-settings-accordion-body">
                                             <p className="dt-settings-mood-hint">
-                                                Pick the moods you want in your feed. Tags are private — nobody sees them on your profile.
+                                                Pick the moods you want in your feed. Tags are private - nobody sees them on your profile.
                                             </p>
                                             <div className="dt-settings-mood-tags">
                                                 {PREDEFINED_MOOD_TAGS.map((tag) => {
@@ -400,14 +425,14 @@ export default function SettingsPage({ user: propUser }) {
                                             </div>
                                         </div>
                                         <div className="dt-settings-accordion-right">
-                                            <span>{CHAT_PERMISSION_CARD_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "Everyone"}</span>
+                                            <span>{CHAT_PERMISSION_CARD_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "People in my rooms"}</span>
                                             {openAccordion === "chat-permissions" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                                         </div>
                                     </button>
 
                                     {openAccordion === "chat-permissions" && (
                                         <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-card-grid-3">
+                                            <div className="dt-settings-card-grid-2">
                                                 {CHAT_PERMISSION_CARD_OPTIONS.map((opt) => {
                                                     const selected = s.chatPermission === opt.value;
                                                     return (

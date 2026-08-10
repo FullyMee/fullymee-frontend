@@ -6,12 +6,14 @@ import {
     MessageCircle,
     Shield,
     Calendar,
-    EyeOff
+    EyeOff,
+    Users
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { ProfileSkeleton } from "../components/common/LoadingStates.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import { getJoinedRooms } from "../services/confession.service.js";
+import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
 import api from "../services/api.js";
 import useIsDesktop from "../hooks/useIsDesktop.js";
 import useBodyClass from "../hooks/useBodyClass.js";
@@ -77,6 +79,7 @@ export default function UserProfilePage({ user: currentUser }) {
     const [isProfileHidden, setIsProfileHidden] = useState(false);
     const [loading, setLoading]             = useState(true);
     const [joinedRooms, setJoinedRooms]     = useState([]);
+    const [targetJoinedRooms, setTargetJoinedRooms] = useState([]);
 
     useBodyClass("confessions-scroll-unlocked");
 
@@ -123,6 +126,7 @@ export default function UserProfilePage({ user: currentUser }) {
                     setIsConnected(!!data.isConnected);
                     setConversationId(data.conversationId || null);
                     setProfileStats(data.stats);
+                    setTargetJoinedRooms(Array.isArray(data.joinedRooms) ? data.joinedRooms : []);
                 } else {
                     showError(data?.error || "User not found.");
                 }
@@ -255,14 +259,36 @@ export default function UserProfilePage({ user: currentUser }) {
                                     </div>
                                 </section>
 
-                                <section className="desktop-privacy-banner">
-                                    <h3>Privacy Notice</h3>
-                                    {isConnected ? (
-                                        <p>All identities on FullyMe are anonymous. Confessions and room activity are never shared on profiles.</p>
-                                    ) : (
-                                        <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
-                                    )}
-                                </section>
+                                 <section className="desktop-privacy-banner">
+                                     <h3>Privacy Notice</h3>
+                                     {isConnected ? (
+                                         <p>All identities on FullyMe are anonymous. Confessions and room activity are never shared on profiles.</p>
+                                     ) : (
+                                         <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
+                                     )}
+                                 </section>
+
+                                 {targetJoinedRooms && targetJoinedRooms.length > 0 && (
+                                     <section className="desktop-profile-rooms-section">
+                                         <div className="desktop-profile-rooms-head">
+                                             <Users size={18} strokeWidth={2.2} color="#4A2545" />
+                                             <h3>Joined Rooms ({targetJoinedRooms.length})</h3>
+                                         </div>
+                                         <div className="uprofile-rooms-scroll-container">
+                                             {targetJoinedRooms.map((room) => {
+                                                 const roomId = Number(room.roomId);
+                                                 return (
+                                                     <AmbienceRoomCard
+                                                         key={room.roomId}
+                                                         room={room}
+                                                         isJoined={(joinedRooms || []).some((r) => Number(r.roomId) === roomId)}
+                                                         onAction={(r) => navigate(`/confessions?roomId=${r.roomId}`)}
+                                                     />
+                                                 );
+                                             })}
+                                         </div>
+                                     </section>
+                                 )}
                             </div>
                         )}
 
@@ -417,6 +443,28 @@ export default function UserProfilePage({ user: currentUser }) {
                             )}
                         </div>
                     </section>
+
+                    {targetJoinedRooms && targetJoinedRooms.length > 0 && (
+                        <section className="mobile-profile-rooms-section">
+                            <div className="mobile-profile-rooms-head">
+                                <Users size={18} strokeWidth={2.2} color="#3B1F43" />
+                                <h3>Joined Rooms ({targetJoinedRooms.length})</h3>
+                            </div>
+                            <div className="uprofile-rooms-scroll-container">
+                                {targetJoinedRooms.map((room) => {
+                                    const roomId = Number(room.roomId);
+                                    return (
+                                        <AmbienceRoomCard
+                                            key={room.roomId}
+                                            room={room}
+                                            isJoined={(joinedRooms || []).some((r) => Number(r.roomId) === roomId)}
+                                            onAction={(r) => navigate(`/confessions?roomId=${r.roomId}`)}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
 
                     {profileUser.createdAt && isConnected && (
                         <section className="uprofile-info-card">
