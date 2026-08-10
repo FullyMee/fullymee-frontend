@@ -128,7 +128,7 @@ function SectionGroup({ label, children }) {
 }
 
 function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
-    const chatLabel = CHAT_PERMISSION_OPTIONS.find(o => o.value === s.chatPermission)?.label || "Everyone";
+    const chatLabel = CHAT_PERMISSION_OPTIONS.find(o => o.value === s.chatPermission)?.label || "People in my rooms";
     const expiryLabel = AUDIO_EXPIRY_OPTIONS.find(o => o.value === s.audioExpiry)?.label || "Never";
     const interestCount = s.interests.length;
 
@@ -490,8 +490,8 @@ function EmailPage({ user, onBack, onClose, animDir }) {
 
 function ChatPermissionPage({ s, onBack, onClose, animDir }) {
     const descriptions = {
-        everyone: "Anyone who sees your confessions or profile can send you a chat request.",
-        nobody:   "No one can send you chat requests. You maintain complete privacy."
+        rooms:  "Only members of rooms you have joined can reach you.",
+        nobody: "Requests are turned off. You can still start chats yourself."
     };
 
     return (

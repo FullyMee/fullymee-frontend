@@ -168,7 +168,7 @@ export default function ChatPage({ user }) {
             setLoadingIndex(true);
 
             const [conversationRows, userRows, unreadRows, requestRows, joinedRoomRows] = await Promise.all([
-                listConversations({ view: "all" }),
+                listConversations({ view: "all", conversationId: activeConversationId }),
                 listUsers(),
                 listConversationUnreadCounts(),
                 listChatRequests(),
@@ -322,6 +322,17 @@ export default function ChatPage({ user }) {
         () => conversationItems.find((conversation) => Number(conversation.id) === activeConversationId) || null,
         [activeConversationId, conversationItems]
     );
+
+    // Automatically switch inboxTab to "past" or "archived" when viewing an ended conversation
+    useEffect(() => {
+        if (activeConversation && activeConversation.status === "ENDED") {
+            if (activeConversation.isArchivedForMe) {
+                setInboxTab("archived");
+            } else {
+                setInboxTab("past");
+            }
+        }
+    }, [activeConversation]);
 
     const activeConversationStatus = useMemo(() => {
         if (!activeConversation) return "";
@@ -547,13 +558,31 @@ export default function ChatPage({ user }) {
         function handleConversationPaused(payload) {
             const cid = Number(payload && payload.conversationId);
             if (!cid) return;
-            setConversationStatusOverrides((prev) => ({ ...prev, [cid]: "PAUSED" }));
+            const pausedBy = Number(payload && payload.pausedBy) || null;
+            setConversationStatusOverrides((prev) => ({ ...prev, [cid]: "PAUSED", [cid + "_pausedBy"]: pausedBy }));
+            setConversations((prev) =>
+                prev.map((c) => (Number(c.id) === cid ? { ...c, status: "PAUSED", pausedBy } : c))
+            );
+            if (cid === activeConversationId) {
+                setDraft("");
+                if (pausedBy && pausedBy !== userId) {
+                    const pausedConv = conversations.find((c) => Number(c.id) === cid);
+                    const name = (pausedConv && pausedConv.title) || "The other person";
+                    setNotice(`${name} paused the conversation.`);
+                }
+            }
         }
 
         function handleConversationResumed(payload) {
             const cid = Number(payload && payload.conversationId);
             if (!cid) return;
-            setConversationStatusOverrides((prev) => ({ ...prev, [cid]: "ACTIVE" }));
+            setConversationStatusOverrides((prev) => ({ ...prev, [cid]: "ACTIVE", [cid + "_pausedBy"]: null }));
+            setConversations((prev) =>
+                prev.map((c) => (Number(c.id) === cid ? { ...c, status: "ACTIVE", pausedBy: null } : c))
+            );
+            if (cid === activeConversationId) {
+                setNotice("Conversation resumed.");
+            }
         }
 
         socket.on("receive_message", handleReceiveMessage);
@@ -578,6 +607,34 @@ export default function ChatPage({ user }) {
             socket.off("conversation_resumed", handleConversationResumed);
         };
     }, [activeConversationId, loadConversationIndex, markConversationRead, socket, userId]);
+
+    // Network reconnection & Wake-from-sleep state synchronization
+    useEffect(() => {
+        const handleSyncState = () => {
+            loadConversationIndex();
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                loadConversationIndex();
+            }
+        };
+
+        window.addEventListener("online", handleSyncState);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        if (socket) {
+            socket.on("connect", handleSyncState);
+        }
+
+        return () => {
+            window.removeEventListener("online", handleSyncState);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            if (socket) {
+                socket.off("connect", handleSyncState);
+            }
+        };
+    }, [loadConversationIndex, socket]);
 
     function openConversation(conversationId) {
         setSearchParams({ conversationId: String(conversationId) });
@@ -617,6 +674,8 @@ export default function ChatPage({ user }) {
             handlePauseConnection();
         } else if (action === "archive") {
             handleArchiveConnection();
+        } else if (action === "unarchive") {
+            handleUnarchiveConnection();
         } else if (action === "report") {
             handleReportConnection();
         }
@@ -656,11 +715,11 @@ export default function ChatPage({ user }) {
             setConnectionBusyAction("pause");
             if (isCurrentlyPaused) {
                 await resumeConnection(activeConversationId);
-                setConversationStatusOverrides((prev) => ({ ...prev, [activeConversationId]: "ACTIVE" }));
+                setConversationStatusOverrides((prev) => ({ ...prev, [activeConversationId]: "ACTIVE", [activeConversationId + "_pausedBy"]: null }));
                 setNotice("Conversation resumed.");
             } else {
                 await pauseConnection(activeConversationId);
-                setConversationStatusOverrides((prev) => ({ ...prev, [activeConversationId]: "PAUSED" }));
+                setConversationStatusOverrides((prev) => ({ ...prev, [activeConversationId]: "PAUSED", [activeConversationId + "_pausedBy"]: Number(userId) }));
                 setNotice("Conversation paused.");
             }
             await loadConversationIndex();
@@ -919,13 +978,13 @@ export default function ChatPage({ user }) {
 
                             {inboxTab === "past" && (
                                 <div className="chat-inbox-tab-notice" style={{ margin: "0 1rem 0.85rem" }}>
-                                    Conversations that have come to an end. Visible only to you — the other person never learns who closed it.
+                                    Conversations that have come to an end. Visible only to you - the other person never learns who closed it.
                                 </div>
                             )}
 
                             {inboxTab === "archived" && (
                                 <div className="chat-inbox-tab-notice" style={{ margin: "0 1rem 0.85rem" }}>
-                                    Your private shelf. Archiving only affects your inbox — the other person&apos;s copy stays exactly where it was.
+                                    Your private shelf. Archiving only affects your inbox - the other person&apos;s copy stays exactly where it was.
                                 </div>
                             )}
 
@@ -950,7 +1009,7 @@ export default function ChatPage({ user }) {
                                         <h2>{inboxTab === "archived" ? "Archive is empty" : inboxTab === "past" ? "No past conversations" : "No active conversations"}</h2>
                                         <p>
                                             {inboxTab === "archived"
-                                                ? "Anything you archive lands here — always private to you."
+                                                ? "Anything you archive lands here - always private to you."
                                                 : inboxTab === "past"
                                                 ? "Ended conversations will appear here."
                                                 : "Start a conversation from confessions or search."}
@@ -1005,22 +1064,15 @@ export default function ChatPage({ user }) {
                                                     </div>
                                                 </button>
 
-                                                <div className="chat-tabbed-card__actions">
+                                                <div className="chat-tabbed-card__actions" style={{ justifyContent: "center" }}>
                                                     <button
                                                         type="button"
                                                         className="chat-tabbed-card__btn"
+                                                        style={{ width: "100%", justifyContent: "center" }}
                                                         onClick={() => handleArchiveConnection(conversation.id)}
                                                     >
                                                         <Archive size={15} />
                                                         <span>Archive</span>
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="chat-tabbed-card__btn"
-                                                        onClick={() => handleDeleteConnectionItem(conversation.id)}
-                                                    >
-                                                        <Trash2 size={15} />
-                                                        <span>Delete</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -1051,7 +1103,7 @@ export default function ChatPage({ user }) {
                                                         </div>
                                                     </button>
 
-                                                    <div className="chat-tabbed-card__actions">
+                                                     <div className="chat-tabbed-card__actions">
                                                         <button
                                                             type="button"
                                                             className="chat-tabbed-card__btn"
@@ -1059,14 +1111,6 @@ export default function ChatPage({ user }) {
                                                         >
                                                             <Archive size={15} />
                                                             <span>Unarchive</span>
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="chat-tabbed-card__btn"
-                                                            onClick={() => handleDeleteConnectionItem(conversation.id)}
-                                                        >
-                                                            <Trash2 size={15} />
-                                                            <span>Delete</span>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1093,7 +1137,18 @@ export default function ChatPage({ user }) {
                                         const isPaused = convStatus === "PAUSED";
                                         const isEnded = convStatus === "ENDED";
                                         const closingNote = closingNoteOverrides[activeConversationId] || getClosingNoteDisplay(activeConversation);
-                                        const statusText = isPaused ? "• Conversation paused" : activeConversationStatus;
+                                        const currentPausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
+                                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
+                                            : activeConversation.pausedBy;
+                                        const isPausedByMe = Number(currentPausedBy) === Number(userId);
+                                        const otherName = activeConversation.title || "Other user";
+                                        const pausedSubtitle = isPausedByMe
+                                            ? "• You paused this conversation"
+                                            : `• ${otherName} paused this conversation`;
+                                        const pausedBannerText = isPausedByMe || !currentPausedBy
+                                            ? "You paused this conversation. Nothing was ended."
+                                            : `${otherName} paused this conversation. Nothing was ended.`;
+                                        const statusText = isPaused ? pausedSubtitle : activeConversationStatus;
 
                                         return (
                                             <>
@@ -1131,7 +1186,7 @@ export default function ChatPage({ user }) {
                                                 {isPaused && (
                                                     <div className="chat-thread-paused-banner" role="status">
                                                         <Pause size={16} strokeWidth={2} />
-                                                        <span>You paused this conversation. Nothing was ended.</span>
+                                                        <span>{pausedBannerText}</span>
                                                     </div>
                                                 )}
 
@@ -1167,7 +1222,6 @@ export default function ChatPage({ user }) {
                                                                 <ConversationEndedPanel
                                                                     closingNoteText={closingNote}
                                                                     onArchive={handleArchiveEndedConversation}
-                                                                    onDelete={handleDeleteEndedConversation}
                                                                     isInitiator={true}
                                                                 />
                                                             )}
@@ -1219,6 +1273,14 @@ export default function ChatPage({ user }) {
                     onSelect={handleManageSheetSelect}
                     busyAction={connectionBusyAction}
                     isPaused={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "PAUSED"}
+                    isPausedByMe={(() => {
+                        const activePausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
+                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
+                            : (activeConversation && activeConversation.pausedBy);
+                        return Number(activePausedBy || 0) === Number(userId);
+                    })()}
+                    isArchived={Boolean(activeConversation && activeConversation.isArchivedForMe)}
+                    isEnded={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "ENDED"}
                 />
 
                 {/* ── End Connection Sheet / Modal ── */}
@@ -1279,13 +1341,13 @@ export default function ChatPage({ user }) {
 
                     {inboxTab === "past" && (
                         <div className="chat-inbox-tab-notice">
-                            Conversations that have come to an end. Visible only to you — the other person never learns who closed it.
+                            Conversations that have come to an end. Visible only to you - the other person never learns who closed it.
                         </div>
                     )}
 
                     {inboxTab === "archived" && (
                         <div className="chat-inbox-tab-notice">
-                            Your private shelf. Archiving only affects your inbox — the other person&apos;s copy stays exactly where it was.
+                            Your private shelf. Archiving only affects your inbox - the other person&apos;s copy stays exactly where it was.
                         </div>
                     )}
 
@@ -1366,14 +1428,6 @@ export default function ChatPage({ user }) {
                                                 <Archive size={15} />
                                                 <span>Archive</span>
                                             </button>
-                                            <button
-                                                type="button"
-                                                className="chat-tabbed-card__btn"
-                                                onClick={() => handleDeleteConnectionItem(conversation.id)}
-                                            >
-                                                <Trash2 size={15} />
-                                                <span>Delete</span>
-                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -1411,14 +1465,6 @@ export default function ChatPage({ user }) {
                                                 >
                                                     <Archive size={15} />
                                                     <span>Unarchive</span>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="chat-tabbed-card__btn"
-                                                    onClick={() => handleDeleteConnectionItem(conversation.id)}
-                                                >
-                                                    <Trash2 size={15} />
-                                                    <span>Delete</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -1497,8 +1543,19 @@ export default function ChatPage({ user }) {
                         const convStatus = conversationStatusOverrides[activeConversationId] || activeConversation.status;
                         const isPaused = convStatus === "PAUSED";
                         const isEnded = convStatus === "ENDED";
+                        const currentPausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
+                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
+                            : activeConversation.pausedBy;
+                        const isPausedByMe = Number(currentPausedBy) === Number(userId);
+                        const otherName = activeConversation.title || "Other user";
+                        const pausedSubtitle = isPausedByMe
+                            ? "• You paused this conversation"
+                            : `• ${otherName} paused this conversation`;
+                        const pausedBannerText = isPausedByMe || !currentPausedBy
+                            ? "You paused this conversation. Nothing was ended."
+                            : `${otherName} paused this conversation. Nothing was ended.`;
                         const statusText = isPaused
-                            ? "Conversation paused"
+                            ? pausedSubtitle
                             : isEnded
                             ? "Conversation ended"
                             : activeConversationStatus;
@@ -1522,7 +1579,7 @@ export default function ChatPage({ user }) {
                                         <div className="chat-mobile-header__titles">
                                             <strong>{activeConversation.title}</strong>
                                             <small style={isPaused ? { color: "#806b78" } : undefined}>
-                                                {isPaused ? "• Conversation paused" : statusText}
+                                                {statusText}
                                             </small>
                                         </div>
                                     </button>
@@ -1539,7 +1596,7 @@ export default function ChatPage({ user }) {
                                 {isPaused && (
                                     <div className="chat-thread-paused-banner" role="status">
                                         <Pause size={16} strokeWidth={2} />
-                                        <span>You paused this conversation. Nothing was ended.</span>
+                                        <span>{pausedBannerText}</span>
                                     </div>
                                 )}
                             </>
@@ -1601,7 +1658,6 @@ export default function ChatPage({ user }) {
                                                 <ConversationEndedPanel
                                                     closingNoteText={closingNote}
                                                     onArchive={handleArchiveEndedConversation}
-                                                    onDelete={handleDeleteEndedConversation}
                                                     isInitiator={true}
                                                 />
                                             )}
@@ -1613,7 +1669,6 @@ export default function ChatPage({ user }) {
                                             <ConversationEndedPanel
                                                 closingNoteText={closingNote}
                                                 onArchive={handleArchiveEndedConversation}
-                                                onDelete={handleDeleteEndedConversation}
                                                 isInitiator={true}
                                             />
                                         </div>
@@ -1662,6 +1717,14 @@ export default function ChatPage({ user }) {
                 onSelect={handleManageSheetSelect}
                 busyAction={connectionBusyAction}
                 isPaused={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "PAUSED"}
+                isPausedByMe={(() => {
+                    const activePausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
+                        ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
+                        : (activeConversation && activeConversation.pausedBy);
+                    return Number(activePausedBy || 0) === Number(userId);
+                })()}
+                isArchived={Boolean(activeConversation && activeConversation.isArchivedForMe)}
+                isEnded={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "ENDED"}
             />
 
             {/* ── End Connection Sheet ── */}

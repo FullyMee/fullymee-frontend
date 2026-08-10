@@ -551,7 +551,7 @@ export default function ConfessionRoomPage({ user }) {
                                 </div>
                                 <div className="confide-cta-banner__copy">
                                     <strong>Say it anonymously</strong>
-                                    <span>No name, no pressure — just your truth.</span>
+                                    <span>No name, no pressure - just your truth.</span>
                                 </div>
                                 <button
                                     type="button"

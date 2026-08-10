@@ -43,7 +43,7 @@ export default function UnifiedSidebar({
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const displayName = String((user && user.username) || "Quiet Fox").trim() || "Quiet Fox";
+    const displayName = String((user && user.username) || (user && user.email ? user.email.split("@")[0] : "User")).trim() || "User";
     const displayAvatarId = String((user && (user.preferences?.avatar || user.avatar)) || "flowing_waterfall").trim();
 
     return (
@@ -119,7 +119,7 @@ export default function UnifiedSidebar({
                 </span>
                 <span className="home-identity-card__copy">
                     <span className="home-identity-card__eyebrow">{browsingAsLabel}</span>
-                    <strong>{displayName}</strong>
+                    <strong title={displayName}>{displayName}</strong>
 
                 </span>
             </button>

@@ -110,31 +110,38 @@
 .my-confessions-room-list .ambience-room-card {
     flex: none;
     width: 100%;
-    height: clamp(140px, 40vw, 190px);
-    border-radius: 16px;
-    padding: 0.75rem 0.8rem 0.7rem;
+    height: 165px;
+    border-radius: 18px;
+    padding: 0.75rem 0.75rem 0.65rem;
+    box-sizing: border-box;
 }
 
 .my-confessions-room-list .ambience-room-card__title {
-    font-size: clamp(14px, 4vw, 18px);
+    font-size: 0.92rem;
+    line-height: 1.25;
+    font-weight: 700;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .my-confessions-room-list .ambience-room-card__badge {
-    font-size: 0.62rem;
-    padding: 0.22rem 0.5rem;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.45rem;
 }
 
 .my-confessions-room-list .ambience-room-card__glyph {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .my-confessions-room-list .ambience-room-card__meta {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
 }
 
 .my-confessions-room-list .ambience-room-card__cta {
-    font-size: 0.68rem;
-    padding: 0.28rem 0.65rem;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.55rem;
 }
 
 .my-confessions-room-card {

@@ -1,8 +1,9 @@
 import { apiRequest } from "./api";
 
-export function listConversations({ view = "active" } = {}) {
+export function listConversations({ view = "active", conversationId } = {}) {
     const params = new URLSearchParams();
     if (view) params.set("view", view);
+    if (conversationId) params.set("conversationId", String(conversationId));
     const suffix = params.toString() ? `?${params.toString()}` : "";
     return apiRequest(`/conversations${suffix}`, { method: "GET" });
 }
