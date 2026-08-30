@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
-import { FeedSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
+import { FeedSkeleton, ScrollLoader } from "../../../components/loaders";
 import MemoizedConfessionCard from "../../../components/common/ConfessionCard.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
@@ -12,9 +12,12 @@ import {
     getRoomTone,
     RoomGlyphIcon
 } from "../../../components/common/MobileRoomVisuals.jsx";
+import ConfessionMoreMenu from "./ConfessionMoreMenu.jsx";
 import { Virtuoso } from "react-virtuoso";
 import { getRoomHeroBadge } from "../utils/confessionView.js";
 import { ArrowLeftIcon, CommentIcon, CopyIcon, HeartIcon, LeaveIcon, LockIcon, PlusIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
+
+import { safeUnicodeSlice } from "../../../utils/unicode.js";
 
 function formatScheduleCountdown(date, now = Date.now()) {
     const target = new Date(date || 0).getTime();
@@ -55,6 +58,8 @@ export default function ActiveRoomFeed({
     onLoadMoreConfessions,
     onReact,
     onChatRequest,
+    onDeleteConfession,
+    user,
     scheduledConfessions = [],
     onCancelScheduled
 }) {
@@ -69,6 +74,12 @@ export default function ActiveRoomFeed({
 
     if (!activeRoom) return null;
 
+    const dynamicSkeletonCount = (confessions && confessions.length > 0)
+        ? confessions.length
+        : (activeRoom && Number.isFinite(Number(activeRoom.confessionCount || activeRoom.postCount)) && Number(activeRoom.confessionCount || activeRoom.postCount) > 0)
+            ? Math.min(Math.max(Number(activeRoom.confessionCount || activeRoom.postCount), 1), 6)
+            : 3;
+
     const confessionList = isDesktop ? (
         <div className="desktop-social-feed">
             {confessions.map((confession) => {
@@ -76,23 +87,31 @@ export default function ActiveRoomFeed({
                 const isLiked = likedConfessionIds.has(confessionId);
                 const isReacting = reactingConfessionIds.has(confessionId);
                 const isSentRequest = sentChatRequestIds.has(confessionId);
+                const isAuthor = (activeRoom?.alias && confession.alias === activeRoom.alias) || (user && Number(confession.author) === Number(user.id || user.userId));
 
                 return (
                     <article key={confession.confessionId} className="desktop-social-post">
                         <header 
                             className="desktop-social-post__header"
-                            style={{ cursor: "pointer" }}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
-                            }}
+                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
                         >
-                            <UserAvatar avatarId={confession.avatar} className="desktop-social-post__avatar" />
-                            <div className="desktop-social-post__meta">
-                                <strong>{confession.alias}</strong>
-                                <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
+                            <div
+                                style={{ display: "flex", alignItems: "center", gap: "0.7rem", cursor: "pointer", flex: 1 }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
+                                }}
+                            >
+                                <UserAvatar avatarId={confession.avatar} className="desktop-social-post__avatar" />
+                                <div className="desktop-social-post__meta">
+                                    <strong>{confession.alias}</strong>
+                                    <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
+                                </div>
                             </div>
+                            {isAuthor ? (
+                                <ConfessionMoreMenu onDelete={() => onDeleteConfession?.(confession.confessionId)} />
+                            ) : null}
                         </header>
 
                         <button
@@ -143,35 +162,32 @@ export default function ActiveRoomFeed({
             })}
         </div>
     ) : (
-        <Virtuoso
-            useWindowScroll
-            data={confessions}
-            endReached={() => {
-                if (!loadingConfessions && !loadingMoreConfessions && hasMoreConfessions) {
-                    onLoadMoreConfessions();
-                }
-            }}
-            components={{
-                Footer: () => (
-                    loadingMoreConfessions ? <InfiniteScrollLoader label="Loading more confessions" /> : null
-                )
-            }}
-            itemContent={(index, confession) => (
-                <div style={{ paddingBottom: "1rem" }}>
-                    <MemoizedConfessionCard
-                        key={confession.confessionId}
-                        confession={confession}
-                        isDesktop={false}
-                        isLiked={likedConfessionIds.has(Number(confession.confessionId))}
-                        isReacting={reactingConfessionIds.has(Number(confession.confessionId))}
-                        isSentRequest={sentChatRequestIds.has(Number(confession.confessionId))}
-                        onOpenView={onOpenConfession}
-                        onReact={onReact}
-                        onChatRequest={onChatRequest}
-                    />
+        <div className="room-mobile-redesign-feed-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {confessions.map((confession) => (
+                <MemoizedConfessionCard
+                    key={confession.confessionId}
+                    confession={confession}
+                    isDesktop={false}
+                    isLiked={likedConfessionIds.has(Number(confession.confessionId))}
+                    isReacting={reactingConfessionIds.has(Number(confession.confessionId))}
+                    isSentRequest={sentChatRequestIds.has(Number(confession.confessionId))}
+                    onOpenView={onOpenConfession}
+                    onReact={onReact}
+                    onChatRequest={onChatRequest}
+                    onDeleteConfession={onDeleteConfession}
+                    currentAlias={activeRoom?.alias}
+                    user={user}
+                />
+            ))}
+            {!loadingConfessions && !loadingMoreConfessions && hasMoreConfessions && (
+                <div style={{ textAlign: "center", padding: "1rem 0" }}>
+                    <button type="button" className="desktop-secondary-button" onClick={onLoadMoreConfessions}>
+                        Load more confessions
+                    </button>
                 </div>
             )}
-        />
+            {loadingMoreConfessions && <ScrollLoader label="Loading more confessions" />}
+        </div>
     );
 
     if (isDesktop) {
@@ -191,12 +207,12 @@ export default function ActiveRoomFeed({
                                             <ClockBadgeIcon />
                                         </div>
                                         <div>
-                                            <strong>Time-locked confession</strong>
+                                            <strong>Time-locked fume</strong>
                                             <span>Posts in {formatScheduleCountdown(item.scheduledAt, scheduleNow)}</span>
                                         </div>
                                     </header>
                                     <div className="room-scheduled-card__copy">
-                                        <p>{String(item.content || "").trim() ? String(item.content || "").slice(0, 90) : "Audio confession"}</p>
+                                        <p>{String(item.content || "").trim() ? safeUnicodeSlice(item.content, 90) : "Audio fume"}</p>
                                     </div>
                                     {typeof onCancelScheduled === "function" && (
                                         <footer className="room-scheduled-card__actions">
@@ -213,17 +229,19 @@ export default function ActiveRoomFeed({
 
                 <section className="desktop-profile-section">
                     <div className="desktop-profile-section__head">
-                        <h2>Confessions</h2>
-                        <span>{loadingConfessions ? "Loading..." : `${confessions.length} posts`}</span>
+                        <h2>Fumes</h2>
+                        <span>{loadingConfessions ? "Loading..." : `${confessions.length} fumes`}</span>
                     </div>
 
-                    {loadingConfessions && confessions.length === 0 && <FeedSkeletonList count={3} />}
+                    {loadingConfessions && confessions.length === 0 && (
+                        <FeedSkeleton isDesktop={true} count={dynamicSkeletonCount} />
+                    )}
 
                     {!loadingConfessions && confessions.length === 0 && (
                         <DesktopEmptyState
                             compact
-                            title="No confessions yet"
-                            description="Be the first to post in this room."
+                            title="No fumes yet"
+                            description="Be the first to drop a fume in this circle."
                         />
                     )}
 
@@ -235,7 +253,7 @@ export default function ActiveRoomFeed({
                             </button>
                         </div>
                     )}
-                    {loadingMoreConfessions && <InfiniteScrollLoader label="Loading more confessions" />}
+                    {loadingMoreConfessions && <ScrollLoader label="Loading more confessions" />}
                 </section>
             </div>
         );
@@ -250,7 +268,7 @@ export default function ActiveRoomFeed({
             <header className="room-mobile-redesign-header">
                 <button type="button" className="room-mobile-redesign-header__back" onClick={onBack}>
                     <ArrowLeftIcon />
-                    <span>Rooms</span>
+                    <span>Circles</span>
                 </button>
 
                 <div className="room-mobile-redesign-header__actions">
@@ -259,7 +277,7 @@ export default function ActiveRoomFeed({
                         className="room-mobile-redesign-header__leave"
                         disabled={leavingRoomId === Number(activeRoom.roomId)}
                         onClick={() => onLeaveRoom(activeRoom)}
-                        aria-label="Leave room"
+                        aria-label="Leave circle"
                     >
                         <LeaveIcon />
                     </button>
@@ -267,7 +285,7 @@ export default function ActiveRoomFeed({
                         type="button"
                         className="room-mobile-redesign-header__compose"
                         onClick={onOpenComposer}
-                        aria-label="Create confession"
+                        aria-label="Drop a Fume"
                     >
                         <PlusIcon />
                     </button>
@@ -299,7 +317,7 @@ export default function ActiveRoomFeed({
                 </section>
                 <hr className="room-mobile-redesign-divider" />
                 <section className="room-mobile-redesign-voices-head">
-                    <h2>VOICES FROM THE ROOM</h2>
+                    <h2>VOICES FROM THE CIRCLE</h2>
                     <p>Listen with kindness. Leave space for every story.</p>
                 </section>
                 <hr className="room-mobile-redesign-divider" />
@@ -317,7 +335,7 @@ export default function ActiveRoomFeed({
                                     <div className="room-mobile-redesign-card__content-btn" style={{ cursor: "default", textAlign: "left", display: "block", width: "100%", background: "none", border: "none", padding: 0 }}>
                                         <div className="room-mobile-redesign-card__author-row">
                                             <div className="room-mobile-redesign-card__author-info">
-                                                <UserAvatar avatarId={item.avatar} className="rm-avatar" />
+                                                <UserAvatar avatarId={item.avatar} className="room-mobile-redesign-card__avatar" />
                                                 <strong className="room-mobile-redesign-card__alias">{item.alias || "Anonymous"}</strong>
                                                 <svg className="room-mobile-redesign-card__sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L14.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L9.91 8.26L12 2Z"/></svg>
                                                 <span className="room-mobile-redesign-card__meta">
@@ -367,7 +385,9 @@ export default function ActiveRoomFeed({
                 )}
 
                 <section className="room-mobile-redesign-feed">
-                    {loadingConfessions && confessions.length === 0 && <FeedSkeletonList count={3} />}
+                    {loadingConfessions && confessions.length === 0 && (
+                        <FeedSkeleton isDesktop={false} count={dynamicSkeletonCount} />
+                    )}
 
                     {!loadingConfessions && confessions.length === 0 && (
                         <DesktopEmptyState

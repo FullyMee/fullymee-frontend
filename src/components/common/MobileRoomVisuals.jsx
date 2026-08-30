@@ -35,7 +35,7 @@ export function getRoomBadgeLabel(roomLike) {
 
 export function formatCompactMemberCount(value) {
     const count = Number(value && value.currentUserCount !== undefined ? value.currentUserCount : value);
-    if (!Number.isFinite(count) || count <= 0) return "New room";
+    if (!Number.isFinite(count) || count <= 0) return "New circle";
     return `${new Intl.NumberFormat("en-US").format(count)} members`;
 }
 
@@ -115,7 +115,7 @@ export function AmbienceRoomCard({
             <div className="ambience-room-card__content">
                 <div className="ambience-room-card__top">
                     <span className="ambience-room-card__badge">
-                        {isPrivate ? "🔒 Private" : "🌐 Public"}
+                        {isPrivate ? "🔒 Inner Circle" : "🌐 Fume Circle"}
                     </span>
                     <span className="ambience-room-card__glyph">{cornerGlyph}</span>
                 </div>

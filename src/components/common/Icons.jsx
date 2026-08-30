@@ -88,7 +88,7 @@ export function MobileMenuIcon({ size = 18, strokeWidth = 2 }) {
     return <Menu size={size} strokeWidth={strokeWidth} />;
 }
 
-export function ConfideMarkIcon({ size = 18, strokeWidth = 2 }) {
+export function FullyMeeMarkIcon({ size = 18, strokeWidth = 2 }) {
     return <MessageSquareQuote size={size} strokeWidth={strokeWidth} />;
 }
 
@@ -132,7 +132,7 @@ export function SparkIcon({ size = 18, strokeWidth = 2 }) {
     return <Sparkles size={size} strokeWidth={strokeWidth} />;
 }
 
-export function MobileConfideIcon({ size = 18, strokeWidth = 2 }) {
+export function MobileFullyMeeIcon({ size = 18, strokeWidth = 2 }) {
     return <MessageSquareQuote size={size} strokeWidth={strokeWidth} />;
 }
 

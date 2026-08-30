@@ -187,7 +187,7 @@ function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
                     <ListRow
                         icon={User}
                         iconColor="#7B4FA6"
-                        title="Username & Avatar"
+                        title="Username & Aura"
                         subtitle={user?.username ? `@${user.username}` : "Not set"}
                         valueEmoji={<div style={{ width: '20px', height: '20px' }}><UserAvatar avatarId={s.avatarDraft} /></div>}
                         onClick={() => onNavigate("identity")}
@@ -287,7 +287,7 @@ function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
 
 function IdentityPage({ s, onBack, onClose, animDir }) {
     return (
-        <PageShell title="Username & Avatar" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
+        <PageShell title="Username & Aura" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
             <form onSubmit={s.saveIdentity} id="sd-identity-form" className="sd-subpage-form">
 
                 {/* Current preview */}
@@ -304,7 +304,7 @@ function IdentityPage({ s, onBack, onClose, animDir }) {
                 <div className="sd-subpage-section">
                     <div className="sd-subpage-label">
                         <Smile size={14} />
-                        Choose Avatar
+                        Choose Aura
                     </div>
                     <AvatarPicker selectedAvatar={s.avatarDraft} onSelect={s.setAvatarDraft} />
                     

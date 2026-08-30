@@ -15,6 +15,9 @@ const ERROR_CODE_MAP = {
     'AUTH_SESSION_EXPIRED': 'Your session has expired. Please sign in again.',
     'AUTH_INVALID_TOKEN': 'Your authentication token is invalid. Please sign in again.',
     'AUTH_RATE_LIMITED': 'Too many attempts. Please wait a moment and try again.',
+    'GOOGLE_SIGNIN_NO_ACCOUNT': 'User does not exist, sign up first.',
+    'GOOGLE_ACCOUNT_CONFLICT': 'This Google account is already linked to another user.',
+    'GOOGLE_SIGNIN_INVALID': 'Unable to validate Google credential. Please try again.',
 
     // Validation errors
     'VALIDATION_EMAIL_INVALID': 'Please enter a valid email address.',
@@ -114,18 +117,22 @@ export function mapErrorCode(code, fallback = null) {
  * @returns {string} User-friendly error message
  */
 export function mapHttpStatus(status, payload = null) {
-    // Check for backend error code in response
-    if (payload && payload.code) {
-        return mapErrorCode(payload.code);
+    // Check for exact backend error code in response
+    if (payload && payload.code && ERROR_CODE_MAP[payload.code]) {
+        return ERROR_CODE_MAP[payload.code];
     }
 
-    // Check for error message in response
+    // Check for specific error message in response
     if (payload && (payload.error || payload.message)) {
-        const msg = payload.error || payload.message;
-        // Only use server message if it's not a generic error
-        if (msg && !msg.includes('error') && msg.length > 10) {
+        const msg = String(payload.error || payload.message).trim();
+        if (msg) {
             return msg;
         }
+    }
+
+    // Fall back to mapped error code if exists
+    if (payload && payload.code) {
+        return mapErrorCode(payload.code);
     }
 
     return HTTP_STATUS_MAP[status] || ERROR_CODE_MAP.UNKNOWN_ERROR;

@@ -5,7 +5,7 @@ import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, 
 import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import DesktopIconStatCard from "../components/common/DesktopIconStatCard.jsx";
-import { InlineSpinner, ProfileSkeleton } from "../components/common/LoadingStates.jsx";
+import { InlineSpinner, ProfileSkeleton } from "../components/loaders";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import { checkUsername, logout, updateCurrentUserPreferences } from "../services/auth.service";
 import { getJoinedRooms, getMyConfessions } from "../services/confession.service";
@@ -200,7 +200,7 @@ export default function ProfilePage({ user }) {
                     hideStageHeader
                 >
                     <div className="desktop-profile-container">
-                        {loading && <ProfileSkeleton />}
+                        {loading && <ProfileSkeleton isDesktop={true} roomCount={joinedRooms?.length > 0 ? joinedRooms.length : 3} />}
 
                         {!loading && (
                             <div className="desktop-profile-grid">
@@ -316,9 +316,7 @@ export default function ProfilePage({ user }) {
                 </div>
 
                 {loading ? (
-                    <div className="profile-content">
-                        <ProfileSkeleton />
-                    </div>
+                    <ProfileSkeleton isDesktop={false} roomCount={activeJoinedRooms?.length > 0 ? activeJoinedRooms.length : (joinedRooms?.length > 0 ? joinedRooms.length : 5)} />
                 ) : (
                     <main className="profile-mobile-redesign__content">
                         {/* ── 1. Top Header Card: Avatar + Stats ── */}

@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import Router from "./app/router.jsx";
-import { InlineSpinner } from "./components/common/LoadingStates.jsx";
+import { InlineSpinner } from "./components/loaders";
 
-function GlobalAppLoader() {
-    const isFetching = useIsFetching();
-    const isMutating = useIsMutating();
-    const [visible, setVisible] = useState(false);
+function GlobalTopBarLoader() {
     const [isOffline, setIsOffline] = useState(typeof navigator !== "undefined" ? !navigator.onLine : false);
 
     useEffect(() => {
@@ -25,39 +21,14 @@ function GlobalAppLoader() {
         };
     }, []);
 
-    useEffect(() => {
-        if (isOffline) {
-            const timerId = window.setTimeout(() => setVisible(true), 120);
-            return () => window.clearTimeout(timerId);
-        }
-
-        const pendingRequests = isFetching + isMutating;
-
-        if (!pendingRequests) {
-            setVisible(false);
-            return undefined;
-        }
-
-        const timerId = window.setTimeout(() => setVisible(true), 120);
-        return () => window.clearTimeout(timerId);
-    }, [isFetching, isMutating, isOffline]);
-
-    useEffect(() => {
-        if (!isOffline) {
-            setVisible(false);
-        }
-    }, [isOffline]);
-
-    if (!visible) {
-        return null;
-    }
+    if (!isOffline) return null;
 
     return (
-        <div className="app-global-loader" role="status" aria-live="polite" aria-label="Loading content">
-            <div className="app-global-loader__bar" />
-            <div className="app-global-loader__content">
-                <InlineSpinner size="sm" tone="dark" label="Loading content" />
-                <span className="app-global-loader__hint">{isOffline ? "Reconnecting…" : "Loading…"}</span>
+        <div className="fm-loader-bar-wrap" role="status" aria-live="polite" aria-label="Reconnecting">
+            <div className="fm-loader-bar" />
+            <div className="fm-loader-bar-hint">
+                <InlineSpinner size="sm" tone="brand" label="Reconnecting" />
+                <span>Reconnecting…</span>
             </div>
         </div>
     );
@@ -66,7 +37,7 @@ function GlobalAppLoader() {
 export default function App() {
     return (
         <>
-            <GlobalAppLoader />
+            <GlobalTopBarLoader />
             <Router />
         </>
     );

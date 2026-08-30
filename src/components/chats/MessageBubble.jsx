@@ -39,11 +39,12 @@ const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, avatar
     return (
         <article
             className={`chat-thread-bubble${isMine ? " is-mine" : ""}`}
+            style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
         >
             {!isMine && (
                 <UserAvatar avatarId={avatar} className="chat-thread-bubble__author-avatar" style={{width: "24px", height: "24px", borderRadius: "50%", marginRight: "8px"}} />
             )}
-            <p>{message.content}</p>
+            <p style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>{message.content}</p>
             <small>{formatMessageTime(message.createdAt)}</small>
         </article>
     );

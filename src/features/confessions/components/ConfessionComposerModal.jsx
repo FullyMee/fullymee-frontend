@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, Clock, Mic, Type, X } from "lucide-react";
-import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
+import { InlineSpinner } from "../../../components/loaders";
 import AudioConfessionRecorder from "./AudioConfessionRecorder.jsx";
 import {
     formatCompactMemberCount,
@@ -8,6 +8,7 @@ import {
     RoomGlyphIcon
 } from "../../../components/common/MobileRoomVisuals.jsx";
 import { ArrowLeftIcon, ShieldIcon } from "./ConfessionIcons.jsx";
+import { safeUnicodeSlice, getUnicodeLength } from "../../../utils/unicode.js";
 
 const SCHEDULE_OPTIONS = [
     { label: "2 hours", getDate: () => new Date(Date.now() + 2 * 60 * 60 * 1000) },
@@ -40,8 +41,10 @@ export default function ConfessionComposerModal({
     isDesktop,
     room,
     draft,
+    audioTitle,
     posting,
     onDraftChange,
+    onAudioTitleChange,
     onClose,
     onSubmit,
     onShuffle,
@@ -69,8 +72,9 @@ export default function ConfessionComposerModal({
 
     const alias = String(room.alias || "").trim();
     const isAudioMode = confessionMode === "audio";
-    const hasDraft = !!String(draft || "").trim();
-    const canSubmit = isAudioMode ? audioReady && hasDraft : hasDraft;
+    const hasTextDraft = !!String(draft || "").trim();
+    const hasAudioTitle = !!String(audioTitle || "").trim();
+    const canSubmit = isAudioMode ? audioReady && hasAudioTitle : hasTextDraft;
 
     if (!isDesktop) {
         return (
@@ -113,7 +117,7 @@ export default function ConfessionComposerModal({
                         )}
 
                         <section className="room-mobile-redesign-composer__section">
-                            <h2>Post in room</h2>
+                            <h2>Post in circle</h2>
                             <article className="room-mobile-redesign-composer__room-card">
                                 <div className={`room-mobile-redesign-composer__room-icon room-mobile-redesign-composer__room-icon--${getRoomTone(room)}`}>
                                     <RoomGlyphIcon tone={getRoomTone(room)} />
@@ -126,7 +130,7 @@ export default function ConfessionComposerModal({
                         </section>
 
                         <section className="room-mobile-redesign-composer__section">
-                            <h2>Your confession</h2>
+                            <h2>Your fume</h2>
                             <div className="room-mobile-redesign-composer__mode-toggle" role="tablist">
                                 <button
                                     type="button"
@@ -154,10 +158,9 @@ export default function ConfessionComposerModal({
                                             <input
                                                 id="audio-confession-title-mobile"
                                                 type="text"
-                                                value={draft}
-                                                onChange={(event) => onDraftChange(event.target.value)}
-                                                placeholder="Give your audio confession a title..."
-                                                maxLength={80}
+                                                value={audioTitle || ""}
+                                                onChange={(event) => onAudioTitleChange?.(safeUnicodeSlice(event.target.value, 80))}
+                                                placeholder="Give your audio fume a title..."
                                             />
                                         </label>
                                         <AudioConfessionRecorder
@@ -169,7 +172,7 @@ export default function ConfessionComposerModal({
                                         />
                                         <div className="room-mobile-redesign-composer__footer">
                                             <span>Title helps others understand the audio</span>
-                                            <strong>{String(draft || "").length}/80</strong>
+                                            <strong>{getUnicodeLength(audioTitle)}/80</strong>
                                         </div>
                                     </>
                                 ) : (
@@ -177,15 +180,14 @@ export default function ConfessionComposerModal({
                                         <label className="room-mobile-redesign-composer__editor" htmlFor="confession-compose-mobile">
                                             <textarea
                                                 id="confession-compose-mobile"
-                                                value={draft}
-                                                onChange={(event) => onDraftChange(event.target.value)}
+                                                value={draft || ""}
+                                                onChange={(event) => onDraftChange?.(safeUnicodeSlice(event.target.value, 200))}
                                                 placeholder="Share what's on your mind... This is a safe space to express yourself."
-                                                maxLength={200}
                                             />
                                         </label>
                                         <div className="room-mobile-redesign-composer__footer">
                                             <span>Be honest and respectful</span>
-                                            <strong>{String(draft || "").length}/200</strong>
+                                            <strong>{getUnicodeLength(draft)}/200</strong>
                                         </div>
                                     </>
                                 )}
@@ -196,10 +198,10 @@ export default function ConfessionComposerModal({
                             <section className="room-mobile-redesign-composer__schedule">
                                 <div className="room-mobile-redesign-composer__schedule-header">
                                     <Clock size={18} strokeWidth={2} aria-hidden="true" />
-                                    <strong>Time-lock this confession</strong>
+                                    <strong>Time-lock this fume</strong>
                                 </div>
                                 <p className="room-mobile-redesign-composer__schedule-desc">
-                                    It will become visible to the room after the time you choose.
+                                    It will become visible to the circle after the time you choose.
                                 </p>
                                 <div className="room-mobile-redesign-composer__schedule-options">
                                     {SCHEDULE_OPTIONS.map((opt) => {
@@ -246,10 +248,10 @@ export default function ConfessionComposerModal({
                     >
                         {posting ? (
                             <>
-                                <InlineSpinner size="sm" tone="light" label="Posting confession" />
-                                <span>{isScheduled ? "Scheduling..." : "Posting..."}</span>
+                                <InlineSpinner size="sm" tone="light" label="Dropping fume" />
+                                <span>{isScheduled ? "Scheduling..." : "Dropping..."}</span>
                             </>
-                        ) : isScheduled ? `Schedule ${formatCountdown(selectedScheduledAt, now)}` : "Post"}
+                        ) : isScheduled ? `Schedule ${formatCountdown(selectedScheduledAt, now)}` : "Drop Fume"}
                     </button>
                 </header>
 
@@ -258,7 +260,7 @@ export default function ConfessionComposerModal({
                         <ShieldIcon />
                         <div>
                             <strong>Share freely. Your identity stays anonymous.</strong>
-                            <span>No one can trace this confession back to you</span>
+                            <span>No one can trace this fume back to you</span>
                         </div>
                     </section>
 
@@ -272,7 +274,7 @@ export default function ConfessionComposerModal({
                     )}
 
                     <section className="room-post-modal__section">
-                        <h2 id="room-post-title">Post in room</h2>
+                        <h2 id="room-post-title">Post in circle</h2>
                         <article className="room-post-modal__room-card">
                             <div className={`room-post-modal__room-icon room-post-modal__room-icon--${getRoomTone(room)}`}>
                                 <RoomGlyphIcon tone={getRoomTone(room)} />
@@ -285,7 +287,7 @@ export default function ConfessionComposerModal({
                     </section>
 
                     <section className="room-post-modal__section">
-                        <h2>Your confession</h2>
+                        <h2>Your fume</h2>
                         <div className="room-post-modal__mode-toggle" role="tablist" aria-label="Confession type">
                             <button
                                 type="button"
@@ -312,9 +314,9 @@ export default function ConfessionComposerModal({
                                     <input
                                         id="audio-confession-title"
                                         type="text"
-                                        value={draft}
-                                        onChange={(event) => onDraftChange(event.target.value)}
-                                        placeholder="Give your audio confession a title..."
+                                        value={audioTitle || ""}
+                                        onChange={(event) => onAudioTitleChange?.(event.target.value.slice(0, 80))}
+                                        placeholder="Give your audio fume a title..."
                                         maxLength={80}
                                     />
                                 </label>
@@ -327,7 +329,7 @@ export default function ConfessionComposerModal({
                                 />
                                 <div className="room-post-modal__footer">
                                     <span>Title helps others understand the audio</span>
-                                    <strong>{String(draft || "").length}/80</strong>
+                                    <strong>{String(audioTitle || "").length}/80</strong>
                                 </div>
                             </>
                         ) : (
@@ -335,8 +337,8 @@ export default function ConfessionComposerModal({
                                 <label className="room-post-modal__editor" htmlFor="confession-compose">
                                     <textarea
                                         id="confession-compose"
-                                        value={draft}
-                                        onChange={(event) => onDraftChange(event.target.value)}
+                                        value={draft || ""}
+                                        onChange={(event) => onDraftChange?.(event.target.value.slice(0, 200))}
                                         placeholder="Share what's on your mind... This is a safe space to express yourself."
                                         maxLength={200}
                                     />
@@ -353,7 +355,7 @@ export default function ConfessionComposerModal({
                         <section className="room-post-modal__schedule">
                             <div className="room-post-modal__schedule-header">
                                 <Clock size={13} strokeWidth={2.2} aria-hidden="true" />
-                                <span>Time-lock this confession</span>
+                                <span>Time-lock this fume</span>
                             </div>
                             <div className="room-post-modal__schedule-pills">
                                 {SCHEDULE_OPTIONS.map((opt) => {

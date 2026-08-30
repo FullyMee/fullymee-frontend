@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { RoomCardSkeletonList } from "../../../components/common/LoadingStates.jsx";
+import { RoomSkeleton } from "../../../components/loaders";
 import {
     AmbienceRoomCard,
     formatCompactMemberCount,
@@ -10,7 +10,7 @@ import {
 import { ChevronRight, Compass, Sparkles } from "lucide-react";
 
 function formatRoomAccess(room) {
-    return room && room.roomType === "private" ? "Private" : "Public";
+    return room && room.roomType === "private" ? "Inner Circle" : "Fume Circle";
 }
 
 /* ── Desktop no-rooms empty state ── */
@@ -27,9 +27,9 @@ function DesktopNoRooms() {
 
             <div className="joined-rooms-empty__body">
                 <Compass size={32} strokeWidth={1.4} className="joined-rooms-empty__icon" />
-                <h2 className="joined-rooms-empty__title">No rooms joined yet</h2>
+                <h2 className="joined-rooms-empty__title">No circles joined yet</h2>
                 <p className="joined-rooms-empty__sub">
-                    Find a space that resonates with you — explore public and late-night rooms
+                    Find a space that resonates with you - explore Fume Circles
                     and start sharing your thoughts anonymously.
                 </p>
                 <button
@@ -38,7 +38,7 @@ function DesktopNoRooms() {
                     onClick={() => navigate("/search?tab=rooms")}
                 >
                     <Sparkles size={15} strokeWidth={2} />
-                    Discover Rooms
+                    Discover Circles
                 </button>
             </div>
         </div>
@@ -51,14 +51,14 @@ function MobileNoRooms() {
     return (
         <section className="my-confessions-empty-card my-confessions-empty-card--rooms">
             <Compass size={28} strokeWidth={1.4} className="my-confessions-empty-card__icon" />
-            <h2>No joined rooms yet</h2>
-            <p>Discover and join rooms to start posting and replying anonymously.</p>
+            <h2>No joined circles yet</h2>
+            <p>Discover and join circles to start dropping fumes and replying anonymously.</p>
             <button
                 type="button"
                 className="my-confessions-primary-link"
                 onClick={() => navigate("/search?tab=rooms")}
             >
-                Discover Rooms
+                Discover Circles
             </button>
         </section>
     );
@@ -67,15 +67,16 @@ function MobileNoRooms() {
 export default function JoinedRoomsPanel({
     isDesktop = false,
     loadingRooms,
-    joinedRooms,
+    joinedRooms = [],
     onOpenRoom
 }) {
     const emptyJoinedRooms = !loadingRooms && joinedRooms.length === 0;
+    const skeletonCount = (joinedRooms && joinedRooms.length > 0) ? joinedRooms.length : 4;
 
     if (isDesktop) {
         return (
             <>
-                {loadingRooms && <RoomCardSkeletonList count={4} />}
+                {loadingRooms && <RoomSkeleton count={skeletonCount} />}
 
                 {emptyJoinedRooms && <DesktopNoRooms />}
 
@@ -97,7 +98,7 @@ export default function JoinedRoomsPanel({
 
     return (
         <main className="my-confessions-content my-confessions-content--rooms">
-            {loadingRooms && <RoomCardSkeletonList count={4} />}
+            {loadingRooms && <RoomSkeleton count={skeletonCount} />}
 
             {emptyJoinedRooms && <MobileNoRooms />}
 

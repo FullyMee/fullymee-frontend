@@ -70,7 +70,7 @@ export function leaveConfessionRoom(roomId) {
     });
 }
 
-export function listConfessions(roomId, { limit = 50, sortBy = "ranked" } = {}) {
+export function listConfessions(roomId, { limit = 50, sortBy = "latest" } = {}) {
     const params = new URLSearchParams({ limit: String(limit), sortBy });
     return apiRequest(`/confessions/rooms/${roomId}/confessions?${params.toString()}`, {
         method: "GET"
@@ -112,6 +112,14 @@ export function postConfession(roomId, content, options = null) {
     return apiRequest(`/confessions/rooms/${roomId}/confessions`, {
         method: "POST",
         body: JSON.stringify(body)
+    });
+}
+
+export function deleteConfession(roomId, confessionId) {
+    const rId = Number(roomId);
+    const cId = Number(confessionId);
+    return apiRequest(`/confessions/rooms/${rId}/confessions/${cId}`, {
+        method: "DELETE"
     });
 }
 

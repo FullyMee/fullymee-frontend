@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import InlineError from "./InlineError.jsx";
-import { InlineSpinner } from "./LoadingStates.jsx";
+import { InlineSpinner } from "../loaders";
 import { ArrowLeft, Check, ChevronDown, Globe, Lock, RefreshCcw, ImageIcon } from "lucide-react";
 import { getAmbiencesForCategory } from "../../config/ambienceLibrary.js";
 
@@ -125,7 +125,7 @@ export default function CreateRoomModal({
 
                 <div className="discover-create-screen__content">
                     <section className="discover-create-screen__intro">
-                        <span className="discover-create-screen__eyebrow">Create room</span>
+                        <span className="discover-create-screen__eyebrow">Create Circle</span>
                         <h3>
                             Start a new <em>anonymous</em> space
                         </h3>
@@ -134,7 +134,7 @@ export default function CreateRoomModal({
                     {/* Room Title */}
                     <label className="discover-create-screen__field">
                         <div className="discover-create-screen__field-head">
-                            <span>Room title</span>
+                            <span>Circle title</span>
                             <small>Name</small>
                         </div>
                         <input
@@ -270,7 +270,7 @@ export default function CreateRoomModal({
                                     <Globe size={20} strokeWidth={2} />
                                 </span>
                                 <span className="discover-create-screen__option-copy">
-                                    <strong>Public Room</strong>
+                                    <strong>Fume Circle</strong>
                                     <small>Anyone can join.</small>
                                 </span>
                                 {roomType === "public" && (
@@ -289,7 +289,7 @@ export default function CreateRoomModal({
                                     <Lock size={20} strokeWidth={2} />
                                 </span>
                                 <span className="discover-create-screen__option-copy">
-                                    <strong>Private Room</strong>
+                                    <strong>Inner Circle</strong>
                                     <small>Join with a code.</small>
                                 </span>
                                 {roomType === "private" && (

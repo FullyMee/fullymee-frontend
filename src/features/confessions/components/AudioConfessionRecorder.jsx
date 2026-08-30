@@ -1,7 +1,10 @@
 import { Check, Mic, RefreshCw, Square, Upload } from "lucide-react";
-import { useState } from "react";
-import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
+import { useRef, useState } from "react";
+import { InlineSpinner } from "../../../components/loaders";
+import { useGlobalError } from "../../../context/ErrorContext.jsx";
 import useAudioRecorder from "../hooks/useAudioRecorder.js";
+
+const MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 function formatDuration(seconds) {
     const safe = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -63,6 +66,8 @@ export default function AudioConfessionRecorder({
     ready
 }) {
     const recorder = useAudioRecorder({ maxDurationSeconds: token?.maxDurationSeconds || 30 });
+    const { showError } = useGlobalError();
+    const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
 
@@ -70,8 +75,33 @@ export default function AudioConfessionRecorder({
         recorder.start();
     };
 
+    const handleFileSelect = (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        if (file.size > MAX_AUDIO_SIZE_BYTES) {
+            const errorMsg = "Audio file size must be under 10MB";
+            showError(errorMsg);
+            recorder.setError(errorMsg);
+            if (event.target) event.target.value = "";
+            return;
+        }
+
+        recorder.setError("");
+        recorder.setRecordedFile(file);
+        if (event.target) event.target.value = "";
+    };
+
     const handleUse = async () => {
         if (!recorder.blob) return;
+
+        if (recorder.blob.size > MAX_AUDIO_SIZE_BYTES) {
+            const errorMsg = "Audio file size must be under 10MB";
+            showError(errorMsg);
+            recorder.setError(errorMsg);
+            return;
+        }
+
         try {
             setUploading(true);
             setProgress(0);
@@ -79,8 +109,9 @@ export default function AudioConfessionRecorder({
             if (!uploadToken) {
                 throw new Error("Audio uploads are not available right now.");
             }
-            if (uploadToken.maxBytes && recorder.blob.size > Number(uploadToken.maxBytes)) {
-                throw new Error("Audio is too large. Please record a shorter confession.");
+            const maxAllowedBytes = Math.max(MAX_AUDIO_SIZE_BYTES, Number(uploadToken.maxBytes) || MAX_AUDIO_SIZE_BYTES);
+            if (recorder.blob.size > maxAllowedBytes) {
+                throw new Error("Audio file size must be under 10MB");
             }
             const result = await uploadAudio({
                 token: uploadToken,
@@ -100,10 +131,15 @@ export default function AudioConfessionRecorder({
                 bytes: Number(result.bytes || recorder.blob.size || 0)
             });
         } catch (err) {
-            if (err && err.status === 503) {
+            const errorText = (err && err.message) || "";
+            if (errorText.includes("10MB") || errorText.includes("too large") || recorder.blob.size > MAX_AUDIO_SIZE_BYTES) {
+                const errorMsg = "Audio file size must be under 10MB";
+                showError(errorMsg);
+                recorder.setError(errorMsg);
+            } else if (err && err.status === 503) {
                 recorder.setError("Audio uploads are not enabled on the server yet.");
             } else {
-                recorder.setError(err && err.message ? err.message : "Audio upload failed.");
+                recorder.setError(errorText || "Audio upload failed.");
             }
         } finally {
             setUploading(false);
@@ -113,10 +149,29 @@ export default function AudioConfessionRecorder({
     return (
         <div className="audio-recorder">
             {recorder.state === "idle" && (
-                <button type="button" className="audio-recorder__start" onClick={handleStart} disabled={tokenLoading}>
-                    {tokenLoading ? <InlineSpinner size="sm" /> : <Mic size={18} strokeWidth={2.2} />}
-                    <span>{tokenLoading ? "Preparing..." : "Record audio confession"}</span>
-                </button>
+                <div className="audio-recorder__idle-actions" style={{ display: "flex", gap: "8px", width: "100%" }}>
+                    <button type="button" className="audio-recorder__start" onClick={handleStart} disabled={tokenLoading} style={{ flex: 1 }}>
+                        {tokenLoading ? <InlineSpinner size="sm" /> : <Mic size={18} strokeWidth={2.2} />}
+                        <span>{tokenLoading ? "Preparing..." : "Record audio"}</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="audio-recorder__start"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={tokenLoading}
+                        style={{ flex: 1 }}
+                    >
+                        <Upload size={18} strokeWidth={2.2} />
+                        <span>Upload audio</span>
+                    </button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="audio/*"
+                        style={{ display: "none" }}
+                        onChange={handleFileSelect}
+                    />
+                </div>
             )}
 
             {recorder.state === "recording" && (

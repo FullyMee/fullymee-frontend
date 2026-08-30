@@ -8,10 +8,10 @@ import fullymeLogo from "../../assets/fullyme-logo.png";
 
 const DEFAULT_NAV_ITEMS = [
     { key: "home", label: "Home", to: "/" },
-    { key: "confessions", label: "Confessions", to: "/confessions" },
+    { key: "confessions", label: "Fumes", to: "/confessions" },
     { key: "messages", label: "Messages", to: "/chats" },
-    { key: "search", label: "Search", to: "/search" },
-    { key: "profile", label: "Profile", to: "/profile" },
+    { key: "search", label: "Explore", to: "/search" },
+    { key: "profile", label: "Reflection", to: "/profile" },
     { key: "settings", label: "Settings", to: "/settings" }
 ];
 
@@ -50,10 +50,10 @@ export default function UnifiedSidebar({
         <aside className="home-desktop-sidebar desktop-app-shell__sidebar">
             <div className="home-brand">
                 <div className="home-brand__mark" aria-hidden="true">
-                    <img src={fullymeLogo} alt="FullyMe logo" className="home-brand__logo-img" />
+                    <img src={fullymeLogo} alt="FullyMee logo" className="home-brand__logo-img" />
                 </div>
                 <div className="home-brand__copy">
-                    <strong>FullyMe</strong>
+                    <strong>FullyMee</strong>
                     
                 </div>
             </div>
@@ -84,7 +84,7 @@ export default function UnifiedSidebar({
 
             <section className="home-sidebar-section">
                 <div className="home-sidebar-section__head">
-                    <h2>My Rooms</h2>
+                    <h2>My Circles</h2>
                 </div>
                 <div className="home-room-stack">
                     {rooms.length > 0 ? rooms.map((room) => {
@@ -99,12 +99,12 @@ export default function UnifiedSidebar({
                                 <span className={`home-room-pill__icon home-room-pill__icon--${tone}`} aria-hidden="true">
                                     <RoomGlyphIcon tone={tone} />
                                 </span>
-                                <span className="home-room-pill__copy">{room.title || "Untitled room"}</span>
+                                <span className="home-room-pill__copy">{room.title || "Untitled circle"}</span>
                                 <span className="home-room-pill__dot" aria-hidden="true" />
                             </button>
                         );
                     }) : (
-                        <div className="home-room-empty">Join rooms to see them here.</div>
+                        <div className="home-room-empty">Join circles to see them here.</div>
                     )}
                 </div>
             </section>

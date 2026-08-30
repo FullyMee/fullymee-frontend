@@ -40,24 +40,24 @@ export default function ConfessionLobbyDesktop({
                     <section className="home-feed-column my-confessions-lobby-grid__main">
                         <div className="desktop-confessions-hub">
                             <section className="desktop-confessions-hub__hero">
-                                <h1>Your Confession Rooms</h1>
-                                <p>Rooms you have joined and communities where you can post.</p>
+                                <h1>Your Circles</h1>
+                                <p>Circles you have joined and communities where you can post.</p>
                             </section>
 
-                            <section className="desktop-pill-tabs desktop-confessions-hub__filters" aria-label="Room filters">
-                                {["All", "Joined", "Public", "Private", "Late Night", "Heartbreak"].map((label) => (
+                            <section className="desktop-pill-tabs desktop-confessions-hub__filters" aria-label="Circle filters">
+                                {[{ key: "All", label: "All" }, { key: "Public", label: "Fume Circles" }, { key: "Private", label: "Inner Circles" }].map((item) => (
                                     <button
-                                        key={label}
+                                        key={item.key}
                                         type="button"
-                                        className={`desktop-pill-tabs__item${roomFilter === label ? " is-active" : ""}`}
-                                        onClick={() => onRoomFilterChange(label)}
+                                        className={`desktop-pill-tabs__item${roomFilter === item.key ? " is-active" : ""}`}
+                                        onClick={() => onRoomFilterChange(item.key)}
                                     >
-                                        {label}
+                                        {item.label}
                                     </button>
                                 ))}
                             </section>
 
-                            {loadingRooms && <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={[]} onOpenRoom={onOpenRoom} />}
+                            {loadingRooms && <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={filteredJoinedRooms.length > 0 ? filteredJoinedRooms : joinedRooms} onOpenRoom={onOpenRoom} />}
 
                             {!loadingRooms && filteredJoinedRooms.length === 0 && joinedRooms.length === 0 && (
                                 <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={[]} onOpenRoom={onOpenRoom} />
@@ -65,8 +65,8 @@ export default function ConfessionLobbyDesktop({
 
                             {!loadingRooms && filteredJoinedRooms.length === 0 && joinedRooms.length > 0 && (
                                 <DesktopEmptyState
-                                    title="No rooms match this filter"
-                                    description="Try another filter or clear the search bar to see your joined rooms."
+                                    title="No circles match this filter"
+                                    description="Try another filter or clear the search bar to see your joined circles."
                                     action={null}
                                 />
                             )}

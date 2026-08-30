@@ -19,17 +19,17 @@ export function uniqueByNumericId(items, getId) {
 }
 
 export function getRoomHeroBadge(room) {
-    if (room && room.roomType === "private") return "private room";
+    if (room && room.roomType === "private") return "Inner Circle";
 
     const badge = getRoomBadgeLabel(room);
-    if (badge === "room") return "public room";
-    return `${badge} room`;
+    if (badge === "room") return "Fume Circle";
+    return `${badge} circle`;
 }
 
 export function getConfessionParts(content) {
     const text = String(content || "").trim();
     if (!text) {
-        return { title: "Audio confession", body: "" };
+        return { title: "Audio fume", body: "" };
     }
 
     const questionMarkIndex = text.indexOf("?");

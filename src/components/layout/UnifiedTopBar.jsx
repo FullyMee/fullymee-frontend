@@ -3,11 +3,11 @@ import { Bell, Plus, Search } from "lucide-react";
 export default function UnifiedTopBar({
     value,
     onChange,
-    placeholder = "Search rooms, people, or feelings...",
+    placeholder = "Explore circles, people, or feelings...",
     onSubmit,
     onNotificationsClick,
     onPrimaryClick,
-    primaryLabel = "Create Room",
+    primaryLabel = "Create Circle",
     className = ""
 }) {
     return (
@@ -18,6 +18,7 @@ export default function UnifiedTopBar({
                 </span>
                 <input
                     type="search"
+                    maxLength={100}
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}

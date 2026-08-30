@@ -4,6 +4,7 @@ import { useGlobalError } from "../../../context/ErrorContext.jsx";
 import useBodyClass from "../../../hooks/useBodyClass.js";
 import useIntersectionLoadMore from "../../../hooks/useIntersectionLoadMore";
 import useTimedNotice from "../../../hooks/useTimedNotice.js";
+import { safeUnicodeSlice } from "../../../utils/unicode.js";
 import {
     getJoinedRooms,
     leaveConfessionRoom,
@@ -11,6 +12,7 @@ import {
     listConfessions,
     listReplies,
     postConfession,
+    deleteConfession,
     postReply,
     likeConfession,
     likeReply,
@@ -34,11 +36,20 @@ export default function useConfessionRoom() {
     const navigate = useNavigate();
     const { showError, dismissError } = useGlobalError();
 
-    const [joinedRooms, setJoinedRooms] = useState([]);
+    const [joinedRooms, setJoinedRooms] = useState(() => {
+        try {
+            const cached = localStorage.getItem("fm_cached_joined_rooms");
+            const parsed = cached ? JSON.parse(cached) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
     const [roomMembers, setRoomMembers] = useState([]);
     const [confessions, setConfessions] = useState([]);
     const [repliesByConfession, setRepliesByConfession] = useState({});
     const [confessionDraft, setConfessionDraft] = useState("");
+    const [audioTitle, setAudioTitle] = useState("");
     const [replyDrafts, setReplyDrafts] = useState({});
     const [loadingRooms, setLoadingRooms] = useState(true);
     const [loadingConfessions, setLoadingConfessions] = useState(false);
@@ -124,7 +135,11 @@ export default function useConfessionRoom() {
                 setLoadingRooms(true);
                 const rooms = await getJoinedRooms();
                 if (cancelled) return;
-                setJoinedRooms(uniqueByNumericId(rooms, (room) => room && room.roomId));
+                const unique = uniqueByNumericId(rooms, (room) => room && room.roomId);
+                setJoinedRooms(unique);
+                try {
+                    localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique));
+                } catch {}
                 dismissError();
             } catch (err) {
                 if (!cancelled) {
@@ -242,10 +257,43 @@ export default function useConfessionRoom() {
     }, [selectedConfessionId]);
 
     useEffect(() => {
-        if (activeRoomId && activeRoom) {
+        let isCancelled = false;
+        if (!activeRoomId || loadingRooms || activeRoom) return;
+
+        async function autoJoinOrFetchRoom() {
+            try {
+                const joined = await joinConfessionRoom({ roomId: activeRoomId, joinSource: "direct_link" });
+                if (isCancelled) return;
+                if (joined) {
+                    setJoinedRooms((prev) => {
+                        const next = uniqueByNumericId([joined, ...prev], (r) => r && r.roomId);
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch {}
+                        return next;
+                    });
+                }
+            } catch {
+                try {
+                    const rooms = await getJoinedRooms();
+                    if (!isCancelled && Array.isArray(rooms)) {
+                        const unique = uniqueByNumericId(rooms, (r) => r && r.roomId);
+                        setJoinedRooms(unique);
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique)); } catch {}
+                    }
+                } catch {}
+            }
+        }
+
+        autoJoinOrFetchRoom();
+        return () => {
+            isCancelled = true;
+        };
+    }, [activeRoom, activeRoomId, loadingRooms]);
+
+    useEffect(() => {
+        if (activeRoomId) {
             refreshConfessions(activeRoomId);
         }
-    }, [activeRoom, activeRoomId, confessionLimit, refreshConfessions]);
+    }, [activeRoomId, confessionLimit, refreshConfessions]);
 
     useEffect(() => {
         if (activeRoomId && selectedConfessionId) {
@@ -511,7 +559,11 @@ export default function useConfessionRoom() {
             dismissError();
             await leaveConfessionRoom(roomId);
 
-            setJoinedRooms((prev) => prev.filter((entry) => Number(entry && entry.roomId) !== roomId));
+            setJoinedRooms((prev) => {
+                const next = prev.filter((entry) => Number(entry && entry.roomId) !== roomId);
+                try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch {}
+                return next;
+            });
 
             if (roomId === activeRoomId) {
                 setSearchParams({});
@@ -527,17 +579,21 @@ export default function useConfessionRoom() {
 
     const handlePostConfession = useCallback(async (event, options = {}) => {
         event.preventDefault();
-        const content = String(confessionDraft || "").trim();
+        const isAudio = options.isAudio || false;
+        const rawContent = isAudio ? audioTitle : confessionDraft;
+        const content = String(rawContent || "").trim();
         const audioPublicId = String(options.audioPublicId || "").trim();
         if (!activeRoomId || (!content && !audioPublicId)) return false;
 
         try {
             setPostingConfession(true);
-            const result = await postConfession(activeRoomId, content, {
+            const finalContent = isAudio ? safeUnicodeSlice(content, 80) : safeUnicodeSlice(content, 200);
+            const result = await postConfession(activeRoomId, finalContent, {
                 scheduledAt: selectedScheduledAt || undefined,
                 audioPublicId: audioPublicId || undefined
             });
             setConfessionDraft("");
+            setAudioTitle("");
             setSelectedScheduledAt(null);
             dismissError();
 
@@ -573,7 +629,24 @@ export default function useConfessionRoom() {
         } finally {
             setPostingConfession(false);
         }
-    }, [activeRoomId, confessionDraft, dismissError, refreshConfessions, selectedScheduledAt, setNotice, showError]);
+    }, [activeRoomId, audioTitle, confessionDraft, dismissError, refreshConfessions, selectedScheduledAt, setNotice, showError]);
+
+    const handleDeleteConfession = useCallback(async (confessionId) => {
+        const cId = Number(confessionId);
+        if (!activeRoomId || !cId) return;
+
+        try {
+            await deleteConfession(activeRoomId, cId);
+            setConfessions((prev) => prev.filter((row) => Number(row.confessionId) !== cId));
+            if (selectedConfession && Number(selectedConfession.confessionId) === cId) {
+                closeConfessionView();
+            }
+            setNotice("Confession deleted");
+            dismissError();
+        } catch (err) {
+            showError(err && err.message ? err.message : "Unable to delete confession.");
+        }
+    }, [activeRoomId, closeConfessionView, dismissError, selectedConfession, setNotice, showError]);
 
     const handlePostReply = useCallback(async (confessionId, parentReplyId = null, parentAlias = null) => {
         const content = String(replyDrafts[confessionId] || "").trim();
@@ -763,13 +836,13 @@ export default function useConfessionRoom() {
         }
 
         if (sentChatRequestIds.has(confessionId)) {
-            setChatRequestSuccess({ confessionId, alias });
+            setNotice("Pending request already exists.");
             return;
         }
 
         dismissError();
         setChatRequestTarget({ confessionId, alias });
-    }, [activeRoom, dismissError, sentChatRequestIds, showError]);
+    }, [activeRoom, dismissError, sentChatRequestIds, setNotice, showError]);
 
     const handleSendChatRequest = useCallback(async () => {
         if (!activeRoomId || !chatRequestTarget || !chatRequestTarget.confessionId) return;
@@ -792,13 +865,19 @@ export default function useConfessionRoom() {
             }
 
             if (requestState === "already_pending") {
-                setNotice(`Chat request already pending for ${alias}.`);
+                setNotice("Pending request already exists.");
                 return;
             }
 
             setChatRequestSuccess({ confessionId, alias });
         } catch (err) {
-            showError(err && err.message ? err.message : "Unable to send a chat request right now.");
+            const msg = err && err.message ? err.message : "Unable to send a chat request right now.";
+            if (msg.toLowerCase().includes("pending request") || err?.code === "PENDING_REQUEST_EXISTS") {
+                setChatRequestTarget(null);
+                setNotice("Pending request already exists.");
+            } else {
+                showError(msg);
+            }
         } finally {
             setSendingChatRequest(false);
         }
@@ -875,7 +954,7 @@ export default function useConfessionRoom() {
             if (navigator.share) {
                 await navigator.share({
                     title: shareTitle,
-                    text: type === "confession" ? String(item.content || "").slice(0, 120) : String(item.description || ""),
+                    text: type === "confession" ? safeUnicodeSlice(item.content || "", 120) : String(item.description || ""),
                     url: targetUrl
                 });
                 return;
@@ -926,9 +1005,11 @@ export default function useConfessionRoom() {
         shufflingAlias,
         repliesLoadMoreRef,
         confessionDraft,
+        audioTitle,
         detailReplyDraft,
         setShowComposer,
         setConfessionDraft,
+        setAudioTitle,
         setChatRequestTarget,
         setChatRequestSuccess,
         openRoomsView,
@@ -940,6 +1021,7 @@ export default function useConfessionRoom() {
         handleCopyRoomCode,
         handleLeaveRoom,
         handlePostConfession,
+        handleDeleteConfession,
         handlePostReply,
         handleReact,
         openChatRequest,

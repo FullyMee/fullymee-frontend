@@ -23,8 +23,42 @@ export function matchesHomeSearch(room, term) {
     const value = String(term || "").trim().toLowerCase();
     if (!value) return true;
 
-    const haystack = `${room && room.title ? room.title : ""} ${room && room.description ? room.description : ""} ${room && room.category ? room.category : ""} ${room && room.roomType ? room.roomType : ""}`.toLowerCase();
-    return haystack.includes(value);
+    const title = String(room?.title || "").toLowerCase();
+    const desc = String(room?.description || "").toLowerCase();
+    const category = String(room?.category || "").toLowerCase();
+    const cleanQuery = value.replace(/[\s_\-]+/g, "");
+    const cleanCategory = category.replace(/[\s_\-]+/g, "");
+    const categorySpaced = category.replace(/_/g, " ");
+
+    return (
+        title.includes(value) ||
+        desc.includes(value) ||
+        category.includes(value) ||
+        categorySpaced.includes(value) ||
+        cleanCategory.includes(cleanQuery)
+    );
+}
+
+export function matchesCategoryFilter(item, filterKey) {
+    if (!filterKey || filterKey === "all") return true;
+    const key = String(filterKey).trim().toLowerCase();
+
+    const category = String(item?.category || item?.roomCategory || "").trim().toLowerCase();
+    const title = String(item?.title || item?.roomTitle || "").trim().toLowerCase();
+    const desc = String(item?.description || item?.roomDescription || "").trim().toLowerCase();
+    const content = String(item?.content || "").trim().toLowerCase();
+    const tone = String(item?.tone || "").trim().toLowerCase();
+
+    if (category && (category === key || category.includes(key) || key.includes(category))) {
+        return true;
+    }
+
+    const toneLabel = getHomeFilterLabel(tone).toLowerCase();
+    if (toneLabel === key || toneLabel.includes(key)) {
+        return true;
+    }
+
+    return title.includes(key) || desc.includes(key) || content.includes(key);
 }
 
 export function matchesHomeConfessionSearch(card, term) {

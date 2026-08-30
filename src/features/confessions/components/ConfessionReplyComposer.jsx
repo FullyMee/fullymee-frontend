@@ -1,8 +1,8 @@
 import React from "react";
-import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
+import { InlineSpinner } from "../../../components/loaders";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
-import { Send, X } from "lucide-react";
+import { Send, X, CornerDownRight } from "lucide-react";
 
 export default function ConfessionReplyComposer({
     isDesktop = false,
@@ -28,7 +28,10 @@ export default function ConfessionReplyComposer({
 
     const replyingBanner = replyingToAlias ? (
         <div className="confession-replying-to-banner">
-            <span>Replying to <strong>@{replyingToAlias}</strong></span>
+            <div className="confession-replying-to-banner__info">
+                <CornerDownRight size={14} className="confession-replying-to-banner__icon" />
+                <span>Replying to <strong>@{replyingToAlias}</strong></span>
+            </div>
             <button
                 type="button"
                 className="confession-replying-to-cancel"
