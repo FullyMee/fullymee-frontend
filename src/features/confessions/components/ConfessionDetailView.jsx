@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
-import { CommentSkeletonList, InfiniteScrollLoader } from "../../../components/common/LoadingStates.jsx";
+import { ConfessionSkeleton, ScrollLoader } from "../../../components/loaders";
 import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { formatRelativeTime } from "../../../utils/time.js";
@@ -9,6 +9,7 @@ import { formatRelativeTime } from "../../../utils/time.js";
 import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
+import ConfessionMoreMenu from "./ConfessionMoreMenu.jsx";
 import { ArrowLeftIcon, CommentIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
 
 export default function ConfessionDetailView({
@@ -32,12 +33,14 @@ export default function ConfessionDetailView({
     onReact,
     onChatRequest,
     onReplyDraftChange,
-    onPostReply
+    onPostReply,
+    onDeleteConfession
 }) {
     const navigate = useNavigate();
 
     if (!activeRoom || !selectedConfession) return null;
 
+    const isAuthor = (activeRoom?.alias && selectedConfession.alias === activeRoom.alias) || (user && Number(selectedConfession.author) === Number(user.id || user.userId));
     const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
     const replyDisabled = isPostingReply || !String(replyDraft || "").trim();
 
@@ -99,24 +102,14 @@ export default function ConfessionDetailView({
     // Handle reply-to-user click (FullyMee style) — receives { alias, replyId }
     const handleReplyToUser = useCallback((alias, replyId = null) => {
         setReplyingTo({ alias, replyId });
-        const current = replyDraft || "";
-        const mentionTag = `@${alias} `;
-        if (!current.startsWith(mentionTag)) {
-            const cleanDraft = current.replace(/^@[A-Za-z0-9_.-]+\s*/, "");
-            onReplyDraftChange(`${mentionTag}${cleanDraft}`);
-        }
         if (inputRef.current) {
             inputRef.current.focus();
         }
-    }, [onReplyDraftChange, replyDraft]);
+    }, []);
 
     const handleCancelReplyTo = useCallback(() => {
         setReplyingTo(null);
-        if (replyDraft && replyDraft.startsWith("@")) {
-            const cleanDraft = replyDraft.replace(/^@[A-Za-z0-9_.-]+\s*/, "");
-            onReplyDraftChange(cleanDraft);
-        }
-    }, [onReplyDraftChange, replyDraft]);
+    }, []);
 
     // Post reply — forward parentReplyId & parentAlias from replyingTo state
     const handleSubmitReply = useCallback(() => {
@@ -177,18 +170,27 @@ export default function ConfessionDetailView({
         <article className="confession-detail-card">
             <div
                 className="confession-detail-card__author"
-                onClick={() => navigate(`/user/${selectedConfession.alias}`, { state: { profileUser: { username: selectedConfession.alias, isAlias: true } } })}
-                style={{ cursor: "pointer" }}
-                role="button"
-                tabIndex={0}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
             >
-                <UserAvatar avatarId={selectedConfession.avatar} className="confession-detail-card__avatar" />
-                <div className="confession-detail-card__author-copy">
-                    <strong>{selectedConfession.alias}</strong>
-                    <span>{formatRelativeTime(selectedConfession.createdAt)}</span>
+                <div
+                    onClick={() => navigate(`/user/${selectedConfession.alias}`, { state: { profileUser: { username: selectedConfession.alias, isAlias: true } } })}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "12px", flex: 1 }}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <UserAvatar avatarId={selectedConfession.avatar} className="confession-detail-card__avatar" />
+                    <div className="confession-detail-card__author-copy">
+                        <strong>{selectedConfession.alias}</strong>
+                        <span>{formatRelativeTime(selectedConfession.createdAt)}</span>
+                    </div>
                 </div>
-                <div className="confession-detail-card__tag">
-                    {activeRoom.title}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div className="confession-detail-card__tag">
+                        {activeRoom.title}
+                    </div>
+                    {isAuthor ? (
+                        <ConfessionMoreMenu onDelete={() => onDeleteConfession?.(selectedConfession.confessionId)} />
+                    ) : null}
                 </div>
             </div>
 
@@ -230,10 +232,14 @@ export default function ConfessionDetailView({
 
     const repliesSection = (
         <>
-            {loadingReplies && selectedReplies.length === 0 && <CommentSkeletonList count={3} />}
+            {loadingReplies && selectedReplies.length === 0 && <ConfessionSkeleton count={1} showReplies={true} />}
 
             {!loadingReplies && selectedReplies.length === 0 && (
-                <div className="room-feed-empty">No replies yet. Start the conversation with a thoughtful response.</div>
+                <DesktopEmptyState
+                    compact
+                    title="No responses yet"
+                    description="Be the first to share your thoughts."
+                />
             )}
 
             <ConfessionReplyList
@@ -244,7 +250,7 @@ export default function ConfessionDetailView({
                 onReplyToUser={handleReplyToUser}
             />
 
-            {!isDesktop && loadingMoreReplies && <InfiniteScrollLoader label="Loading more responses" />}
+            {!isDesktop && loadingMoreReplies && <ScrollLoader label="Loading more responses" />}
             {!isDesktop && !loadingReplies && !loadingMoreReplies && hasMoreReplies && (
                 <div ref={repliesLoadMoreRef} className="infinite-scroll-loader" aria-hidden="true" />
             )}

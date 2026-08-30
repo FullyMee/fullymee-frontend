@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CreateRoomModal from "../components/common/CreateRoomModal.jsx";
 import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
-import { InfiniteScrollLoader, InlineSpinner, RoomCardSkeletonList } from "../components/common/LoadingStates.jsx";
+import { RoomSkeleton, FeedSkeleton, InlineSpinner, ScrollLoader } from "../components/loaders";
 import UnifiedSidebar from "../components/layout/UnifiedSidebar.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
+import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
 import {
     AmbienceRoomCard,
     getRoomTone,
@@ -39,7 +40,7 @@ import {
     MobileSearchIcon,
     MobileBellIcon,
     MobileMenuIcon,
-    ConfideMarkIcon,
+    FullyMeeMarkIcon,
     PulseIcon,
     GroupIcon,
     HomeIcon,
@@ -56,6 +57,7 @@ import {
     uniqueByRoomId,
     getHomeFilterLabel,
     matchesHomeSearch,
+    matchesCategoryFilter,
     matchesHomeConfessionSearch,
     formatRoomAccess,
     formatCompactPulseCount,
@@ -98,25 +100,21 @@ const EMPTY_CHAT_REQUESTS = { pendingIncomingCount: 0, pending: [], outgoingPend
 
 const HOME_FEED_FILTERS = [
     { key: "all", label: "All" },
-    { key: "late night", label: "Late Night" },
-    { key: "heartbreak", label: "Heartbreak" },
-    { key: "anxiety", label: "Anxiety" },
-    { key: "wins", label: "Wins" },
-    { key: "family", label: "Family" },
-    { key: "work", label: "Work" },
-    { key: "relationships", label: "Relationships" },
-    { key: "random", label: "Random" }
+    ...ROOM_CATEGORIES.map((category) => ({
+        key: category.toLowerCase(),
+        label: category
+    }))
 ];
 
 const SECTION_META = {
     trending: {
         icon: "flame",
-        title: "Trending Rooms",
-        description: "Public rooms with the highest live activity right now"
+        title: "Trending Circles",
+        description: "Fume Circles with the highest live activity right now"
     },
     daily: {
         icon: "sun",
-        title: "Daily Rooms",
+        title: "Daily Circles",
         description: "Visit frequently for relatable content"
     },
     advice: {
@@ -131,8 +129,8 @@ const SECTION_META = {
     },
     general: {
         icon: "spark",
-        title: "Fresh Rooms",
-        description: "Explore public rooms created by the community"
+        title: "Fresh Circles",
+        description: "Explore Fume Circles created by the community"
     }
 };
 
@@ -451,12 +449,7 @@ export default function HomeDiscoverPage() {
 
         const filtered = desktopFilter === "all"
             ? items
-            : items.filter((item) => {
-                const tone = getRoomTone(item);
-                const label = getHomeFilterLabel(tone).toLowerCase();
-                const haystack = `${item.alias || ""} ${item.roomTitle || ""} ${item.roomDescription || ""} ${item.content || ""} ${tone} ${label}`.toLowerCase();
-                return haystack.includes(String(desktopFilter).toLowerCase()) || label.includes(String(desktopFilter).toLowerCase()) || tone === desktopFilter;
-            });
+            : items.filter((item) => matchesCategoryFilter(item, desktopFilter));
 
         const sorted = [...filtered];
         sorted.sort((a, b) => {
@@ -486,24 +479,39 @@ export default function HomeDiscoverPage() {
             ...recommendedRooms,
             ...publicRooms,
             ...trendingRooms
-        ]).filter((room) => !joinedRoomIds.has(Number(room.roomId)));
+        ])
+            .filter((room) => !joinedRoomIds.has(Number(room.roomId)))
+            .filter((room) => room && room.roomType !== "private" && !room.isPrivate);
 
         return rooms.slice(0, HOME_SUGGESTION_LIMIT);
     }, [joinedRoomIds, publicRooms, recommendedRooms, trendingRooms]);
 
     const homeTrendingRooms = useMemo(() => {
-        const rooms = uniqueByRoomId([
+        return uniqueByRoomId([
             ...trendingRooms,
-            ...publicRooms
-        ]).filter((room) => !joinedRoomIds.has(Number(room.roomId)));
+            ...publicRooms,
+            ...recommendedRooms
+        ])
+            .filter((room) => !joinedRoomIds.has(Number(room.roomId || room.id)))
+            .filter((room) => room && room.roomType !== "private" && !room.isPrivate);
+    }, [joinedRoomIds, publicRooms, recommendedRooms, trendingRooms]);
 
-        return rooms.slice(0, 3);
-    }, [joinedRoomIds, publicRooms, trendingRooms]);
+    const allSearchableRooms = useMemo(() => {
+        return uniqueByRoomId([
+            ...publicRooms,
+            ...trendingRooms,
+            ...recommendedRooms,
+            ...joinedRooms
+        ]);
+    }, [publicRooms, trendingRooms, recommendedRooms, joinedRooms]);
 
-    const filteredTrendingRooms = useMemo(
-        () => homeTrendingRooms.filter((room) => matchesHomeSearch(room, homeSearchTerm)),
-        [homeSearchTerm, homeTrendingRooms]
-    );
+    const filteredTrendingRooms = useMemo(() => {
+        return homeTrendingRooms.filter((room) => {
+            const matchesCategory = matchesCategoryFilter(room, desktopFilter);
+            const matchesSearch = matchesHomeSearch(room, homeSearchTerm);
+            return matchesCategory && matchesSearch;
+        });
+    }, [desktopFilter, homeSearchTerm, homeTrendingRooms]);
 
     const filteredFeedCardsSorted = useMemo(
         () => feedCardsSorted.filter((card) => matchesHomeConfessionSearch(card, homeSearchTerm)),
@@ -518,7 +526,7 @@ export default function HomeDiscoverPage() {
     const createDisabled = submitting || String(roomTitle || "").trim().length < 3 || !String(roomCategory || "").trim();
 
     async function handleOpenRoom(room) {
-        const roomId = Number(room && room.roomId);
+        const roomId = Number(room && (room.roomId || room.id));
         if (!roomId) return;
 
         try {
@@ -526,6 +534,10 @@ export default function HomeDiscoverPage() {
             dismissError();
 
             if (!joinedRoomIds.has(roomId)) {
+                if (joinedRooms.length >= 5) {
+                    showError("You can join max 5 circles at a time.");
+                    return;
+                }
                 const joinedRoom = await joinConfessionRoom({ roomId, joinSource: "home_discovery" });
                 queryClient.setQueryData(['homeRooms', DISCOVER_PAGE_SIZE, TRENDING_PAGE_SIZE], (oldData) => {
                     if (!oldData) return oldData;
@@ -661,7 +673,7 @@ export default function HomeDiscoverPage() {
                     ...existing,
                     viewerChatRequestStatus: "pending"
                 }));
-                setNotice(`Chat request already pending for ${alias}.`);
+                setNotice("Pending request already exists.");
                 return;
             }
 
@@ -673,7 +685,12 @@ export default function HomeDiscoverPage() {
             queryClient.invalidateQueries(['homeRooms', DISCOVER_PAGE_SIZE, TRENDING_PAGE_SIZE]);
             setNotice(`Chat request sent to ${alias}.`);
         } catch (err) {
-            showError(err && err.message ? err.message : "Unable to send a chat request right now.");
+            const msg = err && err.message ? err.message : "Unable to send a chat request right now.";
+            if (msg.toLowerCase().includes("pending request") || err?.code === "PENDING_REQUEST_EXISTS") {
+                setNotice("Pending request already exists.");
+            } else {
+                showError(msg);
+            }
         } finally {
             setSendingFeedChatRequestIds((current) => {
                 const next = new Set(current);
@@ -732,6 +749,11 @@ export default function HomeDiscoverPage() {
             return;
         }
 
+        if (joinedRooms.length >= 5) {
+            showError("Maximum limit reached: You can join at most 5 confession rooms (public or private). Please leave a room before creating a new one.");
+            return;
+        }
+
         try {
             setSubmitting(true);
             setCreateErrors({ roomTitle: "", roomCategory: "", joinCode: "" });
@@ -745,7 +767,7 @@ export default function HomeDiscoverPage() {
                 ambienceId: ambienceId || undefined
             });
 
-            setNotice(roomType === "private" ? "Private room created successfully." : "Public room created successfully.");
+            setNotice(roomType === "private" ? "Inner Circle created successfully." : "Fume Circle created successfully.");
             resetModalState();
             // Invalidate queries to fetch fresh lists, but immediately optimistic insert
             const roomId = Number(createdRoom && createdRoom.roomId);
@@ -864,16 +886,18 @@ export default function HomeDiscoverPage() {
                                     ))}
                                 </section>
 
-                                <section className="home-trending-section" aria-label="Trending rooms">
+                                <section className="home-trending-section" aria-label="Trending circles">
                                     <div className="home-trending-section__head">
-                                        <h2>Trending Rooms</h2>
+                                        <h2>Trending Circles</h2>
                                         <button type="button" className="home-trending-section__link" onClick={() => navigate("/search")}>
                                             View all
                                         </button>
                                     </div>
 
                                     <div className="home-trending-grid">
-                                        {filteredTrendingRooms.length > 0 ? (
+                                        {loading ? (
+                                            <RoomSkeleton count={filteredTrendingRooms.length > 0 ? filteredTrendingRooms.length : 4} />
+                                        ) : filteredTrendingRooms.length > 0 ? (
                                             filteredTrendingRooms.map((room, index) => {
                                                 const roomId = Number(room.roomId);
                                                 return (
@@ -888,9 +912,11 @@ export default function HomeDiscoverPage() {
                                             })
                                         ) : (
                                             <div className="home-trending-empty">
-                                                {homeSearchTerm
-                                                    ? "No trending rooms match your search."
-                                                    : "No Trending Rooms Available"}
+                                                {desktopFilter !== "all"
+                                                    ? `No trending circles found for "${HOME_FEED_FILTERS.find((f) => f.key === desktopFilter)?.label || desktopFilter}" category.`
+                                                    : homeSearchTerm
+                                                    ? "No trending circles match your search."
+                                                    : "No Trending Circles Available"}
                                             </div>
                                         )}
                                     </div>
@@ -898,7 +924,7 @@ export default function HomeDiscoverPage() {
 
                                 <section className="home-feed-section">
                                     <div className="home-feed-section__head">
-                                        <h2>Latest Confessions</h2>
+                                        <h2>Latest Fumes</h2>
                                         <div className="home-feed-toggle" role="tablist" aria-label="Feed sort">
                                             <button
                                                 type="button"
@@ -917,19 +943,19 @@ export default function HomeDiscoverPage() {
                                         </div>
                                     </div>
 
-                                    {loading && (
-                                        <div className="home-feed-skeleton-list">
-                                            <RoomCardSkeletonList count={3} />
-                                        </div>
-                                    )}
+                                     {loading && (
+                                         <div className="home-feed-skeleton-list">
+                                             <FeedSkeleton count={filteredFeedCardsSorted && filteredFeedCardsSorted.length > 0 ? filteredFeedCardsSorted.length : (feedCards && feedCards.length > 0 ? feedCards.length : 3)} />
+                                         </div>
+                                     )}
 
                                     {!loading && !hasFeedItems && (
                                         <div className="home-feed-empty">
-                                            <h3>{homeSearchTerm ? "No confessions match your search" : "No confession feed yet"}</h3>
+                                            <h3>{homeSearchTerm ? "No fumes match your search" : "No fumes feed yet"}</h3>
                                             <p>
                                                 {homeSearchTerm
-                                                    ? "Try a different keyword or clear the search bar to see more confessions."
-                                                    : "Join a room to start seeing real conversations here."}
+                                                    ? "Try a different keyword or clear the search bar to see more fumes."
+                                                    : "Join a circle to start seeing real conversations here."}
                                             </p>
                                         </div>
                                     )}
@@ -1025,23 +1051,12 @@ export default function HomeDiscoverPage() {
     }
 
     const mobileTrendingRooms = filteredTrendingRooms;
+    const isHomeSearchActive = new URLSearchParams(location.search).get("search") === "1";
 
     return (
         <div className="home-mobile-page" {...swipeNavigationHandlers}>
             <div className="home-mobile-shell">
                 <main className="home-mobile-content">
-                    <form className="home-searchbar home-mobile-searchbar" onSubmit={(event) => event.preventDefault()}>
-                        <span className="home-searchbar__icon" aria-hidden="true">
-                            <MobileSearchIcon />
-                        </span>
-                        <input
-                            type="search"
-                            value={homeSearch}
-                            onChange={(event) => setHomeSearch(event.target.value)}
-                            placeholder="Search rooms, people, or feelings..."
-                        />
-                    </form>
-
                     <div className="home-mobile-badge">
                         <span aria-hidden="true" />
                         <span>{mobilePulsePeople} people are sharing right now</span>
@@ -1068,17 +1083,19 @@ export default function HomeDiscoverPage() {
                         ))}
                     </section>
 
-                    <section className="home-mobile-section" aria-label="Trending rooms">
+                    <section className="home-mobile-section" aria-label="Trending circles">
                         <div className="home-mobile-section__head">
-                            <h2>Trending Rooms</h2>
+                            <h2>Trending Circles</h2>
                             <button type="button" className="home-mobile-section__link" onClick={() => navigate("/search")}>
                                 View all
                             </button>
                         </div>
 
-                        {mobileTrendingRooms.length > 0 ? (
+                        {loading ? (
+                            <RoomSkeleton count={filteredTrendingRooms.length > 0 ? filteredTrendingRooms.length : 4} />
+                        ) : filteredTrendingRooms.length > 0 ? (
                             <div className="home-mobile-trending-grid">
-                                {mobileTrendingRooms.map((room, index) => {
+                                {filteredTrendingRooms.map((room, index) => {
                                     const roomId = Number(room.roomId);
                                     return (
                                         <AmbienceRoomCard
@@ -1093,9 +1110,11 @@ export default function HomeDiscoverPage() {
                             </div>
                         ) : (
                             <div className="home-trending-empty">
-                                {homeSearchTerm
-                                    ? "No trending rooms match your search."
-                                    : "No Trending Rooms Available"}
+                                {desktopFilter !== "all"
+                                    ? `No trending circles found for "${HOME_FEED_FILTERS.find((f) => f.key === desktopFilter)?.label || desktopFilter}" category.`
+                                    : homeSearchTerm
+                                    ? "No trending circles match your search."
+                                    : "No Trending Circles Available"}
                             </div>
                         )}
                     </section>
@@ -1145,6 +1164,14 @@ export default function HomeDiscoverPage() {
 
                 {createRoomModal}
 
+                <SearchRoomsSheet
+                    isOpen={isHomeSearchActive}
+                    onClose={() => navigate("/", { replace: true })}
+                    rooms={allSearchableRooms}
+                    scope="home"
+                    onSelectRoom={handleOpenRoom}
+                    onSelectPerson={(person) => navigate(`/user/${person.username || person.userId || person.id}`)}
+                />
             </div>
         </div>
     );

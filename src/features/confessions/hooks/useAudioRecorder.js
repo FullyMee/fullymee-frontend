@@ -109,6 +109,17 @@ export default function useAudioRecorder({ maxDurationSeconds = 30 } = {}) {
         }
     }, [maxDurationSeconds, reset, stop, stopTracks]);
 
+    const setRecordedFile = useCallback((fileBlob, durationSec = 1) => {
+        reset();
+        setBlob(fileBlob);
+        setPreviewUrl((current) => {
+            if (current) URL.revokeObjectURL(current);
+            return URL.createObjectURL(fileBlob);
+        });
+        setDuration(durationSec);
+        setState("recorded");
+    }, [reset]);
+
     useEffect(() => () => reset(), [reset]);
 
     return {
@@ -122,6 +133,7 @@ export default function useAudioRecorder({ maxDurationSeconds = 30 } = {}) {
         stop,
         reset,
         setError,
-        setState
+        setState,
+        setRecordedFile
     };
 }

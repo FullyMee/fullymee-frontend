@@ -72,8 +72,24 @@ function normalizePagedResult(payload, limit) {
 
 export function useSearchData(user, query) {
     const [joinedRooms, setJoinedRooms] = useState([]);
-    const [roomResults, setRoomResults] = useState([]);
-    const [peopleResults, setPeopleResults] = useState([]);
+    const [roomResults, setRoomResults] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem("fm_cached_search_rooms");
+            const parsed = cached ? JSON.parse(cached) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
+    const [peopleResults, setPeopleResults] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem("fm_cached_search_people");
+            const parsed = cached ? JSON.parse(cached) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
     const [loading, setLoading] = useState(true);
     const [loadingMoreRooms, setLoadingMoreRooms] = useState(false);
     const [loadingMorePeople, setLoadingMorePeople] = useState(false);
@@ -86,7 +102,7 @@ export function useSearchData(user, query) {
     useEffect(() => {
         const timer = window.setTimeout(() => {
             setDebouncedQuery(String(query || ""));
-        }, 250);
+        }, 300);
 
         return () => window.clearTimeout(timer);
     }, [query]);
@@ -120,8 +136,6 @@ export function useSearchData(user, query) {
         async function loadSearchPage() {
             setLoading(true);
             setError("");
-            setRoomResults([]);
-            setPeopleResults([]);
             setRoomHasMore(false);
             setPeopleHasMore(false);
 
@@ -160,14 +174,23 @@ export function useSearchData(user, query) {
                 if (cancelled || activeQueryRef.current !== term) return;
 
                 const roomsPage = normalizePagedResult(roomsPayload, PAGE_SIZE);
-                setRoomResults(uniqueRooms(roomsPage.items));
+                const publicOnlyRooms = (roomsPage.items || []).filter(room => String(room && room.roomType || "").toLowerCase() === "public");
+                const uniqueR = uniqueRooms(publicOnlyRooms);
+                setRoomResults(uniqueR);
+                try { sessionStorage.setItem("fm_cached_search_rooms", JSON.stringify(uniqueR)); } catch {}
                 setRoomHasMore(roomsPage.hasMore);
                 
                 const peoplePage = normalizePagedResult(peoplePayload, PAGE_SIZE);
-                setPeopleResults(peoplePage.items || []);
+                const peopleList = peoplePage.items || [];
+                setPeopleResults(peopleList);
+                try { sessionStorage.setItem("fm_cached_search_people", JSON.stringify(peopleList)); } catch {}
                 setPeopleHasMore(peoplePage.hasMore);
             } catch (err) {
                 if (cancelled || activeQueryRef.current !== term) return;
+                setRoomResults([]);
+                setPeopleResults([]);
+                setRoomHasMore(false);
+                setPeopleHasMore(false);
                 setError(err && err.message ? err.message : "Unable to load search right now.");
             } finally {
                 if (!cancelled && activeQueryRef.current === term) {
@@ -202,7 +225,8 @@ export function useSearchData(user, query) {
                 paginate: true
             });
             const page = normalizePagedResult(payload, PAGE_SIZE);
-            setRoomResults((prev) => uniqueRooms([...prev, ...page.items]));
+            const publicOnlyMore = (page.items || []).filter(room => String(room && room.roomType || "").toLowerCase() === "public");
+            setRoomResults((prev) => uniqueRooms([...prev, ...publicOnlyMore]));
             setRoomHasMore(page.hasMore);
         } catch (err) {
             setError(err && err.message ? err.message : "Unable to load more rooms.");

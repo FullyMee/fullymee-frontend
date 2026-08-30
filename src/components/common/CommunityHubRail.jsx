@@ -107,7 +107,7 @@ export default function CommunityHubRail({
 
             {showFooter && (
                 <footer className="home-rail-footer">
-                    <span>&copy; 2026 Confide App</span>
+                    <span>&copy; 2026 FullyMee App</span>
                     <div>
                         <a href="#privacy">Privacy</a>
                         <a href="#terms">Terms</a>

@@ -26,10 +26,14 @@ export function verifyOTP(email, otp, username) {
     });
 }
 
-export function googleSignIn(credential) {
+export function googleSignIn(credential, intent) {
+    const payload = { credential };
+    if (intent) {
+        payload.intent = intent;
+    }
     return apiRequest("/auth/google-signin", {
         method: "POST",
-        body: JSON.stringify({ credential })
+        body: JSON.stringify(payload)
     });
 }
 

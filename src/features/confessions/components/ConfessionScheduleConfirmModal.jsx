@@ -28,6 +28,8 @@ function useCountdown(expiresAt) {
     return { msLeft, minutes, seconds, progress };
 }
 
+import { safeUnicodeSlice, getUnicodeLength } from "../../../utils/unicode.js";
+
 export default function ConfessionScheduleConfirmModal({
     confession,
     onConfirm,
@@ -37,7 +39,7 @@ export default function ConfessionScheduleConfirmModal({
     const { minutes, seconds, progress, msLeft } = useCountdown(confirmExpiresAt);
     const hasAutoPublished = useRef(false);
     const previewText = String(content || "").trim()
-        ? `${String(content || "").slice(0, 140)}${String(content || "").length > 140 ? "..." : ""}`
+        ? `${safeUnicodeSlice(content, 140)}${getUnicodeLength(content) > 140 ? "..." : ""}`
         : audio ? "Audio confession" : "";
 
     // Auto-publish when countdown hits zero

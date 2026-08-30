@@ -13,36 +13,105 @@ import {
     buildUsernameCandidate
 } from "./utils/authHelpers.js";
 
+const PENDING_OTP_STORAGE_KEY = "anonymous.auth.pendingOtpSession";
+const OTP_SESSION_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+export function savePendingOtpSession(data) {
+    try {
+        const payload = JSON.stringify({
+            ...data,
+            timestamp: Date.now()
+        });
+        sessionStorage.setItem(PENDING_OTP_STORAGE_KEY, payload);
+        localStorage.setItem(PENDING_OTP_STORAGE_KEY, payload);
+        localStorage.setItem("fm_onboarding_completed", "1");
+    } catch {
+        // ignore storage errors
+    }
+}
+
+export function getPendingOtpSession() {
+    try {
+        const raw = sessionStorage.getItem(PENDING_OTP_STORAGE_KEY) || localStorage.getItem(PENDING_OTP_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.email || !parsed.timestamp) return null;
+        if (Date.now() - parsed.timestamp > OTP_SESSION_TTL_MS) {
+            clearPendingOtpSession();
+            return null;
+        }
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+export function clearPendingOtpSession() {
+    try {
+        sessionStorage.removeItem(PENDING_OTP_STORAGE_KEY);
+        localStorage.removeItem(PENDING_OTP_STORAGE_KEY);
+    } catch {
+        // ignore
+    }
+}
 
 export default function useOtpAuth(initialMode = "signin") {
     const navigate = useNavigate();
     const { showError, dismissError } = useGlobalError();
-    const [mode, setModeState] = useState(initialMode === "signup" ? "signup" : "signin");
-    const [step, setStep] = useState("email");
-    const [email, setEmail] = useState("");
+    
+    // Check if there is an active OTP session from before closing/switching app
+    const savedSession = getPendingOtpSession();
+
+    const [mode, setModeState] = useState(() => {
+        if (savedSession && savedSession.mode) return savedSession.mode;
+        return initialMode === "signup" ? "signup" : "signin";
+    });
+    const [step, setStep] = useState(() => {
+        if (savedSession && savedSession.step) return savedSession.step;
+        return "email";
+    });
+    const [email, setEmail] = useState(() => {
+        if (savedSession && savedSession.email) return savedSession.email;
+        return "";
+    });
     const [otp, setOtp] = useState("");
-    const [username, setUsername] = useState("");
-    const [requiresUsername, setRequiresUsername] = useState(initialMode === "signup");
+    const [username, setUsername] = useState(() => {
+        if (savedSession && savedSession.username) return savedSession.username;
+        return "";
+    });
+    const [requiresUsername, setRequiresUsername] = useState(() => {
+        if (savedSession && typeof savedSession.requiresUsername === "boolean") return savedSession.requiresUsername;
+        return initialMode === "signup";
+    });
     const [usernameStatus, setUsernameStatus] = useState({ status: "idle", message: "" });
     const [usernameRefreshing, setUsernameRefreshing] = useState(false);
-    const [notice, setNotice, clearNotice] = useTimedNotice("", 3200);
+    const [notice, setNotice, clearNotice] = useTimedNotice(
+        savedSession && savedSession.step === "otp"
+            ? `Enter the 6-digit code sent to ${savedSession.email}.`
+            : "",
+        3200
+    );
     const [loading, setLoading] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({ email: "", otp: "", username: "" });
     const autoSuggestedRef = useRef(false);
     const usernameRequestRef = useRef(0);
+    const initialMountRef = useRef(true);
 
     const needsUsername = step === "otp" ? requiresUsername : mode === "signup";
 
+    const lastInitialModeRef = useRef(initialMode);
     useEffect(() => {
-        const safeMode = initialMode === "signup" ? "signup" : "signin";
-        setModeState(safeMode);
-        setStep("email");
-        setOtp("");
-        clearNotice();
-        setFieldErrors({ email: "", otp: "", username: "" });
-        dismissError();
-        setRequiresUsername(safeMode === "signup");
-        autoSuggestedRef.current = false;
+        // If initialMode prop changes while in email step, sync the default mode
+        if (lastInitialModeRef.current !== initialMode) {
+            lastInitialModeRef.current = initialMode;
+            setStep((currentStep) => {
+                if (currentStep === "otp") return currentStep;
+                const safeMode = initialMode === "signup" ? "signup" : "signin";
+                setModeState(safeMode);
+                setRequiresUsername(safeMode === "signup");
+                return "email";
+            });
+        }
     }, [initialMode]);
 
     useEffect(() => {
@@ -131,6 +200,7 @@ export default function useOtpAuth(initialMode = "signin") {
     }
 
     function resetForMode(nextMode) {
+        clearPendingOtpSession();
         const safeMode = nextMode === "signup" ? "signup" : "signin";
         setModeState(safeMode);
         setStep("email");
@@ -253,6 +323,15 @@ export default function useOtpAuth(initialMode = "signin") {
                     : `We sent a 6-digit code to ${normalizedEmail}.`
             );
 
+            // Persist pending OTP session so user can switch apps on mobile without losing state
+            savePendingOtpSession({
+                email: normalizedEmail,
+                mode: nextRequiresUsername ? "signup" : "signin",
+                requiresUsername: nextRequiresUsername,
+                username,
+                step: "otp"
+            });
+
             if (!nextRequiresUsername) {
                 setUsernameStatus({ status: "idle", message: "" });
             } else if (mode !== "signup" && !normalizeUsername(username)) {
@@ -303,6 +382,7 @@ export default function useOtpAuth(initialMode = "signin") {
                 throw new Error("Invalid response from server");
             }
 
+            clearPendingOtpSession();
             disconnectSocket();
             window.dispatchEvent(new Event("auth-changed"));
             navigate("/", { replace: true });

@@ -5,10 +5,10 @@ import UserAvatar from "../common/UserAvatar.jsx";
 
 const NAV_ITEMS = [
     { to: "/", label: "Home", icon: Home },
-    { to: "/confessions", label: "Confessions", icon: MessageSquareQuote },
+    { to: "/confessions", label: "Fumes", icon: MessageSquareQuote },
     { to: "/chats", label: "Messages", icon: MessageCircle },
-    { to: "/search", label: "Search", icon: Search },
-    { to: "/profile", label: "Profile", icon: CircleUser }
+    { to: "/search", label: "Explore", icon: Search },
+    { to: "/profile", label: "Reflection", icon: CircleUser }
 ];
 
 export default function AppBottomNav() {

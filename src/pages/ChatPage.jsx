@@ -3,7 +3,7 @@ import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import { getChatAvatarGlyph } from "../components/common/MobileRoomVisuals.jsx";
-import { ChatListSkeleton, ChatThreadSkeleton, InfiniteScrollLoader, InlineSpinner } from "../components/common/LoadingStates.jsx";
+import { ChatListSkeleton, ChatThreadSkeleton, ScrollLoader, InlineSpinner } from "../components/loaders";
 import VirtualChatFeed from "../components/common/VirtualChatFeed.jsx";
 import MemoizedMessageBubble from "../components/chats/MessageBubble.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
@@ -138,8 +138,17 @@ export default function ChatPage({ user }) {
     const [sendingMessage, setSendingMessage] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState({});
     const threadContentRef = useRef(null);
+    const mobileTextareaRef = useRef(null);
     const olderMessagesLoadRef = useRef(false);
     const previousScrollHeightRef = useRef(0);
+    const isNearBottomRef = useRef(true);
+
+    const handleMessagesScroll = useCallback(() => {
+        const node = threadContentRef.current;
+        if (!node) return;
+        const distanceToBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
+        isNearBottomRef.current = distanceToBottom < 120;
+    }, []);
     // Connection management sheet state
     const [manageSheetOpen, setManageSheetOpen] = useState(false);
     const [endSheetOpen, setEndSheetOpen] = useState(false);
@@ -429,12 +438,34 @@ export default function ChatPage({ user }) {
 
     useEffect(() => {
         if (isDesktop || !activeConversationId || !threadContentRef.current) return;
-
         const node = threadContentRef.current;
         requestAnimationFrame(() => {
             node.scrollTop = node.scrollHeight;
+            isNearBottomRef.current = true;
         });
-    }, [activeConversationId, isDesktop, messages.length, mobileViewportFrame]);
+    }, [activeConversationId, isDesktop]);
+
+    useEffect(() => {
+        if (isDesktop || !activeConversationId || !threadContentRef.current || loadingMessages || olderMessagesLoadRef.current) return;
+        if (isNearBottomRef.current) {
+            requestAnimationFrame(() => {
+                if (threadContentRef.current) {
+                    threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
+                }
+            });
+        }
+    }, [activeConversationId, isDesktop, loadingMessages, messages]);
+
+    useEffect(() => {
+        if (isDesktop || !activeConversationId || !threadContentRef.current) return;
+        if (isNearBottomRef.current) {
+            requestAnimationFrame(() => {
+                if (threadContentRef.current) {
+                    threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
+                }
+            });
+        }
+    }, [activeConversationId, isDesktop, mobileViewportFrame]);
 
     useEffect(() => {
         if (!socket || !connected || !activeConversationId) return;
@@ -870,6 +901,15 @@ export default function ChatPage({ user }) {
         });
 
         setDraft("");
+        if (mobileTextareaRef.current) {
+            mobileTextareaRef.current.style.height = "auto";
+        }
+        isNearBottomRef.current = true;
+        requestAnimationFrame(() => {
+            if (threadContentRef.current) {
+                threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
+            }
+        });
         setSendingMessage(true);
         setMessages((prev) => dedupeMessages([...prev, optimisticMessage]));
         setPreviewByConversation((prev) => ({
@@ -1623,7 +1663,8 @@ export default function ChatPage({ user }) {
                                         <div
                                             ref={threadContentRef}
                                             className="chat-thread-messages"
-                                            style={{ flex: 1, minHeight: 0, padding: "1rem", overflowY: "auto" }}
+                                            onScroll={handleMessagesScroll}
+                                            style={{ flex: 1, minHeight: 0, padding: "1rem 1rem 0.5rem", overflowY: "auto" }}
                                         >
                                             {hasMoreMessages && (
                                                 <button
@@ -1677,11 +1718,26 @@ export default function ChatPage({ user }) {
 
                                 {!isEnded && (
                                     <form className="chat-thread-composer" autoComplete="off" onSubmit={handleDraftSubmit}>
-                                        <input
-                                            type="search"
+                                        <textarea
+                                            ref={mobileTextareaRef}
                                             name="chat_message"
                                             value={isPaused ? "" : draft}
-                                            onChange={(event) => setDraft(event.target.value)}
+                                            onChange={(event) => {
+                                                setDraft(event.target.value);
+                                                if (event.target) {
+                                                    event.target.style.height = "auto";
+                                                    event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
+                                                }
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === "Enter" && !event.shiftKey) {
+                                                    event.preventDefault();
+                                                    handleDraftSubmit(event);
+                                                    if (mobileTextareaRef.current) {
+                                                        mobileTextareaRef.current.style.height = "auto";
+                                                    }
+                                                }
+                                            }}
                                             placeholder={isPaused ? "Conversation paused" : "Type a message..."}
                                             maxLength={1500}
                                             disabled={!connected || isPaused}
@@ -1689,8 +1745,8 @@ export default function ChatPage({ user }) {
                                             autoCorrect="off"
                                             autoCapitalize="off"
                                             spellCheck={false}
+                                            rows={1}
                                             enterKeyHint="send"
-                                            inputMode="text"
                                         />
                                         <button type="submit" disabled={!connected || isPaused || !String(draft || "").trim() || sendingMessage} aria-label="Send message">
                                             {sendingMessage ? <InlineSpinner size="sm" tone="dark" label="Sending message" /> : <SendIcon />}

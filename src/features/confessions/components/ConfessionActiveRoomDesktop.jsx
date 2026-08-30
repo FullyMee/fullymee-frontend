@@ -44,6 +44,7 @@ export default function ConfessionActiveRoomDesktop({
     onLoadMoreConfessions,
     onReact,
     onChatRequest,
+    onDeleteConfession,
     onReplyDraftChange,
     onPostReply,
     onShare,
@@ -60,12 +61,12 @@ export default function ConfessionActiveRoomDesktop({
     ) : null;
 
     const desktopSubtitle = !activeRoom
-        ? "Rooms you have joined and communities where you can post"
+        ? "Circles you have joined and communities where you can post"
         : (selectedConfession
-            ? "Read the confession and keep the conversation thoughtful"
+            ? "Read the fume and keep the conversation thoughtful"
             : (activeRoom.roomType === "private"
-                ? `Private Room ${activeRoom.joinCode ? `· ${activeRoom.joinCode}` : ""}`
-                : "Public Room"));
+                ? `Inner Circle ${activeRoom.joinCode ? `· ${activeRoom.joinCode}` : ""}`
+                : "Fume Circle"));
 
     return (
         <div className="my-confessions-page my-confessions-page--desktop">
@@ -91,7 +92,7 @@ export default function ConfessionActiveRoomDesktop({
                                     className="desktop-confessions-hub__leave-button"
                                     onClick={() => onLeaveRoom(activeRoom)}
                                     disabled={leavingRoomId === Number(activeRoom.roomId)}
-                                    aria-label="Leave room"
+                                    aria-label="Leave circle"
                                 >
                                     <LeaveIcon />
                                     <span>{leavingRoomId === Number(activeRoom.roomId) ? "Leaving..." : "Leave"}</span>
@@ -100,7 +101,7 @@ export default function ConfessionActiveRoomDesktop({
                                     type="button"
                                     className="desktop-primary-button desktop-confessions-hub__compose-button"
                                     onClick={onOpenComposer}
-                                    aria-label="Create confession"
+                                    aria-label="Drop a Fume"
                                 >
                                     <PlusIcon />
                                 </button>
@@ -140,6 +141,8 @@ export default function ConfessionActiveRoomDesktop({
                             onLoadMoreConfessions={onLoadMoreConfessions}
                             onReact={onReact}
                             onChatRequest={onChatRequest}
+                            onDeleteConfession={onDeleteConfession}
+                            user={user}
                             scheduledConfessions={scheduledConfessions}
                             onCancelScheduled={onCancelScheduled}
                         />
@@ -184,6 +187,7 @@ export default function ConfessionActiveRoomDesktop({
                                     onChatRequest={onChatRequest}
                                     onReplyDraftChange={onReplyDraftChange}
                                     onPostReply={onPostReply}
+                                    onDeleteConfession={onDeleteConfession}
                                 />
                             </div>
                         </div>

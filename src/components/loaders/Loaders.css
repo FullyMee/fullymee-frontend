@@ -1,0 +1,623 @@
+/* ═══════════════════════════════════════════════════════════
+   FullyMee — Unified Loading System
+   Centralized CSS for skeletons, spinners, and loaders
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ── */
+
+@keyframes fm-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@keyframes fm-pulse-dots {
+    0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fm-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fm-app-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fm-app-pulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes fm-loader-bar {
+    0% { transform: scaleX(0); transform-origin: left; }
+    50% { transform: scaleX(1); transform-origin: left; }
+    51% { transform: scaleX(1); transform-origin: right; }
+    100% { transform: scaleX(0); transform-origin: right; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .fm-skeleton,
+    .fm-spinner__dot,
+    .fm-app-loader__logo,
+    .fm-typing__dot,
+    .fm-btn-loader,
+    .fm-loader-bar,
+    .fm-img-loader__placeholder {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ═══════════════════════════
+   1. Base Skeleton
+   ═══════════════════════════ */
+
+.fm-skeleton {
+    display: block;
+    background: linear-gradient(90deg, rgba(108,77,246,0.06) 25%, rgba(108,77,246,0.12) 50%, rgba(108,77,246,0.06) 75%);
+    background-size: 200% 100%;
+    animation: fm-shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+.fm-skeleton--circle {
+    border-radius: 50%;
+}
+
+.fm-skeleton--rect {
+    border-radius: 12px;
+}
+
+/* ═══════════════════════════
+   2. Inline Spinner (3 dots)
+   ═══════════════════════════ */
+
+.fm-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+}
+
+.fm-spinner__dot {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 50%;
+    background: currentColor;
+    animation: fm-pulse-dots 1s ease-in-out infinite;
+}
+
+.fm-spinner__dot:nth-child(2) { animation-delay: 0.15s; }
+.fm-spinner__dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* Sizes */
+.fm-spinner--sm { gap: 0.22rem; }
+.fm-spinner--sm .fm-spinner__dot { width: 0.34rem; height: 0.34rem; }
+.fm-spinner--md .fm-spinner__dot { width: 0.45rem; height: 0.45rem; }
+.fm-spinner--lg .fm-spinner__dot { width: 0.56rem; height: 0.56rem; }
+
+/* Tones */
+.fm-spinner--light { color: rgba(255, 243, 231, 0.95); }
+.fm-spinner--dark { color: var(--text-main, #14284f); }
+.fm-spinner--brand { color: var(--primary, #6c4df6); }
+.fm-spinner--muted { color: var(--text-muted, #64748b); }
+
+/* ═══════════════════════════
+   3. App Loader (full-screen)
+   ═══════════════════════════ */
+
+.fm-app-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: linear-gradient(160deg, #f7f3fe 0%, #fffbfe 100%);
+    animation: fm-app-fade-in 0.25s ease-out;
+}
+
+.fm-app-loader__logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    animation: fm-app-pulse 2s ease-in-out infinite;
+}
+
+.fm-app-loader__text {
+    font-family: var(--font-sans, 'Manrope', sans-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    letter-spacing: 0.02em;
+}
+
+/* Fade-out state */
+.fm-app-loader.is-exiting {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════
+   4. Page Loader (Suspense)
+   ═══════════════════════════ */
+
+.fm-page-loader {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+.fm-page-loader__icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    opacity: 0.5;
+    animation: fm-app-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════
+   5. Global Top Bar Loader
+   ═══════════════════════════ */
+
+.fm-loader-bar-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    pointer-events: none;
+    height: 2.5px;
+}
+
+.fm-loader-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--primary-gradient, linear-gradient(135deg, #6c4df6 0%, #8b5cf6 100%));
+    animation: fm-loader-bar 1.1s ease-in-out infinite;
+}
+
+.fm-loader-bar-hint {
+    position: fixed;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1201;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 20px rgba(108, 77, 246, 0.1);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted, #64748b);
+    pointer-events: none;
+}
+
+/* ═══════════════════════════
+   6. Scroll Loader (infinite)
+   ═══════════════════════════ */
+
+.fm-scroll-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.2rem 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+/* ═══════════════════════════
+   7. Typing Indicator
+   ═══════════════════════════ */
+
+.fm-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.fm-typing__dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: var(--text-muted, #64748b);
+    animation: fm-pulse-dots 1.2s ease-in-out infinite;
+}
+
+.fm-typing__dot:nth-child(2) { animation-delay: 0.2s; }
+.fm-typing__dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ═══════════════════════════
+   8. Button Loader
+   ═══════════════════════════ */
+
+.fm-btn-loader {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: fm-spin 0.75s linear infinite;
+}
+
+.fm-btn-loader--sm {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-width: 1.5px;
+}
+
+/* ═══════════════════════════
+   9. Image Loader
+   ═══════════════════════════ */
+
+.fm-img-loader {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.fm-img-loader__placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(108,77,246,0.06) 25%, rgba(108,77,246,0.12) 50%, rgba(108,77,246,0.06) 75%);
+    background-size: 200% 100%;
+    animation: fm-shimmer 1.4s ease-in-out infinite;
+    z-index: 1;
+}
+
+.fm-img-loader__placeholder.is-hidden {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+}
+
+.fm-img-loader__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fm-img-loader__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(108, 77, 246, 0.06);
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* ═══════════════════════════
+   10. Composite Skeletons
+   ═══════════════════════════ */
+
+/* — Profile Skeleton — */
+.fm-profile-skeleton--desktop {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.fm-profile-skeleton--desktop .desktop-profile-stat-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.35rem;
+    border-radius: 1.1rem;
+    background: #ffffff;
+    border: 1px solid rgba(58, 34, 52, 0.08);
+    box-shadow: 0 8px 22px rgba(58, 34, 52, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fm-profile-skeleton--desktop .desktop-profile-stat-box__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+}
+
+.fm-profile-skeleton--desktop .uprofile-rooms-scroll-container {
+    display: flex;
+    gap: 0.85rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    width: 100%;
+}
+
+.fm-profile-skeleton--desktop .ambience-room-card-skeleton {
+    flex: 0 0 225px;
+    width: 225px;
+    height: 260px;
+    border-radius: 24px;
+    padding: 1.2rem 1.2rem 1.1rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(145deg, rgba(64,32,55,0.06) 0%, rgba(20,40,79,0.09) 100%);
+    border: 1px solid rgba(84, 53, 67, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.fm-profile-skeleton--mobile {
+    width: 100%;
+}
+
+/* — Feed Skeleton — */
+.fm-feed-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    width: 100%;
+}
+
+.fm-feed-skeleton__card {
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(84, 53, 67, 0.08);
+    box-shadow: 0 4px 14px rgba(69, 44, 57, 0.04);
+}
+
+.fm-feed-skeleton__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.fm-feed-skeleton__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+}
+
+.fm-feed-skeleton__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fm-feed-skeleton--desktop {
+    display: grid;
+    gap: 1.2rem;
+    width: min(100%, 455px);
+    margin: 0 auto;
+}
+
+.fm-feed-skeleton__card--desktop {
+    border: 1px solid rgba(84, 53, 67, 0.08);
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(69, 44, 57, 0.05);
+    overflow: hidden;
+}
+
+/* — Room Grid Skeleton — */
+.fm-room-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    grid-column: 1 / -1;
+    width: 100%;
+    padding-bottom: 1rem;
+}
+
+.fm-room-card-skeleton {
+    position: relative;
+    width: 100%;
+    height: clamp(150px, 42vw, 185px);
+    border-radius: 16px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(145deg, rgba(108,77,246,0.06) 0%, rgba(20,40,79,0.1) 100%);
+    border: 1px solid rgba(108, 77, 246, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+    .fm-room-skeleton-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    .fm-room-card-skeleton {
+        height: clamp(180px, 26vw, 220px);
+        border-radius: 18px;
+        padding: 0.9rem;
+    }
+}
+
+@media (min-width: 900px) {
+    .fm-room-skeleton-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.85rem;
+    }
+    .fm-room-card-skeleton {
+        height: clamp(210px, 22vw, 250px);
+        border-radius: 20px;
+        padding: 1rem;
+    }
+}
+
+.fm-room-skeleton-grid--list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.fm-room-card-skeleton__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.fm-room-card-skeleton__bottom {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: auto;
+}
+
+.fm-room-card-skeleton__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+/* — Connection — */
+.fm-connection-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.fm-connection-skeleton__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+.fm-connection-skeleton__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* — Chat List — */
+.fm-chat-list-skeleton {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 1rem;
+}
+
+.fm-chat-list-skeleton__item {
+    display: grid;
+    grid-template-columns: 2.8rem 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+}
+
+.fm-chat-list-skeleton__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    justify-content: center;
+}
+
+/* — Chat Thread — */
+.fm-chat-thread-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.fm-chat-thread-skeleton__bubble {
+    border-radius: 16px;
+}
+
+.fm-chat-thread-skeleton__bubble:nth-child(odd) {
+    width: 55%;
+    align-self: flex-start;
+}
+
+.fm-chat-thread-skeleton__bubble:nth-child(even) {
+    width: 40%;
+    align-self: flex-end;
+}
+
+/* — Settings — */
+.fm-settings-skeleton {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.fm-settings-skeleton__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.fm-settings-skeleton__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.fm-settings-skeleton__row-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* — Confession — */
+.fm-confession-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.fm-confession-skeleton__card {
+    padding: 1rem;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.7);
+}
+
+.fm-confession-skeleton__replies {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-left: 1.25rem;
+    margin-top: 0.75rem;
+}
+
+.fm-confession-skeleton__reply {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.fm-confession-skeleton__reply-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}

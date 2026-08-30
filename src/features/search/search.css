@@ -888,7 +888,8 @@
 
     .search-pills {
         width: 100%;
-        padding: 0.25rem 1rem 1.25rem;
+        padding: 1rem 1rem 1.25rem;
+        margin-top: 0.5rem;
         gap: 0.55rem;
     }
 

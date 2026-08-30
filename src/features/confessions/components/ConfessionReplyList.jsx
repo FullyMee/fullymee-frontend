@@ -8,11 +8,17 @@ import UserAvatar from "../../../components/common/UserAvatar.jsx";
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /** Renders content with @mention tags highlighted */
-function ReplyText({ content }) {
-    if (!content) return null;
-    const parts = content.split(/(@[A-Za-z0-9_.-]+)/g);
+function ReplyText({ content, parentAlias }) {
+    if (!content && !parentAlias) return null;
+    const cleanContent = content || "";
+    const hasMentionInBody = parentAlias && cleanContent.startsWith(`@${parentAlias}`);
+    const parts = cleanContent.split(/(@[A-Za-z0-9_.-]+)/g);
+
     return (
         <p className="confession-reply-card__text">
+            {parentAlias && !hasMentionInBody && (
+                <span className="reply-mention">@{parentAlias} </span>
+            )}
             {parts.map((part, i) =>
                 part.startsWith("@")
                     ? <span key={i} className="reply-mention">{part}</span>
@@ -54,7 +60,7 @@ function ReplyCard({
                         <span className="confession-reply-card__time">{formatRelativeTime(reply.createdAt)}</span>
                     </div>
 
-                    <ReplyText content={reply.content} />
+                    <ReplyText content={reply.content} parentAlias={reply.parentAlias} />
 
                     <div className="confession-reply-card__actions">
                         <button
@@ -178,26 +184,63 @@ export default function ConfessionReplyList({
 }) {
     if (!Array.isArray(replies) || replies.length === 0) return null;
 
-    // Split into top-level replies (no parentReplyId) and children (have parentReplyId)
-    const topLevelReplies = replies.filter((r) => !r.parentReplyId);
-    const childReplies = replies.filter((r) => !!r.parentReplyId);
+    // 1. Build a map of all replies by numeric replyId
+    const replyMap = new Map();
+    replies.forEach((r) => {
+        const id = Number(r.replyId);
+        if (id) replyMap.set(id, r);
+    });
 
-    // Build a map: parentReplyId → [child replies]
-    const childrenByParentId = new Map();
-    childReplies.forEach((child) => {
-        const pid = Number(child.parentReplyId);
-        if (!childrenByParentId.has(pid)) childrenByParentId.set(pid, []);
-        childrenByParentId.get(pid).push(child);
+    // 2. Trace root top-level reply ID for any nested reply
+    const getRootId = (r) => {
+        let curr = r;
+        const visited = new Set();
+        while (curr && curr.parentReplyId && !visited.has(Number(curr.replyId))) {
+            visited.add(Number(curr.replyId));
+            const parent = replyMap.get(Number(curr.parentReplyId));
+            if (!parent) break;
+            curr = parent;
+        }
+        return curr ? Number(curr.replyId) : Number(r.replyId);
+    };
+
+    // 3. Group top-level replies and child replies under their root thread
+    const topLevelReplies = [];
+    const childrenByRootId = new Map();
+
+    replies.forEach((r) => {
+        if (!r.parentReplyId) {
+            topLevelReplies.push(r);
+        } else {
+            const rootId = getRootId(r);
+            if (!childrenByRootId.has(rootId)) childrenByRootId.set(rootId, []);
+            childrenByRootId.get(rootId).push(r);
+        }
+    });
+
+    // 4. Ensure no orphaned child reply is omitted if root parent is missing
+    const topLevelIds = new Set(topLevelReplies.map((r) => Number(r.replyId)));
+    childrenByRootId.forEach((childrenList, rootId) => {
+        if (!topLevelIds.has(rootId)) {
+            const promoted = childrenList.shift();
+            if (promoted) {
+                topLevelReplies.push(promoted);
+                topLevelIds.add(Number(promoted.replyId));
+                if (childrenList.length > 0) {
+                    childrenByRootId.set(Number(promoted.replyId), childrenList);
+                }
+            }
+        }
     });
 
     // Sort children by createdAt ascending (oldest first in each thread)
-    childrenByParentId.forEach((arr) => arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
+    childrenByRootId.forEach((arr) => arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
 
     return (
         <div className="confession-reply-list">
             {topLevelReplies.map((reply, index) => {
                 const replyIdNum = Number(reply.replyId);
-                const children = childrenByParentId.get(replyIdNum) || [];
+                const children = childrenByRootId.get(replyIdNum) || [];
 
                 return (
                     <div key={reply.replyId || index} className="confession-reply-thread-wrapper">

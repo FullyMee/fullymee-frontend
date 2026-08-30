@@ -8,6 +8,7 @@ export default function SearchInput({ value, onChange, placeholder = "Search for
                 <Search size={18} strokeWidth={2} className="search-input__icon-svg" />
                 <input
                     type="text"
+                    maxLength={100}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}

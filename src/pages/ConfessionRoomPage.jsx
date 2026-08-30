@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
 import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
@@ -9,7 +9,9 @@ import ChatRequestDialogs from "../features/confessions/components/ChatRequestDi
 import ConfessionComposerModal from "../features/confessions/components/ConfessionComposerModal.jsx";
 import ConfessionScheduleConfirmModal from "../features/confessions/components/ConfessionScheduleConfirmModal.jsx";
 import ConfessionDetailView from "../features/confessions/components/ConfessionDetailView.jsx";
+import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
 import JoinedRoomsPanel from "../features/confessions/components/JoinedRoomsPanel.jsx";
+import { RoomSkeleton } from "../components/loaders";
 import ConfessionLobbyDesktop from "../features/confessions/components/ConfessionLobbyDesktop.jsx";
 import ConfessionActiveRoomDesktop from "../features/confessions/components/ConfessionActiveRoomDesktop.jsx";
 import RoomMembersRail from "../features/confessions/components/RoomMembersRail.jsx";
@@ -24,7 +26,7 @@ import {
 } from "../components/common/MobileRoomVisuals.jsx";
 import { getAudioUploadToken } from "../services/confession.service.js";
 import {
-    MobileConfideIcon,
+    MobileFullyMeeIcon,
     MobileBellIcon,
     MobileMenuIcon,
     MobileSearchIcon,
@@ -37,12 +39,13 @@ import {
     matchesJoinedRoomFilter
 } from "../features/confessions/utils/roomFilters.js";
 
-const MOBILE_ROOM_FILTERS = ["All", "Joined", "Public", "Private", "Late Night"];
+const MOBILE_ROOM_FILTERS = ["All", "Public", "Private"];
 
 
 export default function ConfessionRoomPage({ user }) {
     const isDesktop = useIsDesktop();
     const navigate = useNavigate();
+    const location = useLocation();
     const [desktopSearch, setDesktopSearch] = useState("");
     const [desktopRoomFilter, setDesktopRoomFilter] = useState("All");
     const [mobileSearch, setMobileSearch] = useState("");
@@ -83,9 +86,11 @@ export default function ConfessionRoomPage({ user }) {
         reactingReplyIds,
         repliesLoadMoreRef,
         confessionDraft,
+        audioTitle,
         detailReplyDraft,
         setShowComposer,
         setConfessionDraft,
+        setAudioTitle,
         setChatRequestTarget,
         setChatRequestSuccess,
         openRoomsView,
@@ -97,6 +102,7 @@ export default function ConfessionRoomPage({ user }) {
         handleCopyRoomCode,
         handleLeaveRoom,
         handlePostConfession,
+        handleDeleteConfession,
         handlePostReply,
         handleReact,
         openChatRequest,
@@ -175,7 +181,9 @@ export default function ConfessionRoomPage({ user }) {
         setAudioToken(null);
         setAudioReady(false);
         setAudioReadyData(null);
-    }, [setSelectedScheduledAt, setShowComposer]);
+        setConfessionDraft("");
+        setAudioTitle("");
+    }, [setSelectedScheduledAt, setShowComposer, setConfessionDraft, setAudioTitle]);
 
     const handleFetchAudioToken = useCallback(async () => {
         if (!activeRoomId || audioToken || audioTokenLoading) return audioToken;
@@ -199,13 +207,17 @@ export default function ConfessionRoomPage({ user }) {
         setAudioToken(null);
         setAudioReady(false);
         setAudioReadyData(null);
-    }, []);
+        setConfessionDraft("");
+        setAudioTitle("");
+    }, [setConfessionDraft, setAudioTitle]);
 
     const handleComposerSubmit = useCallback(async (event) => {
-        const posted = await handlePostConfession(event, confessionMode === "audio" ? {
-            audioPublicId: audioReadyData && audioReadyData.audioPublicId,
-            audioDuration: audioReadyData && audioReadyData.audioDuration
-        } : {});
+        const isAudio = confessionMode === "audio";
+        const posted = await handlePostConfession(event, {
+            isAudio,
+            audioPublicId: isAudio && audioReadyData ? audioReadyData.audioPublicId : undefined,
+            audioDuration: isAudio && audioReadyData ? audioReadyData.audioDuration : undefined
+        });
         if (posted) {
             resetAudioComposerState();
         }
@@ -216,8 +228,10 @@ export default function ConfessionRoomPage({ user }) {
             isDesktop={isDesktop}
             room={activeRoom}
             draft={confessionDraft}
+            audioTitle={audioTitle}
             posting={postingConfession}
             onDraftChange={setConfessionDraft}
+            onAudioTitleChange={setAudioTitle}
             onClose={resetComposerState}
             onSubmit={handleComposerSubmit}
             onShuffle={handleShuffleAlias}
@@ -332,6 +346,7 @@ export default function ConfessionRoomPage({ user }) {
                     onChatRequest={openChatRequest}
                     onReplyDraftChange={(value) => updateReplyDraft(selectedConfession?.confessionId, value)}
                     onPostReply={handlePostReply}
+                    onDeleteConfession={handleDeleteConfession}
                     onShare={handleShare}
                     onShuffleAlias={handleShuffleAlias}
                     shufflingAlias={shufflingAlias}
@@ -367,7 +382,7 @@ export default function ConfessionRoomPage({ user }) {
                                 </section>
 
                                 <section className="desktop-pill-tabs desktop-confessions-hub__filters" aria-label="Room filters">
-                                    {["All", "Joined", "Public", "Private", "Late Night", "Heartbreak"].map((label) => (
+                                    {["All", "Public", "Private"].map((label) => (
                                         <button
                                             key={label}
                                             type="button"
@@ -413,12 +428,12 @@ export default function ConfessionRoomPage({ user }) {
         ) : null;
 
         const desktopSubtitle = !activeRoom
-            ? "Rooms you have joined and communities where you can post anonymously"
+            ? "Circles you have joined and communities where you can post anonymously"
             : (selectedConfession
-                ? "Read the confession and keep the conversation thoughtful"
+                ? "Read the fume and keep the conversation thoughtful"
                 : (activeRoom.roomType === "private"
-                    ? `Private Room ${activeRoom.joinCode ? `· ${activeRoom.joinCode}` : ""}`
-                    : "Public Room"));
+                    ? `Inner Circle ${activeRoom.joinCode ? `· ${activeRoom.joinCode}` : ""}`
+                    : "Fume Circle"));
 
         return (
             <div className="my-confessions-page my-confessions-page--desktop">
@@ -506,6 +521,7 @@ export default function ConfessionRoomPage({ user }) {
                                         onChatRequest={openChatRequest}
                                         onReplyDraftChange={(value) => updateReplyDraft(selectedConfession.confessionId, value)}
                                         onPostReply={handlePostReply}
+                                        onDeleteConfession={handleDeleteConfession}
                                     />
                                 </div>
                             </div>
@@ -520,42 +536,30 @@ export default function ConfessionRoomPage({ user }) {
     }
 
     return (
-        <div className="confide-confessions-mobile" {...swipeNavigationHandlers}>
+        <div className="fullymee-confessions-mobile" {...swipeNavigationHandlers}>
             {notice && <p className="my-confessions-alert my-confessions-alert--notice">{notice}</p>}
 
-            <div className="confide-confessions-mobile__shell">
+            <div className="fullymee-confessions-mobile__shell">
                 {!activeRoom && !selectedConfession && (
                     <>
-                        <main className="confide-confessions-mobile__content">
-                            <form className="confide-confessions-mobile__search" onSubmit={(event) => event.preventDefault()}>
-                                <span className="confide-confessions-mobile__search-icon" aria-hidden="true">
-                                    <MobileSearchIcon />
-                                </span>
-                                <input
-                                    type="search"
-                                    value={mobileSearch}
-                                    onChange={(event) => setMobileSearch(event.target.value)}
-                                    placeholder="Search rooms, people, or feelings..."
-                                />
-                            </form>
-
-                            <section className="confide-confessions-mobile__hero">
-                                <span className="confide-confessions-mobile__hero-label">✨ YOUR SAFE SPACE</span>
+                        <main className="fullymee-confessions-mobile__content">
+                            <section className="fullymee-confessions-mobile__hero">
+                                <span className="fullymee-confessions-mobile__hero-label">✨ YOUR SAFE SPACE</span>
                                 <h1>Your confession rooms</h1>
                                 <p>The communities where your thoughts can arrive exactly as they are.</p>
                             </section>
 
-                            <div className="confide-cta-banner">
-                                <div className="confide-cta-banner__icon" aria-hidden="true">
-                                    <MobileConfideIcon />
+                            <div className="fullymee-cta-banner">
+                                <div className="fullymee-cta-banner__icon" aria-hidden="true">
+                                    <MobileFullyMeeIcon />
                                 </div>
-                                <div className="confide-cta-banner__copy">
+                                <div className="fullymee-cta-banner__copy">
                                     <strong>Say it anonymously</strong>
                                     <span>No name, no pressure - just your truth.</span>
                                 </div>
                                 <button
                                     type="button"
-                                    className="confide-cta-banner__add"
+                                    className="fullymee-cta-banner__add"
                                     onClick={() => navigate("/create-room", { state: { openCreateRoom: true } })}
                                     aria-label="Create a new room"
                                 >
@@ -563,12 +567,12 @@ export default function ConfessionRoomPage({ user }) {
                                 </button>
                             </div>
 
-                            <section className="confide-confessions-mobile__filters" aria-label="Room filters">
+                            <section className="fullymee-confessions-mobile__filters" aria-label="Room filters">
                                 {MOBILE_ROOM_FILTERS.map((label) => (
                                     <button
                                         key={label}
                                         type="button"
-                                        className={`confide-confessions-mobile__filter${mobileRoomFilter === label ? " is-active" : ""}`}
+                                        className={`fullymee-confessions-mobile__filter${mobileRoomFilter === label ? " is-active" : ""}`}
                                         onClick={() => setMobileRoomFilter(label)}
                                     >
                                         {label}
@@ -576,8 +580,8 @@ export default function ConfessionRoomPage({ user }) {
                                 ))}
                             </section>
 
-                            <section className="confide-confessions-mobile__rooms">
-                                <div className="confide-rooms-section-head">
+                            <section className="fullymee-confessions-mobile__rooms">
+                                <div className="fullymee-rooms-section-head">
                                     <h2>Spaces for you</h2>
                                     {mobileFilteredRooms.length > 0 && (
                                         <span>{mobileFilteredRooms.length} room{mobileFilteredRooms.length !== 1 ? "s" : ""}</span>
@@ -585,21 +589,18 @@ export default function ConfessionRoomPage({ user }) {
                                 </div>
 
                                 {loadingRooms && (
-                                    <div className="confide-confessions-mobile__loading">
-                                        <div className="confide-confessions-mobile__skeleton" />
-                                        <div className="confide-confessions-mobile__skeleton" />
-                                    </div>
+                                    <RoomSkeleton count={mobileFilteredRooms.length > 0 ? mobileFilteredRooms.length : (joinedRooms.length > 0 ? joinedRooms.length : 4)} />
                                 )}
 
                                 {!loadingRooms && mobileFilteredRooms.length === 0 && (
-                                    <div className="confide-rooms-empty">
-                                        <div className="confide-rooms-empty__icon-wrap">
+                                    <div className="fullymee-rooms-empty">
+                                        <div className="fullymee-rooms-empty__icon-wrap">
                                             <MobileSearchIcon />
                                         </div>
-                                        <h3 className="confide-rooms-empty__title">
+                                        <h3 className="fullymee-rooms-empty__title">
                                             {mobileSearchTerm ? "No rooms match your search" : "No joined rooms yet"}
                                         </h3>
-                                        <p className="confide-rooms-empty__sub">
+                                        <p className="fullymee-rooms-empty__sub">
                                             {mobileSearchTerm
                                                 ? "Try a different keyword or clear the search bar."
                                                 : "Discover and join rooms from the home screen to start posting."}
@@ -607,7 +608,7 @@ export default function ConfessionRoomPage({ user }) {
                                         {!mobileSearchTerm && (
                                             <button
                                                 type="button"
-                                                className="confide-rooms-empty__cta"
+                                                className="fullymee-rooms-empty__cta"
                                                 onClick={() => navigate("/")}
                                             >
                                                 <MobileSparkIcon />
@@ -618,7 +619,7 @@ export default function ConfessionRoomPage({ user }) {
                                 )}
 
                                 {!loadingRooms && mobileFilteredRooms.length > 0 && (
-                                    <div className="confide-rooms-grid">
+                                    <div className="fullymee-rooms-grid">
                                         {mobileFilteredRooms.map((room) => (
                                             <AmbienceRoomCard
                                                 key={room.roomId}
@@ -632,9 +633,9 @@ export default function ConfessionRoomPage({ user }) {
                             </section>
 
                             {/* Safety First banner */}
-                            <section className="confide-confessions-mobile__safety-section">
-                                <div className="confide-safety-card">
-                                    <div className="confide-safety-card__icon" aria-hidden="true">
+                            <section className="fullymee-confessions-mobile__safety-section">
+                                <div className="fullymee-safety-card">
+                                    <div className="fullymee-safety-card__icon" aria-hidden="true">
                                         <MobileShieldIcon />
                                     </div>
                                     <h2>Safety First</h2>
@@ -667,6 +668,7 @@ export default function ConfessionRoomPage({ user }) {
                             onLoadMoreConfessions={loadMoreConfessions}
                             onReact={handleReact}
                             onChatRequest={openChatRequest}
+                            onDeleteConfession={handleDeleteConfession}
                             scheduledConfessions={scheduledConfessions}
                             onCancelScheduled={handleCancelScheduled}
                         />
@@ -697,10 +699,19 @@ export default function ConfessionRoomPage({ user }) {
                         onChatRequest={openChatRequest}
                         onReplyDraftChange={(value) => updateReplyDraft(selectedConfession.confessionId, value)}
                         onPostReply={handlePostReply}
+                        onDeleteConfession={handleDeleteConfession}
                     />
                 )}
 
                 {chatRequestDialogs}
+
+                <SearchRoomsSheet
+                    isOpen={new URLSearchParams(location.search).get("search") === "1"}
+                    onClose={() => navigate("/confessions", { replace: true })}
+                    rooms={joinedRooms}
+                    scope="confessions"
+                    onSelectRoom={(room) => openRoomView(room.roomId || room.id)}
+                />
             </div>
         </div>
     );

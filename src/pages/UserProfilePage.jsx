@@ -10,7 +10,7 @@ import {
     Users
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
-import { ProfileSkeleton } from "../components/common/LoadingStates.jsx";
+import { ProfileSkeleton } from "../components/loaders";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import { getJoinedRooms } from "../services/confession.service.js";
 import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
@@ -183,7 +183,7 @@ export default function UserProfilePage({ user: currentUser }) {
                     hideStageHeader
                 >
                     <div className="desktop-profile-container">
-                        {loading && <ProfileSkeleton />}
+                        {loading && <ProfileSkeleton isDesktop={true} roomCount={profileStats?.rooms > 0 ? profileStats.rooms : 3} />}
 
                         {/* Hidden profile splash */}
                         {!loading && isProfileHidden && (
@@ -210,7 +210,7 @@ export default function UserProfilePage({ user: currentUser }) {
                                             <h2>{displayUsername}</h2>
                                             <p>
                                                 {isConnected
-                                                    ? "Anonymous identity on FullyMe."
+                                                    ? "Anonymous identity on FullyMee."
                                                     : "Private Identity not yet connected"}
                                             </p>
 
@@ -220,11 +220,11 @@ export default function UserProfilePage({ user: currentUser }) {
                                             >
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.confessions : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>confessions</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>fumes</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.rooms : "—"}</span>
-                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>rooms</span>
+                                                    <span className="profile-redesign__stat-label" style={{ color: "black" }}>circles</span>
                                                 </div>
                                                 <div className="profile-redesign__stat-item">
                                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.replies : "—"}</span>
@@ -351,16 +351,13 @@ export default function UserProfilePage({ user: currentUser }) {
                     <ArrowLeft size={22} strokeWidth={2.2} color="#3B1F43" />
                 </button>
                 <h1 className="uprofile-mobile__topbar-title">
-                    {loading ? "Profile" : displayUsername}
+                    {loading ? "Reflection" : displayUsername}
                 </h1>
                 <div className="uprofile-mobile__topbar-spacer" />
             </header>
 
             {loading ? (
-                <div className="profile-content">
-                    <ProfileSkeleton />
-                </div>
-
+                <ProfileSkeleton isDesktop={false} roomCount={profileStats?.rooms > 0 ? profileStats.rooms : 4} />
             ) : isProfileHidden ? (
                 /* ── Hidden profile ── */
                 <HiddenProfileSplash
@@ -389,11 +386,11 @@ export default function UserProfilePage({ user: currentUser }) {
                             <div className="profile-redesign__stats-group">
                                 <div className="profile-redesign__stat-item">
                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.confessions : "—"}</span>
-                                    <span className="profile-redesign__stat-label">confessions</span>
+                                    <span className="profile-redesign__stat-label">fumes</span>
                                 </div>
                                 <div className="profile-redesign__stat-item">
                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.rooms : "—"}</span>
-                                    <span className="profile-redesign__stat-label">rooms</span>
+                                    <span className="profile-redesign__stat-label">circles</span>
                                 </div>
                                 <div className="profile-redesign__stat-item">
                                     <span className="profile-redesign__stat-value">{profileStats ? profileStats.replies : "—"}</span>
@@ -413,7 +410,7 @@ export default function UserProfilePage({ user: currentUser }) {
                             </h1>
                             <p className="profile-redesign__tagline">
                                 {isConnected
-                                    ? "Anonymous identity on FullyMe."
+                                    ? "Anonymous identity on FullyMee."
                                     : "You are always anonymous in rooms."}
                             </p>
                             <div className="profile-redesign__badges-row">
@@ -458,7 +455,7 @@ export default function UserProfilePage({ user: currentUser }) {
                         <div className="uprofile-privacy-card__copy">
                             <strong>Privacy Notice</strong>
                             {isConnected ? (
-                                <p>All identities on FullyMe are anonymous. Confessions and room activity are never shared on profiles.</p>
+                                <p>All identities on FullyMee are anonymous. Confessions and room activity are never shared on profiles.</p>
                             ) : (
                                 <p>This is a room-specific anonymous identity. Their real profile is completely private and hidden.</p>
                             )}

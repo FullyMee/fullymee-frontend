@@ -131,40 +131,6 @@ p {
     padding: 0.7rem 1rem;
 }
 
-.auth-page {
-    position: relative;
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: minmax(280px, 1.1fr) minmax(320px, 0.9fr);
-    gap: 1.5rem;
-    align-items: center;
-    padding: 2.2rem;
-}
-
-.auth-orb {
-    position: absolute;
-    pointer-events: none;
-    border-radius: 999px;
-    filter: blur(6px);
-    opacity: 0.45;
-}
-
-.auth-orb--left {
-    width: 280px;
-    height: 280px;
-    left: -120px;
-    bottom: 12%;
-    background: radial-gradient(circle, rgba(230, 126, 34, 0.52), transparent 70%);
-}
-
-.auth-orb--right {
-    width: 320px;
-    height: 320px;
-    right: -120px;
-    top: 8%;
-    background: radial-gradient(circle, rgba(15, 118, 110, 0.48), transparent 72%);
-}
-
 .auth-panel {
     position: relative;
     z-index: 2;
@@ -748,11 +714,6 @@ p {
 }
 
 @media (max-width: 900px) {
-    .auth-page {
-        grid-template-columns: 1fr;
-        padding: 1.1rem;
-    }
-
     .chat-page {
         padding: 0.8rem;
         height: auto;
@@ -798,4 +759,21 @@ p {
     .auth-actions {
         grid-template-columns: 1fr;
     }
+}
+
+/* ─── Trending Rooms Empty State Card (Mobile & Desktop) ─────────────────────── */
+.home-trending-empty {
+    width: 100%;
+    padding: 1.1rem 1.35rem;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid rgba(84, 53, 67, 0.08);
+    color: #8a7c86;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.5;
+    box-shadow: 0 4px 14px rgba(45, 37, 30, 0.03);
+    margin-top: 0.25rem;
+    box-sizing: border-box;
 }

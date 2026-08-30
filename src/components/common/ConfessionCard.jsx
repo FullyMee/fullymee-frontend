@@ -1,11 +1,12 @@
 import React, { memo } from 'react';
 import { useNavigate } from "react-router-dom";
-import { InlineSpinner } from './LoadingStates.jsx';
+import { InlineSpinner } from '../loaders';
 import { getAliasTone, getInitial } from '../../utils/presentation.js';
 import UserAvatar from './UserAvatar.jsx';
 import { formatRelativeTime } from '../../utils/time.js';
 import { Heart, MessageSquare, Send } from "lucide-react";
 import AudioPlayer from "../../features/confessions/components/AudioPlayer.jsx";
+import ConfessionMoreMenu from "../../features/confessions/components/ConfessionMoreMenu.jsx";
 
 const MemoizedConfessionCard = memo(({ 
     confession, 
@@ -15,9 +16,13 @@ const MemoizedConfessionCard = memo(({
     isSentRequest,
     onOpenView,
     onReact,
-    onChatRequest
+    onChatRequest,
+    onDeleteConfession,
+    currentAlias,
+    user
 }) => {
     const navigate = useNavigate();
+    const isAuthor = (currentAlias && confession.alias === currentAlias) || (user && Number(confession.author) === Number(user.id || user.userId));
 
     if (!isDesktop) {
         return (
@@ -46,9 +51,9 @@ const MemoizedConfessionCard = memo(({
                                 {formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })} {confession.audio ? "" : "· written"}
                             </span>
                         </div>
-                        <div className="room-mobile-redesign-card__more">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                        </div>
+                        {isAuthor ? (
+                            <ConfessionMoreMenu onDelete={() => onDeleteConfession?.(confession.confessionId)} />
+                        ) : null}
                     </div>
 
                     {confession.content ? (
@@ -76,7 +81,7 @@ const MemoizedConfessionCard = memo(({
                             className={`room-mobile-redesign-card__stat${isLiked ? " is-liked" : ""}`}
                             onClick={(e) => { e.stopPropagation(); onReact("confession", confession.confessionId); }}
                             disabled={isReacting}
-                            aria-label={isLiked ? "Unlike confession" : "Like confession"}
+                            aria-label={isLiked ? "Unfelt fume" : "Felt fume"}
                         >
                             <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={isLiked ? 0 : 2} />
                             <span>{confession.reactionCount || 0}</span>
@@ -117,18 +122,25 @@ const MemoizedConfessionCard = memo(({
             >
                 <div
                     className="room-confession-card__author"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
-                    }}
-                    style={{ cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
                 >
-                    <UserAvatar avatarId={confession.avatar} className="confession-card__avatar" />
-                    <div>
-                        <strong>{confession.alias}</strong>
-                        <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
+                    <div
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate(`/user/${confession.alias}`, { state: { profileUser: { username: confession.alias, isAlias: true } } });
+                        }}
+                        style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
+                    >
+                        <UserAvatar avatarId={confession.avatar} className="confession-card__avatar" />
+                        <div>
+                            <strong>{confession.alias}</strong>
+                            <span>{formatRelativeTime(confession.createdAt, { short: true, nowLabel: "now" })}</span>
+                        </div>
                     </div>
+                    {isAuthor ? (
+                        <ConfessionMoreMenu onDelete={() => onDeleteConfession?.(confession.confessionId)} />
+                    ) : null}
                 </div>
                 {confession.content ? <p>{confession.content}</p> : null}
             </div>

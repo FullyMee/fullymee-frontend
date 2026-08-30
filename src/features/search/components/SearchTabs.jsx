@@ -11,7 +11,7 @@ export default function SearchTabs({ tab, setTab, roomCount, peopleCount, onJoin
                 className={`search-pill${tab === ROOMS_TAB ? " is-active" : ""}`}
                 onClick={() => setTab(ROOMS_TAB)}
             >
-                All Rooms ({roomCount || 0})
+                All Circles ({roomCount || 0})
             </button>
             <button
                 type="button"

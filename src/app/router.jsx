@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { MessageSquareQuote, Plus, UserRoundPlus } from "lucide-react";
+import { MessageSquareQuote, Plus, Search, UserRoundPlus } from "lucide-react";
 import fullymeLogo from "../assets/fullyme-logo.png";
 import useAuth from "../hooks/useAuth.js";
 import ErrorBanner from "../components/common/ErrorBanner.jsx";
-import { InlineSpinner } from "../components/common/LoadingStates.jsx";
+import { AppLoader, PageLoader } from "../components/loaders";
 import AppBottomNav from "../components/navigation/AppBottomNav.jsx";
 import { connectSocket, disconnectSocket } from "../services/socket.js";
 import useIsDesktop from "../hooks/useIsDesktop.js";
@@ -20,14 +20,6 @@ const UserProfilePage = lazy(() => import("../pages/UserProfilePage.jsx"));
 const SettingsPage = lazy(() => import("../pages/SettingsPage.jsx"));
 const PRIMARY_TAB_ROUTES = ["/", "/confessions", "/chats", "/search", "/profile", "/settings"];
 const PRIMARY_TAB_TRANSITION_MS = 280;
-
-function PageLoader() {
-    return (
-        <div className="page-loader" role="status" aria-live="polite" aria-label="Loading page">
-            <InlineSpinner size="lg" tone="dark" label="Loading page" />
-        </div>
-    );
-}
 
 function AppRouteSet({ isAuthenticated, user, locationOverride }) {
     return (
@@ -84,19 +76,55 @@ function AppRouteSet({ isAuthenticated, user, locationOverride }) {
 
 function MobileGlobalHeader() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const isSearchActive = searchParams.get("search") === "1";
+
+    const handleSearchClick = () => {
+        if (location.pathname === "/") {
+            if (isSearchActive) {
+                navigate("/", { replace: true });
+            } else {
+                navigate("/?search=1", { replace: true });
+            }
+        } else if (location.pathname === "/confessions") {
+            if (isSearchActive) {
+                navigate("/confessions", { replace: true });
+            } else {
+                navigate("/confessions?search=1", { replace: true });
+            }
+        } else if (location.pathname === "/search") {
+            if (isSearchActive) {
+                navigate("/search", { replace: true });
+            } else {
+                navigate("/search?search=1", { replace: true });
+            }
+        } else {
+            navigate("/search?search=1");
+        }
+    };
+
     return (
         <header className="home-mobile-header">
             <div className="home-mobile-brand">
                 <div className="home-mobile-brand__mark" aria-hidden="true">
-                    <img src={fullymeLogo} alt="FullyMe logo" className="home-brand__logo-img" />
+                    <img src={fullymeLogo} alt="FullyMee logo" className="home-brand__logo-img" />
                 </div>
                 <div className="home-mobile-brand__copy">
-                    <strong>FullyMe</strong>
+                    <strong>FullyMee</strong>
                     <span></span>
                 </div>
             </div>
 
             <div className="home-mobile-header__actions">
+                <button
+                    type="button"
+                    className={`home-mobile-header__action${isSearchActive ? " is-active" : ""}`}
+                    onClick={handleSearchClick}
+                    aria-label="Search rooms"
+                >
+                    <Search size={19} strokeWidth={2} />
+                </button>
                 <button
                     type="button"
                     className="home-mobile-header__action home-mobile-header__action--create"
@@ -238,7 +266,7 @@ export default function Router() {
         connectSocket().catch(() => { });
     }, [isAuthenticated]);
 
-    if (loading) return null;
+    if (loading) return <AppLoader />;
 
     return (
         <BrowserRouter>

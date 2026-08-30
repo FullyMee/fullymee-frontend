@@ -2,7 +2,7 @@ import React from "react";
 import { CheckIcon, CloseIcon, ChatBubbleIcon } from "../../../components/common/Icons.jsx";
 import { getChatAvatarGlyph } from "../../../components/common/MobileRoomVisuals.jsx";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
-import { InlineSpinner } from "../../../components/common/LoadingStates.jsx";
+import { InlineSpinner } from "../../../components/loaders";
 import {
     getAvatarTone,
     formatListTime,
