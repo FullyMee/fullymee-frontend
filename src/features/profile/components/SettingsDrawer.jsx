@@ -507,6 +507,7 @@ function EmailPage({ user, onBack, onClose, animDir }) {
 
 function ChatPermissionPage({ s, onBack, onClose, animDir }) {
     const descriptions = {
+        anyone: "Anyone can send you chat requests, even from outside your rooms.",
         rooms:  "Only members of rooms you have joined can reach you.",
         nobody: "Requests are turned off. You can still start chats yourself."
     };
