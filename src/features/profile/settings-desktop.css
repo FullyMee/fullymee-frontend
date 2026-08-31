@@ -685,12 +685,19 @@
     width: 100%;
 }
 
-.dt-settings-card-grid-3 {
+.dt-settings-card-grid-3,
+.dt-settings-chat-permission-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.65rem;
     margin-top: 0.75rem;
     width: 100%;
+}
+
+@media (max-width: 900px) {
+    .dt-settings-chat-permission-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .dt-settings-audio-expiry-grid {

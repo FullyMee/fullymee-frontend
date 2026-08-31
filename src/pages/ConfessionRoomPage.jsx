@@ -377,7 +377,7 @@ export default function ConfessionRoomPage({ user }) {
                         <section className="home-feed-column my-confessions-lobby-grid__main">
                             <div className="desktop-confessions-hub">
                                 <section className="desktop-confessions-hub__hero">
-                                    <h1>Your Confession Rooms</h1>
+                                    <h1>Your Circles</h1>
                                     <p>Rooms you have joined and communities where you can post anonymously.</p>
                                 </section>
 
@@ -545,7 +545,7 @@ export default function ConfessionRoomPage({ user }) {
                         <main className="fullymee-confessions-mobile__content">
                             <section className="fullymee-confessions-mobile__hero">
                                 <span className="fullymee-confessions-mobile__hero-label">✨ YOUR SAFE SPACE</span>
-                                <h1>Your confession rooms</h1>
+                                <h1>Your Circles</h1>
                                 <p>The communities where your thoughts can arrive exactly as they are.</p>
                             </section>
 

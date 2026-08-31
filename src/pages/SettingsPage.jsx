@@ -41,6 +41,7 @@ const AUDIO_EXPIRY_CARD_OPTIONS = [
 ];
 
 const CHAT_PERMISSION_CARD_OPTIONS = [
+    { value: "anyone", label: "Anyone", desc: "Anyone can send you chat requests, even from outside your rooms." },
     { value: "rooms", label: "People in my rooms", desc: "Only members of rooms you have joined can reach you." },
     { value: "nobody", label: "No one", desc: "Requests are turned off. You can still start chats yourself." }
 ];
@@ -432,7 +433,7 @@ export default function SettingsPage({ user: propUser }) {
 
                                     {openAccordion === "chat-permissions" && (
                                         <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-card-grid-2">
+                                            <div className="dt-settings-chat-permission-grid">
                                                 {CHAT_PERMISSION_CARD_OPTIONS.map((opt) => {
                                                     const selected = s.chatPermission === opt.value;
                                                     return (

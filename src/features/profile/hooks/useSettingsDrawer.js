@@ -8,6 +8,7 @@ import { updateCurrentUserPreferences } from "../../../services/auth.service";
 // AVATAR_OPTIONS moved to src/constants/avatars.js
 
 export const CHAT_PERMISSION_OPTIONS = [
+    { value: 'anyone', label: 'Anyone',              desc: 'Anyone can send you chat requests, even from outside your rooms.' },
     { value: 'rooms',  label: 'People in my rooms', desc: 'Only members of rooms you have joined can reach you.' },
     { value: 'nobody', label: 'No one',              desc: 'Requests are turned off. You can still start chats yourself.' },
 ];
@@ -23,11 +24,17 @@ export const AUDIO_EXPIRY_OPTIONS = [
 // Helper: extract initial preferences from user object
 // ─────────────────────────────────────────────────────────────────────────────
 
+function normalizeChatRequestPermission(perm) {
+    if (perm === 'nobody') return 'nobody';
+    if (perm === 'anyone') return 'anyone';
+    return 'rooms';
+}
+
 function extractPrefs(user) {
     const p = (user && user.preferences) || {};
     return {
         avatar:                   p.avatar                   || 'flowing_waterfall',
-        chatRequestPermission:    p.chatRequestPermission === 'nobody' ? 'nobody' : 'rooms',
+        chatRequestPermission:    normalizeChatRequestPermission(p.chatRequestPermission),
         limitNighttimeRequests:   !!p.limitNighttimeRequests,
         hideJoinedRooms:          !!p.hideJoinedRooms,
         hideProfileGlobal:        !!p.hideProfileGlobal,

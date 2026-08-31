@@ -139,11 +139,11 @@ export default function useConfessionRoom() {
                 setJoinedRooms(unique);
                 try {
                     localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique));
-                } catch {}
+                } catch { }
                 dismissError();
             } catch (err) {
                 if (!cancelled) {
-                    showError(err && err.message ? err.message : "Unable to load your confession rooms.");
+                    showError(err && err.message ? err.message : "Unable to load your circles.");
                 }
             } finally {
                 if (!cancelled) {
@@ -267,7 +267,7 @@ export default function useConfessionRoom() {
                 if (joined) {
                     setJoinedRooms((prev) => {
                         const next = uniqueByNumericId([joined, ...prev], (r) => r && r.roomId);
-                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch {}
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { }
                         return next;
                     });
                 }
@@ -277,9 +277,9 @@ export default function useConfessionRoom() {
                     if (!isCancelled && Array.isArray(rooms)) {
                         const unique = uniqueByNumericId(rooms, (r) => r && r.roomId);
                         setJoinedRooms(unique);
-                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique)); } catch {}
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique)); } catch { }
                     }
-                } catch {}
+                } catch { }
             }
         }
 
@@ -561,7 +561,7 @@ export default function useConfessionRoom() {
 
             setJoinedRooms((prev) => {
                 const next = prev.filter((entry) => Number(entry && entry.roomId) !== roomId);
-                try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch {}
+                try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { }
                 return next;
             });
 
