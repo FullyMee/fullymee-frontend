@@ -15,6 +15,16 @@ import { ErrorProvider } from "./context/ErrorContext.jsx";
 
 const queryClient = new QueryClient();
 
+// Suppress benign browser media AbortError caused by rapid navigation or pause interrupting play()
+if (typeof window !== "undefined") {
+    window.addEventListener("unhandledrejection", (event) => {
+        const err = event && event.reason;
+        if (err && (err.name === "AbortError" || String(err.message || "").includes("play() request was interrupted"))) {
+            event.preventDefault();
+        }
+    });
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <ErrorProvider>

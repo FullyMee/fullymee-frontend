@@ -75,7 +75,7 @@ export default function UnifiedSidebar({
                             </span>
                             <span>{item.label}</span>
                             {item.key === "messages" && pendingMessageCount > 0 && (
-                                <span className="home-nav__badge">{pendingMessageCount > 9 ? "9+" : pendingMessageCount}</span>
+                                <span className="home-nav__badge">{pendingMessageCount > 99 ? "99+" : pendingMessageCount}</span>
                             )}
                         </Link>
                     );

@@ -1207,11 +1207,30 @@
 
     .desktop-chat-list__meta {
         align-self: flex-start;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.35rem;
     }
     .desktop-chat-list__meta span {
         color: #9f8c79;
         font-size: 0.74rem;
         white-space: nowrap;
+    }
+    .desktop-chat-list__badge {
+        min-width: 1.25rem;
+        height: 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.35rem;
+        border-radius: 999px;
+        background: #e07a56;
+        color: #fffdf9;
+        font-size: 0.7rem;
+        font-weight: 800;
+        line-height: 1;
+        box-shadow: 0 4px 10px rgba(224, 122, 86, 0.25);
     }
 
     /* ── Inline Request Cards ── */

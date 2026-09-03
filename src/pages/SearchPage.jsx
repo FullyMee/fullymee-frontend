@@ -7,12 +7,10 @@ import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import { ConnectionSkeleton, RoomSkeleton } from "../components/loaders";
 import { joinConfessionRoom, joinConfessionRoomByCode } from "../services/confession.service";
-import { sendUserChatRequest } from "../services/chat.service";
 import useIsDesktop from "../hooks/useIsDesktop";
 
 // Modular feature imports
 import { useSearchData } from "../features/search/hooks/useSearchData.js";
-import SearchInput from "../features/search/components/SearchInput.jsx";
 import SearchTabs, { ROOMS_TAB, PEOPLE_TAB } from "../features/search/components/SearchTabs.jsx";
 import SearchRoomCard from "../features/search/components/SearchRoomCard.jsx";
 import SearchUserCard from "../features/search/components/SearchUserCard.jsx";
@@ -26,6 +24,7 @@ import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.
 export default function SearchPage({ user }) {
     const isDesktop = useIsDesktop();
     const navigate = useNavigate();
+    const location = useLocation();
     const { showError, dismissError } = useGlobalError();
 
     const [tab, setTab] = useState(ROOMS_TAB);
@@ -47,11 +46,8 @@ export default function SearchPage({ user }) {
         peopleResults, 
         loading, 
         loadingMoreRooms,
-        loadingMorePeople,
         roomHasMore,
-        peopleHasMore,
         loadMoreRooms,
-        loadMorePeople,
         joinedRoomIds,
         removePerson,
         addPersonToHistory
@@ -382,8 +378,6 @@ export default function SearchPage({ user }) {
             </>
         );
     }
-
-    const location = useLocation();
 
     return (
         <div className="search-mobile-page" {...swipeNavigationHandlers}>

@@ -26,8 +26,8 @@ export const AUDIO_EXPIRY_OPTIONS = [
 
 function normalizeChatRequestPermission(perm) {
     if (perm === 'nobody') return 'nobody';
-    if (perm === 'anyone') return 'anyone';
-    return 'rooms';
+    if (perm === 'rooms') return 'rooms';
+    return 'anyone';
 }
 
 function extractPrefs(user) {

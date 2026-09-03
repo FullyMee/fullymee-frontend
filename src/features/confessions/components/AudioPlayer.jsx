@@ -1,5 +1,5 @@
 import { Pause, Play, RotateCw } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getConfessionAudioUrl } from "../../../services/confession.service.js";
 
 const AUDIO_PLAY_EVENT = "fullyme:audio-play";
@@ -26,29 +26,43 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
         return Math.pow(2, pitchShift / 1200);
     }, [audio]);
 
-    const applyPitchShift = () => {
+    const applyPitchShift = useCallback(() => {
         const node = audioRef.current;
         if (node) {
             node.preservesPitch = false;
             node.playbackRate = playbackRate;
         }
-    };
+    }, [playbackRate]);
 
     useEffect(() => {
         applyPitchShift();
-    }, [src, playbackRate]);
+    }, [src, applyPitchShift]);
 
     useEffect(() => {
+        const node = audioRef.current;
         const handleOtherAudioPlay = (event) => {
             if (!event || !event.detail || event.detail.playerId === playerId) return;
-            const node = audioRef.current;
-            if (node && !node.paused) {
-                node.pause();
+            const currentNode = audioRef.current;
+            if (currentNode && !currentNode.paused) {
+                try {
+                    currentNode.pause();
+                } catch {
+                    // Ignore playback pause interruptions
+                }
             }
             setPlaying(false);
         };
         window.addEventListener(AUDIO_PLAY_EVENT, handleOtherAudioPlay);
-        return () => window.removeEventListener(AUDIO_PLAY_EVENT, handleOtherAudioPlay);
+        return () => {
+            window.removeEventListener(AUDIO_PLAY_EVENT, handleOtherAudioPlay);
+            if (node && !node.paused) {
+                try {
+                    node.pause();
+                } catch {
+                    // Ignore playback pause interruptions
+                }
+            }
+        };
     }, [playerId]);
 
     if (!audio) return null;
@@ -83,11 +97,26 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
                 }
                 applyPitchShift();
                 window.dispatchEvent(new CustomEvent(AUDIO_PLAY_EVENT, { detail: { playerId } }));
-                await node.play();
+                const playPromise = node.play();
+                if (playPromise !== undefined) {
+                    try {
+                        await playPromise;
+                    } catch (playErr) {
+                        if (playErr && (playErr.name === "AbortError" || String(playErr.message || "").includes("interrupted"))) {
+                            setPlaying(false);
+                            return;
+                        }
+                        throw playErr;
+                    }
+                }
                 applyPitchShift();
                 setPlaying(true);
             }
         } catch (err) {
+            if (err && (err.name === "AbortError" || String(err.message || "").includes("interrupted"))) {
+                setPlaying(false);
+                return;
+            }
             if (err && err.status === 410) {
                 setError("Audio expired");
             } else if (err && err.status) {
