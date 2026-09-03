@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ChevronDown, Search, X, User } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import { AmbienceRoomCard } from "./MobileRoomVisuals.jsx";
 import SearchUserCard from "../../features/search/components/SearchUserCard.jsx";
 import { getAllUsers } from "../../services/auth.service.js";
+import { getPublicRooms } from "../../services/confession.service.js";
+import { RoomSkeleton } from "../loaders";
 import "../../features/search/search.css";
 import "./SearchRoomsSheet.css";
 
@@ -21,8 +23,11 @@ function SearchRoomsSheetInner({
 }) {
     const [activeTab, setActiveTab] = useState(initialTab || "rooms");
     const [query, setQuery] = useState("");
+    const [liveRooms, setLiveRooms] = useState(EMPTY_ARRAY);
+    const [loadingRooms, setLoadingRooms] = useState(false);
     const [livePeople, setLivePeople] = useState(EMPTY_ARRAY);
     const [loadingPeople, setLoadingPeople] = useState(false);
+    const roomsSearchTimerRef = useRef(null);
     const searchTimerRef = useRef(null);
 
     // Close on Escape key press
@@ -36,11 +41,11 @@ function SearchRoomsSheetInner({
 
     const normalizedQuery = query.trim().toLowerCase();
 
-    // Filter circles by title, description, or category (partial, full, slug, and multi-token matches)
+    // In-memory fallback / local joined rooms filter
     const filteredRooms = useMemo(() => {
         if (!normalizedQuery) return EMPTY_ARRAY;
-        const cleanQuery = normalizedQuery.replace(/[\s_\-]+/g, "");
-        const tokens = normalizedQuery.split(/[\s_\-&]+/).filter((t) => t.length > 0 && t !== "and");
+        const cleanQuery = normalizedQuery.replace(/[\s_-]+/g, "");
+        const tokens = normalizedQuery.split(/[\s_& -]+/).filter((t) => t.length > 0 && t !== "and");
 
         return rooms
             .filter((room) => scope === "confessions" || (room && room.roomType !== "private" && !room.isPrivate))
@@ -49,7 +54,7 @@ function SearchRoomsSheetInner({
                 const desc = String(room?.description || "").toLowerCase();
                 const category = String(room?.category || "").toLowerCase();
                 const categorySpaced = category.replace(/_/g, " ");
-                const cleanCategory = category.replace(/[\s_\-]+/g, "");
+                const cleanCategory = category.replace(/[\s_-]+/g, "");
 
                 const directMatch =
                     title.includes(normalizedQuery) ||
@@ -72,6 +77,52 @@ function SearchRoomsSheetInner({
                 return false;
             });
     }, [rooms, normalizedQuery, scope]);
+
+    // Live server search for rooms across entire database
+    useEffect(() => {
+        let isCancelled = false;
+
+        if (roomsSearchTimerRef.current) {
+            clearTimeout(roomsSearchTimerRef.current);
+        }
+
+        if (scope === "confessions" || !normalizedQuery) {
+            setLiveRooms(EMPTY_ARRAY);
+            setLoadingRooms(false);
+            return () => {
+                isCancelled = true;
+            };
+        }
+
+        setLoadingRooms(true);
+        roomsSearchTimerRef.current = setTimeout(async () => {
+            try {
+                const res = await getPublicRooms({
+                    search: normalizedQuery,
+                    limit: 30,
+                    paginate: true,
+                    sortBy: "discover"
+                });
+                if (isCancelled) return;
+                const items = Array.isArray(res)
+                    ? res
+                    : (res && Array.isArray(res.items) ? res.items : []);
+                setLiveRooms(items);
+            } catch {
+                if (isCancelled) return;
+                setLiveRooms(filteredRooms);
+            } finally {
+                if (!isCancelled) {
+                    setLoadingRooms(false);
+                }
+            }
+        }, 250);
+
+        return () => {
+            isCancelled = true;
+            if (roomsSearchTimerRef.current) clearTimeout(roomsSearchTimerRef.current);
+        };
+    }, [normalizedQuery, scope, filteredRooms]);
 
     // Live search for people when activeTab is "people" and query is present
     useEffect(() => {
@@ -98,7 +149,6 @@ function SearchRoomsSheetInner({
                 setLivePeople(items);
             } catch {
                 if (isCancelled) return;
-                // Fallback to local filter if API fails
                 const local = (people || []).filter((p) => {
                     const uname = String(p?.username || "").toLowerCase();
                     return uname.includes(normalizedQuery);
@@ -115,11 +165,16 @@ function SearchRoomsSheetInner({
             isCancelled = true;
             if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
         };
-    }, [activeTab, normalizedQuery]);
+    }, [activeTab, normalizedQuery, people]);
 
     const isPeopleTab = activeTab === "people";
     const displayedPeople = normalizedQuery ? livePeople : (people || EMPTY_ARRAY);
-    const circlesCount = normalizedQuery ? filteredRooms.length : (rooms?.length || 0);
+    const displayedRooms = scope === "confessions"
+        ? filteredRooms
+        : (normalizedQuery ? (loadingRooms ? EMPTY_ARRAY : liveRooms) : (rooms || EMPTY_ARRAY));
+    const circlesCount = scope === "confessions"
+        ? (normalizedQuery ? filteredRooms.length : (rooms?.length || 0))
+        : (normalizedQuery ? (loadingRooms ? "..." : liveRooms.length) : (rooms?.length || 0));
     const peopleCount = displayedPeople.length || 0;
 
     const placeholderText = isPeopleTab
@@ -213,10 +268,17 @@ function SearchRoomsSheetInner({
                                 </div>
                             )}
 
-                            {/* Filtered Rooms List */}
-                            {normalizedQuery && filteredRooms.length > 0 && (
+                            {/* Loading State */}
+                            {loadingRooms && (
+                                <div style={{ padding: "0.5rem 0" }}>
+                                    <RoomSkeleton count={4} />
+                                </div>
+                            )}
+
+                            {/* Rooms List */}
+                            {!loadingRooms && normalizedQuery && displayedRooms.length > 0 && (
                                 <div className="search-results-list search-sheet-rooms-grid">
-                                    {filteredRooms.map((room) => (
+                                    {displayedRooms.map((room) => (
                                         <AmbienceRoomCard
                                             key={room.roomId || room.id}
                                             room={room}
@@ -234,7 +296,7 @@ function SearchRoomsSheetInner({
                             )}
 
                             {/* No Matches Found */}
-                            {normalizedQuery && filteredRooms.length === 0 && (
+                            {!loadingRooms && normalizedQuery && displayedRooms.length === 0 && (
                                 <div className="search-sheet-empty-state">
                                     <div className="search-sheet-icon-circle">
                                         <Search size={28} strokeWidth={1.8} />

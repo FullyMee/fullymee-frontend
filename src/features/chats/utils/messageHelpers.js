@@ -31,6 +31,10 @@ export function dedupeMessages(items) {
     }
 
     return next.sort((a, b) => {
+        const aSeq = Number(a && a.seq);
+        const bSeq = Number(b && b.seq);
+        if (aSeq && bSeq) return aSeq - bSeq;
+
         const aId = Number(a && a.id);
         const bId = Number(b && b.id);
         if (aId && bId) return aId - bId;
@@ -48,6 +52,7 @@ export function buildOptimisticMessage({ clientMessageId, conversationId, conten
         conversationId,
         senderId,
         content,
+        status: "sending",
         createdAt: new Date().toISOString()
     };
 }

@@ -1,4 +1,5 @@
 import UnifiedSidebar from "./UnifiedSidebar.jsx";
+import { useUnread } from "../../context/UnreadContext.jsx";
 
 export default function DesktopAppShell({
     title,
@@ -14,13 +15,18 @@ export default function DesktopAppShell({
     onSelectSidebarRoom = null,
     pendingMessageCount = 0
 }) {
+    const { totalUnreadCount } = useUnread();
+    const effectivePendingMessageCount = Number.isFinite(pendingMessageCount) && pendingMessageCount > 0
+        ? pendingMessageCount
+        : totalUnreadCount;
+
     return (
         <div className="desktop-app-shell">
             <UnifiedSidebar
                 rooms={sidebarRooms}
                 selectedRoomId={selectedSidebarRoomId}
                 onSelectRoom={onSelectSidebarRoom}
-                pendingMessageCount={pendingMessageCount}
+                pendingMessageCount={effectivePendingMessageCount}
             />
 
             <div className="desktop-app-shell__stage">

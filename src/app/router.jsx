@@ -8,6 +8,7 @@ import { AppLoader, PageLoader } from "../components/loaders";
 import AppBottomNav from "../components/navigation/AppBottomNav.jsx";
 import { connectSocket, disconnectSocket } from "../services/socket.js";
 import useIsDesktop from "../hooks/useIsDesktop.js";
+import { UnreadProvider } from "../context/UnreadContext.jsx";
 
 // Lazy-loaded pages to split the massive bundle and improve TTI
 const LoginPage = lazy(() => import("../pages/LoginPage.jsx"));
@@ -270,10 +271,12 @@ export default function Router() {
 
     return (
         <BrowserRouter>
-            <ErrorBanner />
-            <Suspense fallback={<PageLoader />}>
-                <AnimatedAppRoutes isAuthenticated={isAuthenticated} user={user} />
-            </Suspense>
+            <UnreadProvider isAuthenticated={isAuthenticated} userId={user?.userId}>
+                <ErrorBanner />
+                <Suspense fallback={<PageLoader />}>
+                    <AnimatedAppRoutes isAuthenticated={isAuthenticated} user={user} />
+                </Suspense>
+            </UnreadProvider>
         </BrowserRouter>
     );
 }

@@ -20,7 +20,6 @@ import EndConnectionSheet from "../features/chats/components/EndConnectionSheet.
 import ConversationEndedPanel from "../features/chats/components/ConversationEndedPanel.jsx";
 import { waitForSocketConnection } from "../services/socket.js";
 import { getJoinedRooms } from "../services/confession.service";
-import { getInitial } from "../utils/presentation.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
 import {
     listChatRequests,
@@ -34,10 +33,9 @@ import {
     resumeConnection,
     archiveConnection,
     unarchiveConnection,
-    reportConnection,
-    deleteConnection
+    reportConnection
 } from "../services/chat.service";
-import { isConversationEnded, getClosingNoteDisplay } from "../features/chats/constants/closingNotes.js";
+import { getClosingNoteDisplay } from "../features/chats/constants/closingNotes.js";
 import {
     ArrowLeftIcon,
     MoreIcon,
@@ -51,15 +49,11 @@ import {
     ChatBubbleIcon
 } from "../components/common/Icons.jsx";
 import {
-    getHashValue,
     getAvatarTone,
     formatListTime,
-    formatMessageTime,
     formatDesktopDateLabel,
     truncateText,
-    formatRequestSummary,
-    getRequestSubtitle,
-    getRequestInfoLine
+    formatRequestSummary
 } from "../features/chats/utils/chatHelpers.js";
 import {
     normalizeDisplayNames,
@@ -68,6 +62,7 @@ import {
     replaceOptimisticMessage,
     createClientMessageId
 } from "../features/chats/utils/messageHelpers.js";
+import { useUnread } from "../context/UnreadContext.jsx";
 
 import { Search, Sparkles, MessageSquare, Pause, Archive, Trash2, Star, ChevronRight, SlidersHorizontal, Leaf } from "lucide-react";
 
@@ -119,6 +114,12 @@ export default function ChatPage({ user }) {
     const { showError, dismissError } = useGlobalError();
 
     const userId = Number((user && user.userId) || 0);
+    const {
+        unreadByConversation: contextUnread,
+        setActiveConversationId: setGlobalActiveConversationId,
+        markConversationReadLocally
+    } = useUnread();
+
     const [conversations, setConversations] = useState([]);
     const [chatRequests, setChatRequests] = useState({ pendingIncomingCount: 0, pending: [], accepted: [] });
     const [users, setUsers] = useState([]);
@@ -126,6 +127,8 @@ export default function ChatPage({ user }) {
     const [unreadByConversation, setUnreadByConversation] = useState({});
     const [previewByConversation, setPreviewByConversation] = useState({});
     const [messages, setMessages] = useState([]);
+    const messagesRef = useRef(messages);
+    messagesRef.current = messages;
     const [draft, setDraft] = useState("");
     const [loadingIndex, setLoadingIndex] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
@@ -156,7 +159,6 @@ export default function ChatPage({ user }) {
     const [endingConversation, setEndingConversation] = useState(false);
     // Inbox view tab state: "active" | "past" | "archived"
     const [inboxTab, setInboxTab] = useState("active");
-    const [showSearch, setShowSearch] = useState(false);
     // Local overrides for conversation status (optimistic / socket-pushed updates)
     const [conversationStatusOverrides, setConversationStatusOverrides] = useState({});
     const [closingNoteOverrides, setClosingNoteOverrides] = useState({});
@@ -272,7 +274,8 @@ export default function ChatPage({ user }) {
             const preview = previewByConversation[conversation.id] || null;
             const timeLabel = formatListTime((preview && preview.createdAt) || conversation.created_at);
             const desktopDateLabel = formatDesktopDateLabel((preview && preview.createdAt) || conversation.created_at);
-            const avatar = conversation.participantAvatars?.[otherUserId] || null;
+
+            const unreadCount = Number(contextUnread[conversation.id] !== undefined ? contextUnread[conversation.id] : unreadByConversation[conversation.id]) || 0;
 
             return {
                 ...conversation,
@@ -285,7 +288,7 @@ export default function ChatPage({ user }) {
                 desktopDateLabel,
                 listMetaLabel: connected && isOtherUserOnline ? "Active now" : timeLabel,
                 desktopMetaLabel: connected && isOtherUserOnline ? "Active now" : (desktopDateLabel || timeLabel),
-                unreadCount: Number(unreadByConversation[conversation.id]) || 0,
+                unreadCount,
                 avatarLabel: getChatAvatarGlyph(rawTitle),
                 avatar: conversation?.participantAvatars?.[String(otherUserId)] || null,
                 avatarTone: getAvatarTone(rawTitle),
@@ -293,7 +296,7 @@ export default function ChatPage({ user }) {
                 isArchivedForMe: Boolean(conversation.isArchivedForMe)
             };
         });
-    }, [acceptedRequestLabelsByConversation, connected, conversationStatusOverrides, conversations, onlineUsers, previewByConversation, unreadByConversation, userId, usersById]);
+    }, [acceptedRequestLabelsByConversation, connected, contextUnread, conversationStatusOverrides, conversations, onlineUsers, previewByConversation, unreadByConversation, userId, usersById]);
 
     const activeConversationsCount = useMemo(() => {
         return conversationItems.filter((c) => c.status !== "ENDED" && !c.isArchivedForMe).length;
@@ -349,21 +352,25 @@ export default function ChatPage({ user }) {
     }, [activeConversation, connected]);
 
     const markConversationRead = useCallback((conversationId, rows) => {
-        if (!socket || !connected || !conversationId) return;
+        if (!conversationId) return;
         const list = Array.isArray(rows) ? rows : [];
         const lastMessage = list.length > 0 ? list[list.length - 1] : null;
-        if (!lastMessage || !lastMessage.id) return;
+        const lastMessageId = lastMessage && lastMessage.id ? Number(lastMessage.id) : null;
 
-        socket.emit("mark_read", {
-            conversationId,
-            messageId: Number(lastMessage.id)
-        });
+        markConversationReadLocally(conversationId, lastMessageId);
 
         setUnreadByConversation((prev) => ({
             ...prev,
             [conversationId]: 0
         }));
-    }, [connected, socket]);
+
+        if (socket && connected && lastMessageId) {
+            socket.emit("mark_read", {
+                conversationId,
+                messageId: lastMessageId
+            });
+        }
+    }, [connected, markConversationReadLocally, socket]);
 
     useEffect(() => {
         if (!activeConversationId) {
@@ -428,12 +435,11 @@ export default function ChatPage({ user }) {
     useEffect(() => {
         setMessageLimit(MESSAGE_PAGE_SIZE);
         olderMessagesLoadRef.current = false;
-    }, [activeConversationId]);
-
-    useEffect(() => {
-        if (!isDesktop || isRequestsView || activeConversationId || conversationItems.length === 0) return;
-        setSearchParams({ conversationId: String(conversationItems[0].id) });
-    }, [activeConversationId, conversationItems, isDesktop, isRequestsView, setSearchParams]);
+        setGlobalActiveConversationId(activeConversationId);
+        return () => {
+            setGlobalActiveConversationId(0);
+        };
+    }, [activeConversationId, setGlobalActiveConversationId]);
 
 
     useEffect(() => {
@@ -537,6 +543,14 @@ export default function ChatPage({ user }) {
                 return [entry, ...current];
             });
 
+            if (Number(normalizedMessage.senderId) !== userId) {
+                // Acknowledge receipt to server so sender sees DELIVERED status
+                socket.emit("message_delivered", {
+                    conversationId,
+                    messageId: Number(normalizedMessage.id)
+                });
+            }
+
             if (conversationId !== activeConversationId) return;
 
             setMessages((prev) => {
@@ -546,6 +560,37 @@ export default function ChatPage({ user }) {
                 }
                 return next;
             });
+        }
+
+        function handleMessageStatusUpdate(payload) {
+            const conversationId = Number(payload && payload.conversationId);
+            const messageId = Number(payload && payload.messageId);
+            const upToMessageId = Number(payload && payload.upToMessageId);
+            const nextStatus = payload && payload.status;
+
+            if (!conversationId || !nextStatus) return;
+
+            setMessages((prev) => prev.map((item) => {
+                const itemId = Number(item && item.id);
+                if (!itemId) return item;
+
+                if (upToMessageId && itemId <= upToMessageId) {
+                    return { ...item, status: nextStatus };
+                }
+                if (messageId && itemId === messageId) {
+                    return { ...item, status: nextStatus };
+                }
+                return item;
+            }));
+        }
+
+        function handleSyncResult(payload) {
+            const conversationId = Number(payload && payload.conversationId);
+            if (!conversationId || conversationId !== activeConversationId) return;
+            const incoming = Array.isArray(payload && payload.messages) ? payload.messages : [];
+            if (!incoming.length) return;
+
+            setMessages((prev) => dedupeMessages([...prev, ...incoming]));
         }
 
         function handleDmCreated() {
@@ -617,6 +662,8 @@ export default function ChatPage({ user }) {
         }
 
         socket.on("receive_message", handleReceiveMessage);
+        socket.on("message_status_update", handleMessageStatusUpdate);
+        socket.on("sync_result", handleSyncResult);
         socket.on("dm_created", handleDmCreated);
         socket.on("chat_request_created", handleChatRequestEvent);
         socket.on("chat_request_updated", handleChatRequestEvent);
@@ -628,6 +675,8 @@ export default function ChatPage({ user }) {
 
         return () => {
             socket.off("receive_message", handleReceiveMessage);
+            socket.off("message_status_update", handleMessageStatusUpdate);
+            socket.off("sync_result", handleSyncResult);
             socket.off("dm_created", handleDmCreated);
             socket.off("chat_request_created", handleChatRequestEvent);
             socket.off("chat_request_updated", handleChatRequestEvent);
@@ -643,6 +692,12 @@ export default function ChatPage({ user }) {
     useEffect(() => {
         const handleSyncState = () => {
             loadConversationIndex();
+            if (activeConversationId && socket && socket.connected) {
+                const currentMsgs = messagesRef.current;
+                const lastMsg = currentMsgs && currentMsgs.length > 0 ? currentMsgs[currentMsgs.length - 1] : null;
+                const afterId = lastMsg && Number(lastMsg.id) ? Number(lastMsg.id) : 0;
+                socket.emit("sync_messages", { conversationId: activeConversationId, after: afterId });
+            }
         };
 
         const handleVisibilityChange = () => {
@@ -791,21 +846,6 @@ export default function ChatPage({ user }) {
         }
     }
 
-    async function handleDeleteConnectionItem(id) {
-        const targetId = Number(id || activeConversationId);
-        if (!targetId) return;
-        try {
-            await deleteConnection(targetId);
-            setNotice("Conversation deleted.");
-            if (targetId === activeConversationId) {
-                setSearchParams({});
-            }
-            await loadConversationIndex();
-        } catch (err) {
-            showError(err && err.message ? err.message : "Unable to delete conversation.");
-        }
-    }
-
     async function handleReportConnection() {
         if (!activeConversationId) return;
         try {
@@ -822,17 +862,6 @@ export default function ChatPage({ user }) {
         }
     }
 
-    async function handleDeleteEndedConversation() {
-        if (!activeConversationId) return;
-        try {
-            await deleteConnection(activeConversationId);
-            setSearchParams({});
-            await loadConversationIndex();
-        } catch (err) {
-            showError(err && err.message ? err.message : "Unable to delete this conversation.");
-        }
-    }
-
     async function handleArchiveEndedConversation() {
         if (!activeConversationId) return;
         try {
@@ -843,14 +872,6 @@ export default function ChatPage({ user }) {
         } catch (err) {
             showError(err && err.message ? err.message : "Unable to archive this conversation.");
         }
-    }
-
-    function handleThreadScroll(event) {
-        const node = event.currentTarget;
-        if (!node || loadingMessages || loadingOlderMessages || !hasMoreMessages) return;
-        if (node.scrollTop > 72) return;
-        olderMessagesLoadRef.current = true;
-        setMessageLimit((prev) => prev + MESSAGE_PAGE_SIZE);
     }
 
     async function handleRespondToRequest(requestId, action) {
@@ -931,7 +952,18 @@ export default function ChatPage({ user }) {
                 return;
             }
 
-            if (!ack || ack.status === "delivered" || ack.status === "duplicate_ignored") return;
+            if (!ack || ack.status === "sent" || ack.status === "delivered" || ack.status === "duplicate_ignored") {
+                if (ack && (ack.message || ack.messageId)) {
+                    const confirmed = ack.message || { id: ack.messageId, seq: ack.seq, clientMessageId, status: ack.status };
+                    setMessages((prev) => prev.map((item) => {
+                        if (String(item && item.clientMessageId) === clientMessageId) {
+                            return { ...item, ...confirmed, status: ack.status || item.status };
+                        }
+                        return item;
+                    }));
+                }
+                return;
+            }
 
             setDraft(content);
             setMessages((prev) => prev.filter((item) => String(item && item.clientMessageId ? item.clientMessageId : "") !== clientMessageId));
@@ -1067,17 +1099,17 @@ export default function ChatPage({ user }) {
                                                 onClick={() => openConversation(conversation.id)}
                                             >
                                                 <UserAvatar avatarId={conversation.avatar} className="desktop-chat-avatar" />
-                                                <div style={{ position: 'absolute', top: 0, right: 0 }}>
-                                                    {conversation.unreadCount > 0 && (
-                                                        <b>{conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}</b>
-                                                    )}
-                                                </div>
                                                 <div className="desktop-chat-list__copy">
                                                     <strong>{conversation.title}</strong>
                                                     <p>{conversation.subtitle}</p>
                                                 </div>
                                                 <div className="desktop-chat-list__meta">
                                                     <span>{conversation.desktopMetaLabel}</span>
+                                                    {conversation.unreadCount > 0 && (
+                                                        <span className="desktop-chat-list__badge">
+                                                            {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </button>
                                         ))}
@@ -1165,8 +1197,8 @@ export default function ChatPage({ user }) {
                             {!activeConversation && (
                                 <div className="desktop-chat-placeholder desktop-chat-placeholder--reference">
                                     <ChatBubbleIcon />
-                                    <h2>Select a conversation</h2>
-                                    <p>Choose a chat from the list to start messaging.</p>
+                                    <h2>Select a conversation to start chatting</h2>
+                                    <p>Choose a conversation from the list to view your messages.</p>
                                 </div>
                             )}
 
@@ -1391,19 +1423,17 @@ export default function ChatPage({ user }) {
                         </div>
                     )}
 
-                    {showSearch && (
-                        <section className="chat-search" style={{ padding: "0 1.25rem 1rem" }}>
-                            <div className="chat-search__field">
-                                <SearchIcon />
-                                <input
-                                    type="text"
-                                    placeholder="Search by name or message"
-                                    value={searchQuery}
-                                    onChange={(event) => setSearchQuery(event.target.value)}
-                                />
-                            </div>
-                        </section>
-                    )}
+                    <section className="chat-search" style={{ padding: "0 1.25rem 1rem" }}>
+                        <div className="chat-search__field">
+                            <SearchIcon />
+                            <input
+                                type="text"
+                                placeholder="Search by name or message"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                            />
+                        </div>
+                    </section>
 
                     <main className="chat-content">
                         {loadingIndex && <ChatListSkeleton count={5} />}
@@ -1431,7 +1461,7 @@ export default function ChatPage({ user }) {
                                         <div className="chat-conversation-card__aside">
                                             <span>{conversation.listMetaLabel}</span>
                                             {conversation.unreadCount > 0 && (
-                                                <strong>{conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}</strong>
+                                                <strong>{conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}</strong>
                                             )}
                                         </div>
                                     </button>

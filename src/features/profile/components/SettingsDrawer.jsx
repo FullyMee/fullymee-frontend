@@ -145,7 +145,7 @@ function SectionGroup({ label, children }) {
 }
 
 function MainPage({ s, user, onNavigate, onClose, animDir, onLogout }) {
-    const chatLabel = CHAT_PERMISSION_OPTIONS.find(o => o.value === s.chatPermission)?.label || "People in my rooms";
+    const chatLabel = CHAT_PERMISSION_OPTIONS.find(o => o.value === s.chatPermission)?.label || "Anyone";
     const expiryLabel = AUDIO_EXPIRY_OPTIONS.find(o => o.value === s.audioExpiry)?.label || "Never";
     const interestCount = s.interests.length;
 

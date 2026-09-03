@@ -12,10 +12,16 @@ export function getConversation(conversationId) {
     return apiRequest(`/conversations/${conversationId}`, { method: "GET" });
 }
 
-export function listConversationMessages(conversationId, { limit } = {}) {
+export function listConversationMessages(conversationId, { limit, before, after } = {}) {
     const params = new URLSearchParams();
     if (Number.isFinite(Number(limit)) && Number(limit) > 0) {
         params.set("limit", String(Math.min(100, Math.floor(Number(limit)))));
+    }
+    if (before !== undefined && before !== null && before !== "") {
+        params.set("before", String(before));
+    }
+    if (after !== undefined && after !== null && after !== "") {
+        params.set("after", String(after));
     }
     const suffix = params.toString() ? `?${params.toString()}` : "";
     return apiRequest(`/messages/${conversationId}${suffix}`, { method: "GET" });

@@ -426,7 +426,7 @@ export default function SettingsPage({ user: propUser }) {
                                             </div>
                                         </div>
                                         <div className="dt-settings-accordion-right">
-                                            <span>{CHAT_PERMISSION_CARD_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "People in my rooms"}</span>
+                                            <span>{CHAT_PERMISSION_CARD_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "Anyone"}</span>
                                             {openAccordion === "chat-permissions" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                                         </div>
                                     </button>
