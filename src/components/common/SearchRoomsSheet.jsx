@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, Search, User, X } from "lucide-react";
 import { AmbienceRoomCard } from "./MobileRoomVisuals.jsx";
 import SearchUserCard from "../../features/search/components/SearchUserCard.jsx";
 import { getAllUsers } from "../../services/auth.service.js";
 import { getPublicRooms } from "../../services/confession.service.js";
-import { RoomSkeleton } from "../loaders";
+import { RoomSkeleton, ConnectionSkeleton } from "../loaders";
 import "../../features/search/search.css";
 import "./SearchRoomsSheet.css";
 
@@ -29,6 +29,13 @@ function SearchRoomsSheetInner({
     const [loadingPeople, setLoadingPeople] = useState(false);
     const roomsSearchTimerRef = useRef(null);
     const searchTimerRef = useRef(null);
+
+    // Sync activeTab when initialTab changes
+    useEffect(() => {
+        if (initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [initialTab]);
 
     // Close on Escape key press
     useEffect(() => {
@@ -140,10 +147,19 @@ function SearchRoomsSheetInner({
             };
         }
 
+        const cleanTerm = normalizedQuery.replace(/^@+/, "").trim();
+        if (!cleanTerm) {
+            setLivePeople(EMPTY_ARRAY);
+            setLoadingPeople(false);
+            return () => {
+                isCancelled = true;
+            };
+        }
+
         setLoadingPeople(true);
         searchTimerRef.current = setTimeout(async () => {
             try {
-                const res = await getAllUsers({ search: normalizedQuery, limit: 20, paginate: true });
+                const res = await getAllUsers({ search: cleanTerm, limit: 20, paginate: true });
                 if (isCancelled) return;
                 const items = Array.isArray(res) ? res : (res && Array.isArray(res.items) ? res.items : []);
                 setLivePeople(items);
@@ -151,7 +167,7 @@ function SearchRoomsSheetInner({
                 if (isCancelled) return;
                 const local = (people || []).filter((p) => {
                     const uname = String(p?.username || "").toLowerCase();
-                    return uname.includes(normalizedQuery);
+                    return uname.includes(cleanTerm);
                 });
                 setLivePeople(local);
             } finally {
@@ -159,7 +175,7 @@ function SearchRoomsSheetInner({
                     setLoadingPeople(false);
                 }
             }
-        }, 300);
+        }, 250);
 
         return () => {
             isCancelled = true;
@@ -175,7 +191,9 @@ function SearchRoomsSheetInner({
     const circlesCount = scope === "confessions"
         ? (normalizedQuery ? filteredRooms.length : (rooms?.length || 0))
         : (normalizedQuery ? (loadingRooms ? "..." : liveRooms.length) : (rooms?.length || 0));
-    const peopleCount = displayedPeople.length || 0;
+    const peopleCount = normalizedQuery
+        ? (loadingPeople ? "..." : livePeople.length)
+        : (displayedPeople.length || 0);
 
     const placeholderText = isPeopleTab
         ? "Search people by username..."
@@ -312,8 +330,8 @@ function SearchRoomsSheetInner({
                     {isPeopleTab && (
                         <>
                             {loadingPeople && (
-                                <div className="search-sheet-empty-state" style={{ padding: "2rem 1.5rem" }}>
-                                    <p>Searching people...</p>
+                                <div style={{ padding: "0.5rem 0" }}>
+                                    <ConnectionSkeleton count={4} />
                                 </div>
                             )}
 
@@ -334,7 +352,7 @@ function SearchRoomsSheetInner({
                                             key={person.id || person.userId}
                                             person={person}
                                             isBusy={busyKey === `person-${person.id || person.userId}`}
-                                            onRemove={(p) => onRemovePerson && onRemovePerson(p)}
+                                            onRemove={!normalizedQuery && onRemovePerson ? (p) => onRemovePerson(p) : undefined}
                                             onClickCard={(p) => {
                                                 if (onSelectPerson) {
                                                     onSelectPerson(p);

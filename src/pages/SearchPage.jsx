@@ -417,9 +417,19 @@ export default function SearchPage({ user }) {
                     )}
 
                     {!loading && tab === PEOPLE_TAB && peopleResults.length === 0 && (
-                        <p style={{ color: "#718096", textAlign: "center", padding: "2rem 0" }}>
-                            No recent searches found{query ? ` matching "${query}"` : "."}
-                        </p>
+                        <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "#718096" }}>
+                            <p style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
+                                {query ? `No people matching "${query}".` : "No recent searches found."}
+                            </p>
+                            <button
+                                type="button"
+                                className="search-pill"
+                                onClick={() => navigate("/search?search=1")}
+                                style={{ margin: "0 auto", display: "inline-flex" }}
+                            >
+                                Search for people
+                            </button>
+                        </div>
                     )}
                     {!loading && tab === PEOPLE_TAB && peopleResults.map((person) => (
                         <SearchUserCard
