@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.js";
 import { RoomGlyphIcon, getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
-import { getInitial } from "../../utils/presentation.js";
 import UserAvatar from "../common/UserAvatar.jsx";
 import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search, Settings } from "lucide-react";
 import fullymeLogo from "../../assets/fullyme-logo.png";

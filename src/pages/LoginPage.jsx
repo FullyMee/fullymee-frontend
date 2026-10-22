@@ -4,18 +4,85 @@ import { ArrowRight, CheckCircle2, ChevronRight, Gift, Heart, Lock, Mail, Refres
 import InlineError from "../components/common/InlineError.jsx";
 import { InlineSpinner } from "../components/loaders";
 import useOtpAuth from "../features/auth/useOtpAuth";
-import Button from "../components/common/Button";
 import * as authService from "../services/auth.service";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import { disconnectSocket } from "../services/socket.js";
 import fullymeLogo from "../assets/fullyme-logo.png";
 import authIllustration from "../assets/auth-illustration.jpg";
-import authSignupOrb from "../assets/auth-signup-orb.jpg";
-import onboardingAdvisorRoom from "../assets/onboarding-advisor-room.jpg";
 import onboardingSlide1Art from "../assets/onboarding-slide1-art.png";
 import onboardingSlide2Art from "../assets/onboarding-slide2-art.png";
 
 const ONBOARDING_STORAGE_KEY = "anonymous.auth.onboardingSeen";
+
+function IdentityInput({
+    id = "username",
+    username,
+    onChange,
+    onRefresh,
+    loading,
+    refreshing,
+    error,
+    status,
+    defaultHint = "Tap refresh to generate a new identity"
+}) {
+    return (
+        <div className="auth-identity">
+            <div className="auth-section-header">
+                <span className="auth-section-header__badge">
+                    <User size={13} strokeWidth={2.4} />
+                </span>
+                <span className="auth-section-header__title">YOUR FULLYMEE IDENTITY</span>
+            </div>
+            <p className="auth-identity__field-label">Anonymous username</p>
+            <div className={`auth-input-row auth-input-row--has-action${error ? " auth-input-row--error" : ""}`}>
+                <span className="auth-input-row__prefix">@</span>
+                <input
+                    id={id}
+                    autoComplete="username"
+                    className="auth-input-row__input auth-input-row__input--bold"
+                    placeholder="softsparrow54"
+                    value={username}
+                    onChange={(e) => onChange(e.target.value)}
+                    aria-invalid={error ? "true" : "false"}
+                />
+                <button
+                    type="button"
+                    className="auth-input-row__action"
+                    onClick={onRefresh}
+                    disabled={loading || refreshing}
+                    aria-label="Generate another username"
+                >
+                    <RefreshCcw size={15} strokeWidth={2.5} />
+                </button>
+            </div>
+            {!error && (
+                <div className={`auth-hint auth-hint--${status?.status || "idle"}`}>
+                    {status?.status === "available" && <CheckCircle2 size={13} className="auth-hint-check-icon" />}
+                    <span>
+                        {refreshing
+                            ? "Finding you a fresh identity..."
+                            : (status?.message || defaultHint)}
+                    </span>
+                </div>
+            )}
+            <InlineError error={error} className="auth-inline-error" />
+        </div>
+    );
+}
+
+function PrivacyCard({ title, showSparkle = false }) {
+    return (
+        <div className="auth-privacy auth-privacy--shield">
+            <ShieldHeartIcon />
+            <div className="auth-privacy__content">
+                <p className="auth-privacy__title">
+                    <span>{title}</span>
+                    {showSparkle && <span className="auth-sparkle-pink" style={{ fontSize: "0.85rem" }}>✦</span>}
+                </p>
+            </div>
+        </div>
+    );
+}
 
 /* ── Mask/Glasses Icon for "100% Anonymous" ── */
 function MaskIcon() {
@@ -641,47 +708,17 @@ export default function LoginPage() {
                             <div className="auth-form">
                                 {/* ── Identity Box (Signup Mode Only) ── */}
                                 {mode === "signup" && (
-                                    <div className="auth-identity">
-                                        <div className="auth-section-header">
-                                            <span className="auth-section-header__badge">
-                                                <User size={13} strokeWidth={2.4} />
-                                            </span>
-                                            <span className="auth-section-header__title">YOUR FULLYMEE IDENTITY</span>
-                                        </div>
-                                        <p className="auth-identity__field-label">Anonymous username</p>
-                                        <div className={`auth-input-row auth-input-row--has-action${fieldErrors.username ? " auth-input-row--error" : ""}`}>
-                                            <span className="auth-input-row__prefix">@</span>
-                                            <input
-                                                id="username"
-                                                autoComplete="username"
-                                                className="auth-input-row__input auth-input-row__input--bold"
-                                                placeholder="softsparrow54"
-                                                value={username}
-                                                onChange={(event) => setUsername(event.target.value)}
-                                                aria-invalid={fieldErrors.username ? "true" : "false"}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="auth-input-row__action"
-                                                onClick={handleRefreshUsername}
-                                                disabled={loading || usernameRefreshing}
-                                                aria-label="Generate another username"
-                                            >
-                                                <RefreshCcw size={15} strokeWidth={2.5} />
-                                            </button>
-                                        </div>
-                                        {!fieldErrors.username && (
-                                            <div className={`auth-hint auth-hint--${usernameStatus.status || "idle"}`}>
-                                                {usernameStatus.status === "available" && <CheckCircle2 size={13} className="auth-hint-check-icon" />}
-                                                <span>
-                                                    {usernameRefreshing
-                                                        ? "Finding you a fresh identity..."
-                                                        : (usernameStatus.message || "Tap refresh to generate a new identity")}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <InlineError error={fieldErrors.username} className="auth-inline-error" />
-                                    </div>
+                                    <IdentityInput
+                                        id="username"
+                                        username={username}
+                                        onChange={setUsername}
+                                        onRefresh={handleRefreshUsername}
+                                        loading={loading}
+                                        refreshing={usernameRefreshing}
+                                        error={fieldErrors.username}
+                                        status={usernameStatus}
+                                        defaultHint="Tap refresh to generate a new identity"
+                                    />
                                 )}
 
                                 {/* ── Email Field ── */}
@@ -745,17 +782,7 @@ export default function LoginPage() {
                                     )}
                                 </div>
 
-                                {/* ── Privacy Note Card (with Shield Heart Badge) ── */}
-                                <div className="auth-privacy auth-privacy--shield">
-                                    <ShieldHeartIcon />
-                                    <div className="auth-privacy__content">
-                                        <p className="auth-privacy__title">
-                                            <span>{privacyContent.title}</span>
-                                            <span className="auth-sparkle-pink" style={{ fontSize: '0.85rem' }}>✦</span>
-                                        </p>
-
-                                    </div>
-                                </div>
+                                <PrivacyCard title={privacyContent.title} showSparkle />
                             </div>
                         )}
 
@@ -781,47 +808,17 @@ export default function LoginPage() {
                                 </div>
 
                                 {needsUsername && (
-                                    <div className="auth-identity">
-                                        <div className="auth-section-header">
-                                            <span className="auth-section-header__badge">
-                                                <User size={13} strokeWidth={2.4} />
-                                            </span>
-                                            <span className="auth-section-header__title">YOUR FULLYMEE IDENTITY</span>
-                                        </div>
-                                        <p className="auth-identity__field-label">Anonymous username</p>
-                                        <div className={`auth-input-row auth-input-row--has-action${fieldErrors.username ? " auth-input-row--error" : ""}`}>
-                                            <span className="auth-input-row__prefix">@</span>
-                                            <input
-                                                id="otp-username"
-                                                autoComplete="username"
-                                                className="auth-input-row__input auth-input-row__input--bold"
-                                                placeholder="softsparrow54"
-                                                value={username}
-                                                onChange={(event) => setUsername(event.target.value)}
-                                                aria-invalid={fieldErrors.username ? "true" : "false"}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="auth-input-row__action"
-                                                onClick={handleRefreshUsername}
-                                                disabled={loading || usernameRefreshing}
-                                                aria-label="Generate another username"
-                                            >
-                                                <RefreshCcw size={15} strokeWidth={2.5} />
-                                            </button>
-                                        </div>
-                                        {!fieldErrors.username && (
-                                            <div className={`auth-hint auth-hint--${usernameStatus.status || "idle"}`}>
-                                                {usernameStatus.status === "available" && <CheckCircle2 size={13} className="auth-hint-check-icon" />}
-                                                <span>
-                                                    {usernameRefreshing
-                                                        ? "Finding you a fresh identity..."
-                                                        : (usernameStatus.message || "Choose a username to finish setup")}
-                                                </span>
-                                            </div>
-                                        )}
-                                        <InlineError error={fieldErrors.username} className="auth-inline-error" />
-                                    </div>
+                                    <IdentityInput
+                                        id="otp-username"
+                                        username={username}
+                                        onChange={setUsername}
+                                        onRefresh={handleRefreshUsername}
+                                        loading={loading}
+                                        refreshing={usernameRefreshing}
+                                        error={fieldErrors.username}
+                                        status={usernameStatus}
+                                        defaultHint="Choose a username to finish setup"
+                                    />
                                 )}
 
                                 <button
@@ -855,14 +852,7 @@ export default function LoginPage() {
                                     </button>
                                 </div>
 
-                                <div className="auth-privacy auth-privacy--shield">
-                                    <ShieldHeartIcon />
-                                    <div className="auth-privacy__content">
-                                        <p className="auth-privacy__title">
-                                            <span>{privacyContent.title}</span>
-                                        </p>
-                                    </div>
-                                </div>
+                                <PrivacyCard title={privacyContent.title} />
                             </div>
                         )}
 

@@ -11,6 +11,17 @@ const UnreadContext = createContext({
     fetchUnreadCounts: () => Promise.resolve()
 });
 
+function parseUnreadRows(rows) {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const map = {};
+    for (const row of safeRows) {
+        const cid = Number(row?.conversationId);
+        const count = Number(row?.unreadCount) || 0;
+        if (cid) map[cid] = count;
+    }
+    return map;
+}
+
 export function UnreadProvider({ children, isAuthenticated, userId }) {
     const [unreadByConversation, setUnreadByConversation] = useState({});
     const [activeConversationId, setActiveConversationIdState] = useState(0);
@@ -27,53 +38,22 @@ export function UnreadProvider({ children, isAuthenticated, userId }) {
             setUnreadByConversation({});
             return;
         }
-
         try {
             const rows = await listConversationUnreadCounts();
-            const safeRows = Array.isArray(rows) ? rows : [];
-            const map = {};
-            for (const row of safeRows) {
-                const cid = Number(row && row.conversationId);
-                const count = Number(row && row.unreadCount) || 0;
-                if (cid) {
-                    map[cid] = count;
-                }
-            }
-            setUnreadByConversation(map);
+            setUnreadByConversation(parseUnreadRows(rows));
         } catch (err) {
-            // Non-blocking fetch failure
             console.error("Failed to fetch unread counts:", err);
         }
     }, [isAuthenticated]);
 
-    // Initial load when user authenticates
+    // Initial load when authentication state changes
     useEffect(() => {
-        let active = true;
         if (!isAuthenticated) {
-            Promise.resolve().then(() => {
-                if (active) setUnreadByConversation({});
-            });
-            return () => { active = false; };
+            setUnreadByConversation({});
+            return;
         }
-
-        listConversationUnreadCounts()
-            .then((rows) => {
-                if (!active) return;
-                const safeRows = Array.isArray(rows) ? rows : [];
-                const map = {};
-                for (const row of safeRows) {
-                    const cid = Number(row && row.conversationId);
-                    const count = Number(row && row.unreadCount) || 0;
-                    if (cid) map[cid] = count;
-                }
-                setUnreadByConversation(map);
-            })
-            .catch((err) => {
-                console.error("Failed to fetch unread counts:", err);
-            });
-
-        return () => { active = false; };
-    }, [isAuthenticated]);
+        fetchUnreadCounts();
+    }, [isAuthenticated, fetchUnreadCounts]);
 
     const markConversationReadLocally = useCallback((conversationId, lastMessageId = null) => {
         const cid = Number(conversationId);
@@ -87,28 +67,20 @@ export function UnreadProvider({ children, isAuthenticated, userId }) {
         });
 
         const socket = getSocket();
-        if (socket && socket.connected && lastMessageId) {
-            socket.emit("mark_read", {
-                conversationId: cid,
-                messageId: Number(lastMessageId)
-            });
+        if (socket?.connected && lastMessageId) {
+            socket.emit("mark_read", { conversationId: cid, messageId: Number(lastMessageId) });
         }
     }, []);
 
-    // Socket.IO real-time unread synchronization & reconnection handling
+    // Socket real-time unread sync
     useEffect(() => {
         if (!isAuthenticated) return undefined;
-
         const socket = getSocket();
         if (!socket) return undefined;
 
         function handleUnreadUpdate(payload) {
-            const cid = Number(payload && payload.conversationId);
-            if (!cid) return;
-
-            // If user is currently looking at this conversation, do not show unread badge
-            if (cid === activeConversationIdRef.current) return;
-
+            const cid = Number(payload?.conversationId);
+            if (!cid || cid === activeConversationIdRef.current) return;
             setUnreadByConversation((prev) => ({
                 ...prev,
                 [cid]: (Number(prev[cid]) || 0) + 1
@@ -116,11 +88,9 @@ export function UnreadProvider({ children, isAuthenticated, userId }) {
         }
 
         function handleUnreadReset(payload) {
-            const cid = Number(payload && payload.conversationId);
-            const targetUserId = Number(payload && payload.userId);
-
+            const cid = Number(payload?.conversationId);
+            const targetUserId = Number(payload?.userId);
             if (targetUserId && userId && Number(targetUserId) !== Number(userId)) return;
-
             if (cid) {
                 setUnreadByConversation((prev) => {
                     if (!prev[cid]) return prev;
@@ -131,35 +101,29 @@ export function UnreadProvider({ children, isAuthenticated, userId }) {
             }
         }
 
-        function handleConnect() {
-            fetchUnreadCounts();
-        }
-
         function handleVisibilityChange() {
-            if (document.visibilityState === "visible") {
-                fetchUnreadCounts();
-            }
+            if (document.visibilityState === "visible") fetchUnreadCounts();
         }
 
         socket.on("unread_update", handleUnreadUpdate);
         socket.on("unread_reset", handleUnreadReset);
-        socket.on("connect", handleConnect);
+        socket.on("connect", fetchUnreadCounts);
         window.addEventListener("online", fetchUnreadCounts);
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
             socket.off("unread_update", handleUnreadUpdate);
             socket.off("unread_reset", handleUnreadReset);
-            socket.off("connect", handleConnect);
+            socket.off("connect", fetchUnreadCounts);
             window.removeEventListener("online", fetchUnreadCounts);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     }, [fetchUnreadCounts, isAuthenticated, userId]);
 
-    // Total unread messages count is the sum of unread counts across all active conversations
-    const totalUnreadCount = useMemo(() => {
-        return Object.values(unreadByConversation).reduce((acc, count) => acc + (Number(count) || 0), 0);
-    }, [unreadByConversation]);
+    const totalUnreadCount = useMemo(
+        () => Object.values(unreadByConversation).reduce((acc, c) => acc + (Number(c) || 0), 0),
+        [unreadByConversation]
+    );
 
     const contextValue = useMemo(() => ({
         unreadByConversation,

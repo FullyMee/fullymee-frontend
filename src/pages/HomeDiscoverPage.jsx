@@ -5,7 +5,7 @@ import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
 import { RoomSkeleton, FeedSkeleton, InlineSpinner, ScrollLoader } from "../components/loaders";
 import UnifiedSidebar from "../components/layout/UnifiedSidebar.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
-import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
+import { ROOM_CATEGORIES } from "../constants/categories.js";
 import {
     AmbienceRoomCard,
     getRoomTone,
@@ -23,30 +23,17 @@ import {
     getPublicRooms,
     listConfessions,
     joinConfessionRoom,
-    reactToConfessionTarget,
     likeConfession,
-    sendConfessionChatRequest
+    sendConfessionChatRequest,
+    subscribeConfessionRoom,
+    unsubscribeConfessionRoom
 } from "../services/confession.service";
 import { listChatRequests } from "../services/chat.service";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { formatRelativeTime } from "../utils/time.js";
 import { getAliasTone } from "../utils/presentation.js";
-import { subscribeConfessionRoom, unsubscribeConfessionRoom } from "../services/confession.service";
 import {
-    JoinRoomsIcon,
-    TrendingIcon,
-    ArrowRightIcon,
-    MobileSearchIcon,
-    MobileBellIcon,
-    MobileMenuIcon,
-    FullyMeeMarkIcon,
-    PulseIcon,
-    GroupIcon,
-    HomeIcon,
-    ConfessionIcon,
-    MessagesIcon,
-    ProfileIcon,
     HeartIcon,
     CommentIcon,
     ShieldIcon,
@@ -55,11 +42,9 @@ import {
 } from "../components/common/Icons.jsx";
 import {
     uniqueByRoomId,
-    getHomeFilterLabel,
     matchesHomeSearch,
     matchesCategoryFilter,
     matchesHomeConfessionSearch,
-    formatRoomAccess,
     formatCompactPulseCount,
     getLatestConfessionScore
 } from "../features/confessions/utils/feedSorting.js";
@@ -69,27 +54,6 @@ const DISCOVER_PAGE_SIZE = 8;
 const TRENDING_PAGE_SIZE = 6;
 const ROOM_TITLE_LIMIT = 50;
 const ROOM_DESCRIPTION_LIMIT = 50;
-const ROOM_CATEGORIES = [
-    "Late Night",
-    "Heartbreak",
-    "Anxiety",
-    "Relationships",
-    "Family",
-    "College",
-    "Career",
-    "Tech and Coding",
-    "Casual Chats",
-    "Confessions",
-    "Gaming",
-    "Entertainment",
-    "Fitness",
-    "Finance",
-    "Politics",
-    "Startup",
-    "Travel",
-    "Books",
-    "Advice"
-];
 const HOME_FEED_PAGE_SIZE = 4;
 const HOME_TOP_ROOMS_LIMIT = 4;
 const HOME_SUGGESTION_LIMIT = 4;
@@ -106,33 +70,38 @@ const HOME_FEED_FILTERS = [
     }))
 ];
 
-const SECTION_META = {
-    trending: {
-        icon: "flame",
-        title: "Trending Circles",
-        description: "Fume Circles with the highest live activity right now"
-    },
-    daily: {
-        icon: "sun",
-        title: "Daily Circles",
-        description: "Visit frequently for relatable content"
-    },
-    advice: {
-        icon: "bulb",
-        title: "Advice Rooms",
-        description: "Get support and meaningful conversations"
-    },
-    chill: {
-        icon: "smile",
-        title: "Chill Rooms",
-        description: "Relax with light and fun content"
-    },
-    general: {
-        icon: "spark",
-        title: "Fresh Circles",
-        description: "Explore Fume Circles created by the community"
+function TrendingRoomList({ gridClassName, rooms, loading, joinedRoomIds, busyRoomId, onOpenRoom, filter, searchTerm }) {
+    if (loading) {
+        return <RoomSkeleton count={rooms.length > 0 ? rooms.length : 4} />;
     }
-};
+    if (rooms.length === 0) {
+        return (
+            <div className="home-trending-empty">
+                {filter !== "all"
+                    ? `No trending circles found for "${HOME_FEED_FILTERS.find((f) => f.key === filter)?.label || filter}" category.`
+                    : searchTerm
+                    ? "No trending circles match your search."
+                    : "No Trending Circles Available"}
+            </div>
+        );
+    }
+    return (
+        <div className={gridClassName}>
+            {rooms.map((room, index) => {
+                const roomId = Number(room.roomId);
+                return (
+                    <AmbienceRoomCard
+                        key={room.roomId || `${room.title}-${index}`}
+                        room={room}
+                        isJoined={joinedRoomIds.has(roomId)}
+                        isBusy={busyRoomId === roomId}
+                        onAction={onOpenRoom}
+                    />
+                );
+            })}
+        </div>
+    );
+}
 
 
 export default function HomeDiscoverPage() {
@@ -436,17 +405,6 @@ export default function HomeDiscoverPage() {
 
     const feedCardsSorted = useMemo(() => {
         const items = Array.isArray(feedCards) ? [...feedCards] : [];
-
-        function getLatestConfessionScore(item) {
-            const createdAtMs = new Date((item && item.createdAt) || 0).getTime();
-            const ageMinutes = Math.max(1, (Date.now() - createdAtMs) / (1000 * 60));
-            const reactionCount = Number(item && item.reactionCount) || 0;
-            const replyCount = Number(item && item.replyCount) || 0;
-            const freshnessScore = 12 / Math.pow(ageMinutes + 12, 1.15);
-            const engagementScore = Math.log1p(reactionCount * 2 + replyCount * 3) * 2.4;
-            return freshnessScore + engagementScore;
-        }
-
         const filtered = desktopFilter === "all"
             ? items
             : items.filter((item) => matchesCategoryFilter(item, desktopFilter));
@@ -894,32 +852,16 @@ export default function HomeDiscoverPage() {
                                         </button>
                                     </div>
 
-                                    <div className="home-trending-grid">
-                                        {loading ? (
-                                            <RoomSkeleton count={filteredTrendingRooms.length > 0 ? filteredTrendingRooms.length : 4} />
-                                        ) : filteredTrendingRooms.length > 0 ? (
-                                            filteredTrendingRooms.map((room, index) => {
-                                                const roomId = Number(room.roomId);
-                                                return (
-                                                    <AmbienceRoomCard
-                                                        key={room.roomId || `${room.title}-${index}`}
-                                                        room={room}
-                                                        isJoined={joinedRoomIds.has(roomId)}
-                                                        isBusy={busyRoomId === roomId}
-                                                        onAction={handleOpenRoom}
-                                                    />
-                                                );
-                                            })
-                                        ) : (
-                                            <div className="home-trending-empty">
-                                                {desktopFilter !== "all"
-                                                    ? `No trending circles found for "${HOME_FEED_FILTERS.find((f) => f.key === desktopFilter)?.label || desktopFilter}" category.`
-                                                    : homeSearchTerm
-                                                    ? "No trending circles match your search."
-                                                    : "No Trending Circles Available"}
-                                            </div>
-                                        )}
-                                    </div>
+                                    <TrendingRoomList
+                                        gridClassName="home-trending-grid"
+                                        rooms={filteredTrendingRooms}
+                                        loading={loading}
+                                        joinedRoomIds={joinedRoomIds}
+                                        busyRoomId={busyRoomId}
+                                        onOpenRoom={handleOpenRoom}
+                                        filter={desktopFilter}
+                                        searchTerm={homeSearchTerm}
+                                    />
                                 </section>
 
                                 <section className="home-feed-section">
@@ -1050,7 +992,6 @@ export default function HomeDiscoverPage() {
         );
     }
 
-    const mobileTrendingRooms = filteredTrendingRooms;
     const isHomeSearchActive = new URLSearchParams(location.search).get("search") === "1";
 
     return (
@@ -1091,32 +1032,16 @@ export default function HomeDiscoverPage() {
                             </button>
                         </div>
 
-                        {loading ? (
-                            <RoomSkeleton count={filteredTrendingRooms.length > 0 ? filteredTrendingRooms.length : 4} />
-                        ) : filteredTrendingRooms.length > 0 ? (
-                            <div className="home-mobile-trending-grid">
-                                {filteredTrendingRooms.map((room, index) => {
-                                    const roomId = Number(room.roomId);
-                                    return (
-                                        <AmbienceRoomCard
-                                            key={room.roomId || `${room.title}-${index}`}
-                                            room={room}
-                                            isJoined={joinedRoomIds.has(roomId)}
-                                            isBusy={busyRoomId === roomId}
-                                            onAction={handleOpenRoom}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="home-trending-empty">
-                                {desktopFilter !== "all"
-                                    ? `No trending circles found for "${HOME_FEED_FILTERS.find((f) => f.key === desktopFilter)?.label || desktopFilter}" category.`
-                                    : homeSearchTerm
-                                    ? "No trending circles match your search."
-                                    : "No Trending Circles Available"}
-                            </div>
-                        )}
+                        <TrendingRoomList
+                            gridClassName="home-mobile-trending-grid"
+                            rooms={filteredTrendingRooms}
+                            loading={loading}
+                            joinedRoomIds={joinedRoomIds}
+                            busyRoomId={busyRoomId}
+                            onOpenRoom={handleOpenRoom}
+                            filter={desktopFilter}
+                            searchTerm={homeSearchTerm}
+                        />
                     </section>
 
                     <section className="home-mobile-section">

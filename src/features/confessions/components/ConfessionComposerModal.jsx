@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, Clock, Mic, Type, X } from "lucide-react";
+import { Clock, Mic, Type, X } from "lucide-react";
 import { InlineSpinner } from "../../../components/loaders";
 import AudioConfessionRecorder from "./AudioConfessionRecorder.jsx";
 import {

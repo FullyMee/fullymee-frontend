@@ -1,5 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 
+@keyframes errorBannerSlideDown {
+    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+
 :root {
     --font-sans: "Manrope", sans-serif;
     --font-display: Georgia, serif;

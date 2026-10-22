@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
-import CommunityHubRail from "../components/common/CommunityHubRail.jsx";
 import useIsDesktop from "../hooks/useIsDesktop";
 import ActiveRoomFeed from "../features/confessions/components/ActiveRoomFeed.jsx";
 import ChatRequestDialogs from "../features/confessions/components/ChatRequestDialogs.jsx";
@@ -10,29 +8,18 @@ import ConfessionComposerModal from "../features/confessions/components/Confessi
 import ConfessionScheduleConfirmModal from "../features/confessions/components/ConfessionScheduleConfirmModal.jsx";
 import ConfessionDetailView from "../features/confessions/components/ConfessionDetailView.jsx";
 import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
-import JoinedRoomsPanel from "../features/confessions/components/JoinedRoomsPanel.jsx";
 import { RoomSkeleton } from "../components/loaders";
 import ConfessionLobbyDesktop from "../features/confessions/components/ConfessionLobbyDesktop.jsx";
 import ConfessionActiveRoomDesktop from "../features/confessions/components/ConfessionActiveRoomDesktop.jsx";
-import RoomMembersRail from "../features/confessions/components/RoomMembersRail.jsx";
 import useConfessionRoom from "../features/confessions/hooks/useConfessionRoom.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
-import { getAliasTone, getInitial } from "../utils/presentation.js";
-import { formatRelativeTime } from "../utils/time.js";
-import {
-    AmbienceRoomCard,
-    getRoomTone,
-    RoomGlyphIcon
-} from "../components/common/MobileRoomVisuals.jsx";
+import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
 import { getAudioUploadToken } from "../services/confession.service.js";
 import {
     MobileFullyMeeIcon,
-    MobileBellIcon,
-    MobileMenuIcon,
     MobileSearchIcon,
     MobileShieldIcon,
-    MobileSparkIcon,
-    MobileArrowRightIcon
+    MobileSparkIcon
 } from "../components/common/Icons.jsx";
 import {
     matchesJoinedRoomSearch,
@@ -170,9 +157,6 @@ export default function ConfessionRoomPage({ user }) {
         [mobileRoomFilter, mobileSearchTerm, joinedRooms]
     );
 
-    const mobileActiveJoinedRooms = useMemo(() => {
-        return Array.isArray(joinedRooms) ? joinedRooms.slice(0, 4) : [];
-    }, [joinedRooms]);
 
     const resetComposerState = useCallback(() => {
         setShowComposer(false);
@@ -358,180 +342,6 @@ export default function ConfessionRoomPage({ user }) {
                 {scheduleConfirmModal}
                 {chatRequestDialogs}
             </>
-        );
-    }
-
-    if (isDesktop && !activeRoom && !selectedConfession) {
-        return (
-            <div className="my-confessions-page my-confessions-page--desktop">
-                {notice && <p className="my-confessions-alert my-confessions-alert--notice">{notice}</p>}
-                <DesktopAppShell
-                    sidebarRooms={sidebarRoomsForSearch}
-                    selectedSidebarRoomId={activeRoomId}
-                    onSelectSidebarRoom={(room) => openRoomView(room.roomId)}
-                    topBar={desktopTopBar}
-                    hideStageHeader
-                    contentClassName="my-confessions-page__lobby-stage"
-                >
-                    <div className="home-content-grid my-confessions-lobby-grid">
-                        <section className="home-feed-column my-confessions-lobby-grid__main">
-                            <div className="desktop-confessions-hub">
-                                <section className="desktop-confessions-hub__hero">
-                                    <h1>Your Circles</h1>
-                                    <p>Rooms you have joined and communities where you can post anonymously.</p>
-                                </section>
-
-                                <section className="desktop-pill-tabs desktop-confessions-hub__filters" aria-label="Room filters">
-                                    {["All", "Public", "Private"].map((label) => (
-                                        <button
-                                            key={label}
-                                            type="button"
-                                            className={`desktop-pill-tabs__item${desktopRoomFilter === label ? " is-active" : ""}`}
-                                            onClick={() => setDesktopRoomFilter(label)}
-                                        >
-                                            {label}
-                                        </button>
-                                    ))}
-                                </section>
-
-                                <JoinedRoomsPanel
-                                    isDesktop
-                                    loadingRooms={loadingRooms}
-                                    joinedRooms={filteredJoinedRooms}
-                                    onOpenRoom={openRoomView}
-                                />
-                            </div>
-                        </section>
-
-                        <CommunityHubRail
-                            activeRooms={desktopStats.activeRooms}
-                            activeRoomsLabel="Joined Rooms"
-                            confessionsToday={desktopStats.confessionsToday}
-                            supportGiven={desktopStats.supportGiven}
-                            rooms={homeSuggestionRooms}
-                            onJoinRoom={(room) => openRoomView(room.roomId)}
-                            emptyMessage="Join more rooms to unlock better suggestions."
-                            showFooter
-                        />
-                    </div>
-                </DesktopAppShell>
-
-                {composerModal}
-                {chatRequestDialogs}
-            </div>
-        );
-    }
-
-    if (isDesktop) {
-        const roomRail = activeRoom ? (
-            <RoomMembersRail activeRoom={activeRoom} roomMembers={roomMembers} />
-        ) : null;
-
-        const desktopSubtitle = !activeRoom
-            ? "Circles you have joined and communities where you can post anonymously"
-            : (selectedConfession
-                ? "Read the fume and keep the conversation thoughtful"
-                : (activeRoom.roomType === "private"
-                    ? `Inner Circle ${activeRoom.joinCode ? `· ${activeRoom.joinCode}` : ""}`
-                    : "Fume Circle"));
-
-        return (
-            <div className="my-confessions-page my-confessions-page--desktop">
-                {notice && <p className="my-confessions-alert my-confessions-alert--notice">{notice}</p>}
-                <DesktopAppShell
-                    sidebarRooms={joinedRooms}
-                    selectedSidebarRoomId={activeRoomId}
-                    onSelectSidebarRoom={(room) => openRoomView(room.roomId)}
-                    rightRail={roomRail}
-                    topBar={desktopTopBar}
-                    hideStageHeader
-                >
-                    <div className="desktop-confessions-hub">
-                        {activeRoom && (
-                            <section className="desktop-confessions-hub__hero desktop-confessions-hub__hero--room">
-                                <h1>{activeRoom.title}</h1>
-                                <p>{desktopSubtitle}</p>
-                            </section>
-                        )}
-
-                        {!activeRoom && <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={filteredJoinedRooms} onOpenRoom={openRoomView} />}
-
-                        {activeRoom && !selectedConfession && (
-                            <ActiveRoomFeed
-                                isDesktop
-                                activeRoom={activeRoom}
-                                confessions={confessions}
-                                loadingConfessions={loadingConfessions}
-                                loadingMoreConfessions={loadingMoreConfessions}
-                                hasMoreConfessions={hasMoreConfessions}
-                                leavingRoomId={leavingRoomId}
-                                copiedRoomId={copiedRoomId}
-                                likedConfessionIds={likedConfessionIds}
-                                reactingConfessionIds={reactingConfessionIds}
-                                sentChatRequestIds={sentChatRequestIds}
-                                onBack={openRoomsView}
-                                onLeaveRoom={handleLeaveRoom}
-                                onCopyRoomCode={handleCopyRoomCode}
-                                onOpenConfession={openConfessionView}
-                                onOpenComposer={() => setShowComposer(true)}
-                                onLoadMoreConfessions={loadMoreConfessions}
-                                onReact={handleReact}
-                                onChatRequest={openChatRequest}
-                                scheduledConfessions={scheduledConfessions}
-                                onCancelScheduled={handleCancelScheduled}
-                            />
-                        )}
-
-                        {activeRoom && selectedConfession && (
-                            <div className="desktop-comment-modal" role="dialog" aria-modal="true" aria-label="Confession comments">
-                                <button
-                                    type="button"
-                                    className="desktop-comment-modal__backdrop"
-                                    onClick={closeConfessionView}
-                                    aria-label="Close comments"
-                                />
-                                <div className="desktop-comment-modal__panel">
-                                    <button
-                                        type="button"
-                                        className="desktop-comment-modal__close"
-                                        onClick={closeConfessionView}
-                                        aria-label="Close comments"
-                                    >
-                                        ×
-                                    </button>
-                                    <ConfessionDetailView
-                                        isDesktop
-                                        user={user}
-                                        activeRoom={activeRoom}
-                                        selectedConfession={selectedConfession}
-                                        selectedReplies={selectedReplies}
-                                        loadingReplies={loadingReplies}
-                                        loadingMoreReplies={loadingMoreReplies}
-                                        hasMoreReplies={hasMoreReplies}
-                                        repliesLoadMoreRef={repliesLoadMoreRef}
-                                        likedConfessionIds={likedConfessionIds}
-                                        likedReplyIds={likedReplyIds}
-                                        reactingReplyIds={reactingReplyIds}
-                                        sentChatRequestIds={sentChatRequestIds}
-                                        replyDraft={detailReplyDraft}
-                                        postingReplyId={postingReplyId}
-                                        onBack={closeConfessionView}
-                                        onShare={handleShare}
-                                        onReact={handleReact}
-                                        onChatRequest={openChatRequest}
-                                        onReplyDraftChange={(value) => updateReplyDraft(selectedConfession.confessionId, value)}
-                                        onPostReply={handlePostReply}
-                                        onDeleteConfession={handleDeleteConfession}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </DesktopAppShell>
-
-                {composerModal}
-                {chatRequestDialogs}
-            </div>
         );
     }
 

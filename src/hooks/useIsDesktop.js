@@ -2,34 +2,14 @@ import { useEffect, useState } from "react";
 
 const DESKTOP_QUERY = "(min-width: 900px)";
 
-function getMatch() {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-        return false;
-    }
-
-    return window.matchMedia(DESKTOP_QUERY).matches;
-}
-
 export default function useIsDesktop() {
-    const [isDesktop, setIsDesktop] = useState(getMatch);
+    const [isDesktop, setIsDesktop] = useState(() => window.matchMedia(DESKTOP_QUERY).matches);
 
     useEffect(() => {
-        if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-            return undefined;
-        }
-
-        const mediaQuery = window.matchMedia(DESKTOP_QUERY);
-        const handleChange = (event) => {
-            setIsDesktop(event.matches);
-        };
-
-        if (typeof mediaQuery.addEventListener === "function") {
-            mediaQuery.addEventListener("change", handleChange);
-            return () => mediaQuery.removeEventListener("change", handleChange);
-        }
-
-        mediaQuery.addListener(handleChange);
-        return () => mediaQuery.removeListener(handleChange);
+        const mq = window.matchMedia(DESKTOP_QUERY);
+        const onChange = (e) => setIsDesktop(e.matches);
+        mq.addEventListener("change", onChange);
+        return () => mq.removeEventListener("change", onChange);
     }, []);
 
     return isDesktop;

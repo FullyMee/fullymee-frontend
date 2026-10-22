@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Clock, CheckCircle, Trash2 } from "lucide-react";
+import { safeUnicodeSlice, getUnicodeLength } from "../../../utils/unicode.js";
 
 const CONFIRM_WINDOW_MS = 5 * 60 * 1000;
 
@@ -27,8 +28,6 @@ function useCountdown(expiresAt) {
 
     return { msLeft, minutes, seconds, progress };
 }
-
-import { safeUnicodeSlice, getUnicodeLength } from "../../../utils/unicode.js";
 
 export default function ConfessionScheduleConfirmModal({
     confession,

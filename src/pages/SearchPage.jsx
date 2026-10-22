@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
@@ -8,8 +8,6 @@ import { useGlobalError } from "../context/ErrorContext.jsx";
 import { ConnectionSkeleton, RoomSkeleton } from "../components/loaders";
 import { joinConfessionRoom, joinConfessionRoomByCode } from "../services/confession.service";
 import useIsDesktop from "../hooks/useIsDesktop";
-
-// Modular feature imports
 import { useSearchData } from "../features/search/hooks/useSearchData.js";
 import SearchTabs, { ROOMS_TAB, PEOPLE_TAB } from "../features/search/components/SearchTabs.jsx";
 import SearchRoomCard from "../features/search/components/SearchRoomCard.jsx";
@@ -21,6 +19,70 @@ import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
 
+function SearchEmptyState({ title, message }) {
+    return (
+        <div
+            className="search-empty-state-card"
+            style={{
+                gridColumn: "1 / -1",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                padding: "3.5rem 1.5rem",
+                margin: "1rem auto 3rem",
+                maxWidth: "560px",
+                width: "100%",
+                background: "rgba(255, 255, 255, 0.7)",
+                backdropFilter: "blur(8px)",
+                borderRadius: "24px",
+                border: "1px solid rgba(80, 45, 65, 0.08)",
+                boxShadow: "0 10px 30px rgba(60, 30, 50, 0.04)"
+            }}
+        >
+            <div
+                style={{
+                    width: "3.6rem",
+                    height: "3.6rem",
+                    borderRadius: "50%",
+                    background: "rgba(80, 45, 65, 0.06)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#6e5264",
+                    marginBottom: "1.2rem"
+                }}
+            >
+                <Search size={24} strokeWidth={2.2} />
+            </div>
+            <h3
+                style={{
+                    fontFamily: "var(--font-sans, system-ui, sans-serif)",
+                    fontSize: "1.25rem",
+                    fontWeight: 700,
+                    color: "#3b1b36",
+                    margin: "0 0 0.5rem"
+                }}
+            >
+                {title}
+            </h3>
+            <p
+                style={{
+                    fontSize: "0.95rem",
+                    color: "#7a6b72",
+                    margin: 0,
+                    lineHeight: 1.55,
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                    maxWidth: "460px"
+                }}
+            >
+                {message}
+            </p>
+        </div>
+    );
+}
+
 export default function SearchPage({ user }) {
     const isDesktop = useIsDesktop();
     const navigate = useNavigate();
@@ -31,20 +93,18 @@ export default function SearchPage({ user }) {
     const [query, setQuery] = useState("");
     const [notice, setNotice] = useTimedNotice("", 2200);
     const [busyKey, setBusyKey] = useState("");
-    
-    // Join code modal states
+
     const [showCodeJoin, setShowCodeJoin] = useState(false);
     const [joinCode, setJoinCode] = useState("");
     const [joinCodeError, setJoinCodeError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    // Modular Hook Call
-    const { 
-        joinedRooms, 
-        setJoinedRooms, 
-        roomResults, 
-        peopleResults, 
-        loading, 
+    const {
+        joinedRooms,
+        setJoinedRooms,
+        roomResults,
+        peopleResults,
+        loading,
         loadingMoreRooms,
         roomHasMore,
         loadMoreRooms,
@@ -136,185 +196,6 @@ export default function SearchPage({ user }) {
         }
     }
 
-    const desktopTopBar = (
-        <UnifiedTopBar
-            className="desktop-page-topbar"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onSubmit={(event) => event.preventDefault()}
-            onNotificationsClick={() => navigate("/chats?requests=1")}
-            onPrimaryClick={() => navigate("/create-room", { state: { openCreateRoom: true } })}
-        />
-    );
-
-    const renderContent = () => (
-        <div className="search-page-container">
-            <SearchTabs
-                tab={tab}
-                setTab={setTab}
-                roomCount={roomResults.length}
-                peopleCount={peopleResults.length}
-                onJoinByCode={() => setShowCodeJoin(true)}
-            />
-
-            <div className={`search-results-list${tab === PEOPLE_TAB ? " search-results-list--people" : ""}`}>
-               {loading && tab === ROOMS_TAB && <RoomSkeleton count={roomResults.length > 0 ? roomResults.length : 4} />}
-               {loading && tab === PEOPLE_TAB && <ConnectionSkeleton count={peopleResults.length > 0 ? peopleResults.length : 4} />}
-
-               {!loading && tab === ROOMS_TAB && roomResults.length === 0 && (
-                   <div
-                       className="search-empty-state-card"
-                       style={{
-                           gridColumn: "1 / -1",
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "center",
-                           justifyContent: "center",
-                           textAlign: "center",
-                           padding: "3.5rem 1.5rem",
-                           margin: "1rem auto 3rem",
-                           maxWidth: "560px",
-                           width: "100%",
-                           background: "rgba(255, 255, 255, 0.7)",
-                           backdropFilter: "blur(8px)",
-                           borderRadius: "24px",
-                           border: "1px solid rgba(80, 45, 65, 0.08)",
-                           boxShadow: "0 10px 30px rgba(60, 30, 50, 0.04)"
-                       }}
-                   >
-                       <div
-                           style={{
-                               width: "3.6rem",
-                               height: "3.6rem",
-                               borderRadius: "50%",
-                               background: "rgba(80, 45, 65, 0.06)",
-                               display: "grid",
-                               placeItems: "center",
-                               color: "#6e5264",
-                               marginBottom: "1.2rem"
-                           }}
-                       >
-                           <Search size={24} strokeWidth={2.2} />
-                       </div>
-                       <h3
-                           style={{
-                               fontFamily: "var(--font-sans, system-ui, sans-serif)",
-                               fontSize: "1.25rem",
-                               fontWeight: 700,
-                               color: "#3b1b36",
-                               margin: "0 0 0.5rem"
-                           }}
-                       >
-                           No circles found
-                       </h3>
-                       <p
-                           style={{
-                               fontSize: "0.95rem",
-                               color: "#7a6b72",
-                               margin: 0,
-                               lineHeight: 1.55,
-                               wordBreak: "break-word",
-                               overflowWrap: "anywhere",
-                               maxWidth: "460px"
-                           }}
-                       >
-                           {query
-                               ? `No circles match "${query}". Try searching for another topic or feeling.`
-                               : "No circles available right now. Check back soon or create one."}
-                       </p>
-                   </div>
-               )}
-               {!loading && tab === ROOMS_TAB && roomResults.map((room) => (
-                   <SearchRoomCard
-                       key={room.roomId}
-                       room={room}
-                       isJoined={joinedRoomIds.has(Number(room.roomId))}
-                       isBusy={busyKey === `room-${room.roomId}`}
-                       onAction={handleOpenRoom}
-                   />
-               ))}
-               {!loading && tab === ROOMS_TAB && roomHasMore && (
-                   <button type="button" className="search-show-more" onClick={loadMoreRooms} disabled={loadingMoreRooms}>
-                       {loadingMoreRooms ? "Loading..." : "Show more circles"}
-                   </button>
-               )}
-
-               {!loading && tab === PEOPLE_TAB && peopleResults.length === 0 && (
-                   <div
-                       className="search-empty-state-card"
-                       style={{
-                           gridColumn: "1 / -1",
-                           display: "flex",
-                           flexDirection: "column",
-                           alignItems: "center",
-                           justifyContent: "center",
-                           textAlign: "center",
-                           padding: "3.5rem 1.5rem",
-                           margin: "1rem auto 3rem",
-                           maxWidth: "560px",
-                           width: "100%",
-                           background: "rgba(255, 255, 255, 0.7)",
-                           backdropFilter: "blur(8px)",
-                           borderRadius: "24px",
-                           border: "1px solid rgba(80, 45, 65, 0.08)",
-                           boxShadow: "0 10px 30px rgba(60, 30, 50, 0.04)"
-                       }}
-                   >
-                       <div
-                           style={{
-                               width: "3.6rem",
-                               height: "3.6rem",
-                               borderRadius: "50%",
-                               background: "rgba(80, 45, 65, 0.06)",
-                               display: "grid",
-                               placeItems: "center",
-                               color: "#6e5264",
-                               marginBottom: "1.2rem"
-                           }}
-                       >
-                           <Search size={24} strokeWidth={2.2} />
-                       </div>
-                       <h3
-                           style={{
-                               fontFamily: "var(--font-sans, system-ui, sans-serif)",
-                               fontSize: "1.25rem",
-                               fontWeight: 700,
-                               color: "#3b1b36",
-                               margin: "0 0 0.5rem"
-                           }}
-                       >
-                           No people found
-                       </h3>
-                       <p
-                           style={{
-                               fontSize: "0.95rem",
-                               color: "#7a6b72",
-                               margin: 0,
-                               lineHeight: 1.55,
-                               wordBreak: "break-word",
-                               overflowWrap: "anywhere",
-                               maxWidth: "460px"
-                           }}
-                       >
-                           {query
-                               ? `No people match "${query}". Try searching by a different username.`
-                               : "No recent people searched yet. Search for someone above to connect."}
-                       </p>
-                   </div>
-               )}
-               {!loading && tab === PEOPLE_TAB && peopleResults.map((person) => (
-                   <SearchUserCard
-                       key={person.id || person.userId}
-                       person={person}
-                       isBusy={busyKey === `person-${person.id || person.userId}`}
-                       onRemove={() => removePerson(person.id || person.userId)}
-                       onClickCard={addPersonToHistory}
-                   />
-               ))}
-            </div>
-        </div>
-    );
-
     const joinCodeModal = (
         <Modal
             isOpen={showCodeJoin}
@@ -339,20 +220,10 @@ export default function SearchPage({ user }) {
                 />
 
                 <div className="search-code-modal__actions">
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={resetModalState}
-                    >
+                    <Button type="button" variant="secondary" size="sm" onClick={resetModalState}>
                         Cancel
                     </Button>
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        isLoading={submitting}
-                    >
+                    <Button type="submit" variant="primary" size="sm" isLoading={submitting}>
                         Join Circle
                     </Button>
                 </div>
@@ -360,19 +231,97 @@ export default function SearchPage({ user }) {
         </Modal>
     );
 
+    const renderResultsList = () => (
+        <div className={`search-results-list${tab === PEOPLE_TAB ? " search-results-list--people" : ""}`}>
+            {loading && tab === ROOMS_TAB && <RoomSkeleton count={roomResults.length > 0 ? roomResults.length : 4} />}
+            {loading && tab === PEOPLE_TAB && <ConnectionSkeleton count={peopleResults.length > 0 ? peopleResults.length : 4} />}
+
+            {!loading && tab === ROOMS_TAB && roomResults.length === 0 && (
+                <SearchEmptyState
+                    title="No circles found"
+                    message={query ? `No circles match "${query}". Try searching for another topic or feeling.` : "No circles available right now. Check back soon or create one."}
+                />
+            )}
+            {!loading && tab === ROOMS_TAB && roomResults.map((room) => (
+                <SearchRoomCard
+                    key={room.roomId}
+                    room={room}
+                    isJoined={joinedRoomIds.has(Number(room.roomId))}
+                    isBusy={busyKey === `room-${room.roomId}`}
+                    onAction={handleOpenRoom}
+                />
+            ))}
+            {!loading && tab === ROOMS_TAB && roomHasMore && (
+                <button type="button" className="search-show-more" onClick={loadMoreRooms} disabled={loadingMoreRooms}>
+                    {loadingMoreRooms ? "Loading..." : "Show more circles"}
+                </button>
+            )}
+
+            {!loading && tab === PEOPLE_TAB && peopleResults.length === 0 && (
+                <SearchEmptyState
+                    title="No people found"
+                    message={query ? `No people match "${query}". Try searching by a different username.` : "No recent people searched yet. Search for someone above to connect."}
+                />
+            )}
+            {!loading && tab === PEOPLE_TAB && peopleResults.map((person) => (
+                <SearchUserCard
+                    key={person.id || person.userId}
+                    person={person}
+                    isBusy={busyKey === `person-${person.id || person.userId}`}
+                    onRemove={() => removePerson(person.id || person.userId)}
+                    onClickCard={addPersonToHistory}
+                />
+            ))}
+        </div>
+    );
+
     if (isDesktop) {
         return (
             <>
-                {notice && <p className="search-alert search-alert--notice" style={{position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: '#fff', padding: '1rem 1.5rem', borderRadius: '0.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}>{notice}</p>}
-                
+                {notice && (
+                    <p
+                        className="search-alert search-alert--notice"
+                        style={{
+                            position: "fixed",
+                            top: "1rem",
+                            right: "1rem",
+                            zIndex: 9999,
+                            background: "#fff",
+                            padding: "1rem 1.5rem",
+                            borderRadius: "0.5rem",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                        }}
+                    >
+                        {notice}
+                    </p>
+                )}
+
                 <DesktopAppShell
                     sidebarRooms={joinedRooms}
                     onSelectSidebarRoom={(room) => navigate(`/confessions?roomId=${room.roomId}`)}
                     contentClassName="desktop-search-content"
-                    topBar={desktopTopBar}
+                    topBar={
+                        <UnifiedTopBar
+                            className="desktop-page-topbar"
+                            value={query}
+                            onChange={(event) => setQuery(event.target.value)}
+                            onSubmit={(event) => event.preventDefault()}
+                            onNotificationsClick={() => navigate("/chats?requests=1")}
+                            onPrimaryClick={() => navigate("/create-room", { state: { openCreateRoom: true } })}
+                        />
+                    }
                     hideStageHeader
                 >
-                    {renderContent()}
+                    <div className="search-page-container">
+                        <SearchTabs
+                            tab={tab}
+                            setTab={setTab}
+                            roomCount={roomResults.length}
+                            peopleCount={peopleResults.length}
+                            onJoinByCode={() => setShowCodeJoin(true)}
+                        />
+                        {renderResultsList()}
+                    </div>
                 </DesktopAppShell>
                 {joinCodeModal}
             </>
@@ -392,55 +341,7 @@ export default function SearchPage({ user }) {
             />
 
             <div className="search-content">
-                <div className={`search-results-list${tab === PEOPLE_TAB ? " search-results-list--people" : ""}`}>
-                    {loading && tab === ROOMS_TAB && <RoomSkeleton count={roomResults.length > 0 ? roomResults.length : 4} />}
-                    {loading && tab === PEOPLE_TAB && <ConnectionSkeleton count={peopleResults.length > 0 ? peopleResults.length : 4} />}
-
-                    {!loading && tab === ROOMS_TAB && roomResults.length === 0 && (
-                        <p style={{ color: "#718096", textAlign: "center", padding: "2rem 0", wordBreak: "break-word", overflowWrap: "anywhere", maxWidth: "100%" }}>
-                            No circles found{query ? ` matching "${query}"` : "."}
-                        </p>
-                    )}
-                    {!loading && tab === ROOMS_TAB && roomResults.map((room) => (
-                        <SearchRoomCard
-                            key={room.roomId}
-                            room={room}
-                            isJoined={joinedRoomIds.has(Number(room.roomId))}
-                            isBusy={busyKey === `room-${room.roomId}`}
-                            onAction={handleOpenRoom}
-                        />
-                    ))}
-                    {!loading && tab === ROOMS_TAB && roomHasMore && (
-                        <button type="button" className="search-show-more" onClick={loadMoreRooms} disabled={loadingMoreRooms}>
-                            {loadingMoreRooms ? "Loading..." : "Show more rooms"}
-                        </button>
-                    )}
-
-                    {!loading && tab === PEOPLE_TAB && peopleResults.length === 0 && (
-                        <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "#718096" }}>
-                            <p style={{ margin: "0 0 0.75rem", fontSize: "0.95rem" }}>
-                                {query ? `No people matching "${query}".` : "No recent searches found."}
-                            </p>
-                            <button
-                                type="button"
-                                className="search-pill"
-                                onClick={() => navigate("/search?search=1")}
-                                style={{ margin: "0 auto", display: "inline-flex" }}
-                            >
-                                Search for people
-                            </button>
-                        </div>
-                    )}
-                    {!loading && tab === PEOPLE_TAB && peopleResults.map((person) => (
-                        <SearchUserCard
-                            key={person.id || person.userId}
-                            person={person}
-                            isBusy={busyKey === `person-${person.id || person.userId}`}
-                            onRemove={() => removePerson(person.id || person.userId)}
-                            onClickCard={addPersonToHistory}
-                        />
-                    ))}
-                </div>
+                {renderResultsList()}
             </div>
 
             {joinCodeModal}

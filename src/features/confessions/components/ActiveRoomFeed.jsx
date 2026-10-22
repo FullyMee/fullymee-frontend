@@ -4,19 +4,12 @@ import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx"
 import { FeedSkeleton, ScrollLoader } from "../../../components/loaders";
 import MemoizedConfessionCard from "../../../components/common/ConfessionCard.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
-import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { formatRelativeTime } from "../../../utils/time.js";
-import {
-    formatCompactMemberCount,
-    getRoomTone,
-    RoomGlyphIcon
-} from "../../../components/common/MobileRoomVisuals.jsx";
+import { formatCompactMemberCount } from "../../../components/common/MobileRoomVisuals.jsx";
 import ConfessionMoreMenu from "./ConfessionMoreMenu.jsx";
-import { Virtuoso } from "react-virtuoso";
 import { getRoomHeroBadge } from "../utils/confessionView.js";
-import { ArrowLeftIcon, CommentIcon, CopyIcon, HeartIcon, LeaveIcon, LockIcon, PlusIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
-
+import { ArrowLeftIcon, CommentIcon, LeaveIcon, PlusIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
 import { safeUnicodeSlice } from "../../../utils/unicode.js";
 
 function formatScheduleCountdown(date, now = Date.now()) {
@@ -258,10 +251,6 @@ export default function ActiveRoomFeed({
             </div>
         );
     }
-
-    const roomSubtitle = activeRoom.roomType === "private"
-        ? `Private Room${activeRoom.joinCode ? ` · ${activeRoom.joinCode}` : ""}`
-        : `${getRoomHeroBadge(activeRoom)} · ${formatCompactMemberCount(activeRoom.currentUserCount)}`;
 
     return (
         <>

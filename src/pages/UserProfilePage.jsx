@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
     ArrowLeft,
-    CheckCircle2,
     MessageCircle,
     Shield,
-    Calendar,
     EyeOff,
     Users
 } from "lucide-react";
@@ -20,16 +18,6 @@ import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
-
-function formatJoinedDate(value) {
-    if (!value) return "Recently";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "Recently";
-    return new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        year: "numeric"
-    }).format(date);
-}
 
 /* ─── Hidden-Profile Splash ─────────────────────────────────────────────────── */
 function HiddenProfileSplash({ username, onBack }) {
@@ -65,10 +53,8 @@ export default function UserProfilePage({ user: currentUser }) {
     const location = useLocation();
     const navigate = useNavigate();
     const isDesktop = useIsDesktop();
-    const { showError, dismissError } = useGlobalError();
+    const { dismissError } = useGlobalError();
     const [notice] = useTimedNotice("", 2600);
-
-    const currentUserId = Number(currentUser?.userId || 0);
 
     const passedUser = location.state?.profileUser || null;
 

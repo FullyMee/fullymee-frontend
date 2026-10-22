@@ -57,25 +57,17 @@ export default function ConfessionLobbyDesktop({
                                 ))}
                             </section>
 
-                            {loadingRooms && <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={filteredJoinedRooms.length > 0 ? filteredJoinedRooms : joinedRooms} onOpenRoom={onOpenRoom} />}
-
-                            {!loadingRooms && filteredJoinedRooms.length === 0 && joinedRooms.length === 0 && (
-                                <JoinedRoomsPanel isDesktop loadingRooms={loadingRooms} joinedRooms={[]} onOpenRoom={onOpenRoom} />
-                            )}
-
-                            {!loadingRooms && filteredJoinedRooms.length === 0 && joinedRooms.length > 0 && (
+                            {!loadingRooms && filteredJoinedRooms.length === 0 && joinedRooms.length > 0 ? (
                                 <DesktopEmptyState
                                     title="No circles match this filter"
                                     description="Try another filter or clear the search bar to see your joined circles."
                                     action={null}
                                 />
-                            )}
-
-                            {!loadingRooms && filteredJoinedRooms.length > 0 && (
+                            ) : (
                                 <JoinedRoomsPanel
                                     isDesktop
                                     loadingRooms={loadingRooms}
-                                    joinedRooms={filteredJoinedRooms}
+                                    joinedRooms={filteredJoinedRooms.length > 0 ? filteredJoinedRooms : (loadingRooms ? joinedRooms : [])}
                                     onOpenRoom={onOpenRoom}
                                 />
                             )}

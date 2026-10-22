@@ -502,48 +502,122 @@ function EmailPage({ user, onBack, onClose, animDir }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Shared Subpage Layout Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function RadioOptionsSection({
+    icon: Icon,
+    label,
+    groupLabel,
+    prefix,
+    options,
+    selectedValue,
+    onChange,
+    footerNote
+}) {
+    return (
+        <div className="sd-subpage-form">
+            <div className="sd-subpage-section">
+                <div className="sd-subpage-label">
+                    <Icon size={14} />
+                    {label}
+                </div>
+
+                <div className="sd-option-list" role="radiogroup" aria-label={groupLabel}>
+                    {options.map(({ value, label: optLabel, desc }) => (
+                        <button
+                            key={value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selectedValue === value}
+                            id={`sd-${prefix}-${value}`}
+                            className={`sd-option-row${selectedValue === value ? " sd-option-row--active" : ""}`}
+                            onClick={() => onChange(value)}
+                        >
+                            <div className="sd-option-row__check">
+                                {selectedValue === value && <Check size={13} strokeWidth={2.5} />}
+                            </div>
+                            <div className="sd-option-row__body">
+                                <span className="sd-option-row__label">{optLabel}</span>
+                                <span className="sd-option-row__desc">{desc}</span>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {footerNote && (
+                <div className="sd-info-card">
+                    <span className="sd-info-card__icon">{footerNote.icon}</span>
+                    <span>{footerNote.text}</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ToggleHeroSection({
+    icon: Icon,
+    iconBg,
+    iconColor,
+    title,
+    desc,
+    statusText,
+    statusColor,
+    toggleId,
+    checked,
+    disabled,
+    onChange,
+    infoCards = []
+}) {
+    return (
+        <div className="sd-subpage-form">
+            <div className="sd-toggle-hero" style={disabled ? { opacity: 0.7 } : undefined}>
+                <div className="sd-toggle-hero__icon" style={{ background: iconBg, color: iconColor }}>
+                    <Icon size={28} strokeWidth={1.5} />
+                </div>
+                <h3 className="sd-toggle-hero__title">{title}</h3>
+                <p className="sd-toggle-hero__desc">{desc}</p>
+
+                <div className="sd-toggle-hero__control">
+                    <span className="sd-toggle-hero__status" style={statusColor ? { color: statusColor, fontWeight: 700 } : undefined}>
+                        {statusText}
+                    </span>
+                    <ToggleSwitch
+                        id={toggleId}
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={onChange}
+                    />
+                </div>
+            </div>
+
+            {infoCards.map((card, idx) => (
+                <div key={idx} className="sd-info-card" style={card.style}>
+                    <span className="sd-info-card__icon">{card.icon}</span>
+                    <span>{card.text}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Sub-page: Chat Request Permissions
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ChatPermissionPage({ s, onBack, onClose, animDir }) {
-    const descriptions = {
-        anyone: "Anyone can send you chat requests, even from outside your rooms.",
-        rooms:  "Only members of rooms you have joined can reach you.",
-        nobody: "Requests are turned off. You can still start chats yourself."
-    };
-
     return (
         <PageShell title="Chat Permissions" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
-            <div className="sd-subpage-form">
-                <div className="sd-subpage-section">
-                    <div className="sd-subpage-label">
-                        <MessageCircle size={14} />
-                        Who can send you chat requests?
-                    </div>
-
-                    <div className="sd-option-list" role="radiogroup" aria-label="Chat request permissions">
-                        {CHAT_PERMISSION_OPTIONS.map(({ value, label }) => (
-                            <button
-                                key={value}
-                                type="button"
-                                role="radio"
-                                aria-checked={s.chatPermission === value}
-                                id={`sd-chat-perm-${value}`}
-                                className={`sd-option-row${s.chatPermission === value ? " sd-option-row--active" : ""}`}
-                                onClick={() => s.handleChatPermission(value)}
-                            >
-                                <div className="sd-option-row__check">
-                                    {s.chatPermission === value && <Check size={13} strokeWidth={2.5} />}
-                                </div>
-                                <div className="sd-option-row__body">
-                                    <span className="sd-option-row__label">{label}</span>
-                                    <span className="sd-option-row__desc">{descriptions[value]}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <RadioOptionsSection
+                icon={MessageCircle}
+                label="Who can send you chat requests?"
+                groupLabel="Chat request permissions"
+                prefix="chat-perm"
+                options={CHAT_PERMISSION_OPTIONS}
+                selectedValue={s.chatPermission}
+                onChange={s.handleChatPermission}
+            />
         </PageShell>
     );
 }
@@ -555,34 +629,20 @@ function ChatPermissionPage({ s, onBack, onClose, animDir }) {
 function NighttimePage({ s, onBack, onClose, animDir }) {
     return (
         <PageShell title="Night-time Requests" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
-            <div className="sd-subpage-form">
-                <div className="sd-toggle-hero" style={{ opacity: 0.7 }}>
-                    <div className="sd-toggle-hero__icon" style={{ background: "#6366F115", color: "#6366F1" }}>
-                        <Moon size={28} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="sd-toggle-hero__title">Quiet Hours</h3>
-                    <p className="sd-toggle-hero__desc">
-                        This feature is preserved for future implementation and is currently disabled.
-                    </p>
-
-                    <div className="sd-toggle-hero__control">
-                        <span className="sd-toggle-hero__status" style={{ color: "#6366F1", fontWeight: 700 }}>
-                            Coming Soon
-                        </span>
-                        <ToggleSwitch
-                            id="sd-nighttime-toggle"
-                            checked={false}
-                            disabled={true}
-                            onChange={() => {}}
-                        />
-                    </div>
-                </div>
-
-                <div className="sd-info-card">
-                    <span className="sd-info-card__icon">🌙</span>
-                    <span>Limit Night-time Requests is currently disabled for future implementation.</span>
-                </div>
-            </div>
+            <ToggleHeroSection
+                icon={Moon}
+                iconBg="#6366F115"
+                iconColor="#6366F1"
+                title="Quiet Hours"
+                desc="This feature is preserved for future implementation and is currently disabled."
+                statusText="Coming Soon"
+                statusColor="#6366F1"
+                toggleId="sd-nighttime-toggle"
+                checked={false}
+                disabled={true}
+                onChange={() => {}}
+                infoCards={[{ icon: "🌙", text: "Limit Night-time Requests is currently disabled for future implementation." }]}
+            />
         </PageShell>
     );
 }
@@ -594,33 +654,18 @@ function NighttimePage({ s, onBack, onClose, animDir }) {
 function HideRoomsPage({ s, onBack, onClose, animDir }) {
     return (
         <PageShell title="Hide Joined Rooms" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
-            <div className="sd-subpage-form">
-                <div className="sd-toggle-hero">
-                    <div className="sd-toggle-hero__icon" style={{ background: "#F59E0B15", color: "#F59E0B" }}>
-                        <EyeOff size={28} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="sd-toggle-hero__title">Room Privacy</h3>
-                    <p className="sd-toggle-hero__desc">
-                        When enabled, your joined rooms are never shown outside your own profile view. Other users and guests won't be able to see your room history.
-                    </p>
-
-                    <div className="sd-toggle-hero__control">
-                        <span className="sd-toggle-hero__status">
-                            {s.hideRooms ? "Hidden" : "Visible"}
-                        </span>
-                        <ToggleSwitch
-                            id="sd-hide-rooms-toggle"
-                            checked={s.hideRooms}
-                            onChange={s.handleHideRooms}
-                        />
-                    </div>
-                </div>
-
-                <div className="sd-info-card">
-                    <span className="sd-info-card__icon">🔒</span>
-                    <span>Your own profile page always shows your rooms, regardless of this setting.</span>
-                </div>
-            </div>
+            <ToggleHeroSection
+                icon={EyeOff}
+                iconBg="#F59E0B15"
+                iconColor="#F59E0B"
+                title="Room Privacy"
+                desc="When enabled, your joined rooms are never shown outside your own profile view. Other users and guests won't be able to see your room history."
+                statusText={s.hideRooms ? "Hidden" : "Visible"}
+                toggleId="sd-hide-rooms-toggle"
+                checked={s.hideRooms}
+                onChange={s.handleHideRooms}
+                infoCards={[{ icon: "🔒", text: "Your own profile page always shows your rooms, regardless of this setting." }]}
+            />
         </PageShell>
     );
 }
@@ -630,44 +675,31 @@ function HideRoomsPage({ s, onBack, onClose, animDir }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function HideProfilePage({ s, onBack, onClose, animDir }) {
+    const infoCards = [
+        { icon: "👻", text: "You can still see your own profile normally. Only others are affected by this setting." }
+    ];
+    if (s.hideProfileGlobal) {
+        infoCards.push({
+            icon: "🔮",
+            text: "Your profile is currently hidden. Other users cannot find or view you.",
+            style: { borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }
+        });
+    }
+
     return (
         <PageShell title="Hide My Profile" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
-            <div className="sd-subpage-form">
-                <div className="sd-toggle-hero">
-                    <div className="sd-toggle-hero__icon" style={{ background: "#8B5CF615", color: "#8B5CF6" }}>
-                        <Lock size={28} strokeWidth={1.5} />
-                    </div>
-                    <h3 className="sd-toggle-hero__title">Profile Visibility</h3>
-                    <p className="sd-toggle-hero__desc">
-                        When enabled, your username and profile will be completely hidden from
-                        other users. Nobody can search for you, and clicking your alias in a
-                        room will show a &ldquo;kept private&rdquo; screen instead of your profile.
-                    </p>
-
-                    <div className="sd-toggle-hero__control">
-                        <span className="sd-toggle-hero__status">
-                            {s.hideProfileGlobal ? "Hidden" : "Visible"}
-                        </span>
-                        <ToggleSwitch
-                            id="sd-hide-profile-toggle"
-                            checked={s.hideProfileGlobal}
-                            onChange={s.handleHideProfileGlobal}
-                        />
-                    </div>
-                </div>
-
-                <div className="sd-info-card">
-                    <span className="sd-info-card__icon">👻</span>
-                    <span>You can still see your own profile normally. Only others are affected by this setting.</span>
-                </div>
-
-                {s.hideProfileGlobal && (
-                    <div className="sd-info-card" style={{ borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)" }}>
-                        <span className="sd-info-card__icon">🔮</span>
-                        <span>Your profile is currently hidden. Other users cannot find or view you.</span>
-                    </div>
-                )}
-            </div>
+            <ToggleHeroSection
+                icon={Lock}
+                iconBg="#8B5CF615"
+                iconColor="#8B5CF6"
+                title="Profile Visibility"
+                desc="When enabled, your username and profile will be completely hidden from other users. Nobody can search for you, and clicking your alias in a room will show a “kept private” screen instead of your profile."
+                statusText={s.hideProfileGlobal ? "Hidden" : "Visible"}
+                toggleId="sd-hide-profile-toggle"
+                checked={s.hideProfileGlobal}
+                onChange={s.handleHideProfileGlobal}
+                infoCards={infoCards}
+            />
         </PageShell>
     );
 }
@@ -676,51 +708,31 @@ function HideProfilePage({ s, onBack, onClose, animDir }) {
 // Sub-page: Audio Expiry
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AudioExpiryPage({ s, onBack, onClose, animDir }) {
-    const descriptions = {
-        never: "Your audio confessions stay available forever until you delete them manually.",
-        "24h": "Audio confessions automatically expire 24 hours after they are first played.",
-        "7d":  "Audio confessions automatically expire 7 days after they are first played.",
-        "30d": "Audio confessions automatically expire 30 days after they are first played."
-    };
+const AUDIO_EXPIRY_DESCRIPTIONS = {
+    never: "Your audio confessions stay available forever until you delete them manually.",
+    "24h": "Audio confessions automatically expire 24 hours after they are first played.",
+    "7d":  "Audio confessions automatically expire 7 days after they are first played.",
+    "30d": "Audio confessions automatically expire 30 days after they are first played."
+};
 
+const AUDIO_OPTIONS_WITH_DESC = AUDIO_EXPIRY_OPTIONS.map(opt => ({
+    ...opt,
+    desc: AUDIO_EXPIRY_DESCRIPTIONS[opt.value]
+}));
+
+function AudioExpiryPage({ s, onBack, onClose, animDir }) {
     return (
         <PageShell title="Audio Expiry" onBack={onBack} onClose={onClose} notice={s.notice} animDir={animDir}>
-            <div className="sd-subpage-form">
-                <div className="sd-subpage-section">
-                    <div className="sd-subpage-label">
-                        <Clock size={14} />
-                        Expiry after first play
-                    </div>
-
-                    <div className="sd-option-list" role="radiogroup" aria-label="Audio expiry duration">
-                        {AUDIO_EXPIRY_OPTIONS.map(({ value, label }) => (
-                            <button
-                                key={value}
-                                type="button"
-                                role="radio"
-                                aria-checked={s.audioExpiry === value}
-                                id={`sd-audio-expiry-${value}`}
-                                className={`sd-option-row${s.audioExpiry === value ? " sd-option-row--active" : ""}`}
-                                onClick={() => s.handleAudioExpiry(value)}
-                            >
-                                <div className="sd-option-row__check">
-                                    {s.audioExpiry === value && <Check size={13} strokeWidth={2.5} />}
-                                </div>
-                                <div className="sd-option-row__body">
-                                    <span className="sd-option-row__label">{label}</span>
-                                    <span className="sd-option-row__desc">{descriptions[value]}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="sd-info-card">
-                    <span className="sd-info-card__icon">🎙️</span>
-                    <span>This only applies to audio confessions. Text posts are unaffected.</span>
-                </div>
-            </div>
+            <RadioOptionsSection
+                icon={Clock}
+                label="Expiry after first play"
+                groupLabel="Audio expiry duration"
+                prefix="audio-expiry"
+                options={AUDIO_OPTIONS_WITH_DESC}
+                selectedValue={s.audioExpiry}
+                onChange={s.handleAudioExpiry}
+                footerNote={{ icon: "🎙️", text: "This only applies to audio confessions. Text posts are unaffected." }}
+            />
         </PageShell>
     );
 }
@@ -730,6 +742,7 @@ function AudioExpiryPage({ s, onBack, onClose, animDir }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PAGE_COMPONENTS = {
+    main:            MainPage,
     identity:        IdentityPage,
     interests:       InterestsPage,
     email:           EmailPage,
@@ -768,34 +781,7 @@ export default function SettingsDrawer({ user, onClose, onUserUpdated, onLogout 
         return () => document.removeEventListener("keydown", handleKey);
     }, [page, onClose]);
 
-    // ── Render ──────────────────────────────────────────────────────────────
-    let pageNode;
-
-    if (page === "main") {
-        pageNode = (
-            <MainPage
-                key="main"
-                s={s}
-                user={user}
-                onNavigate={navigate}
-                onClose={onClose}
-                animDir={animDir}
-                onLogout={onLogout}
-            />
-        );
-    } else {
-        const SubPage = PAGE_COMPONENTS[page];
-        pageNode = SubPage ? (
-            <SubPage
-                key={page}
-                s={s}
-                user={user}
-                onBack={goBack}
-                onClose={onClose}
-                animDir={animDir}
-            />
-        ) : null;
-    }
+    const CurrentPage = PAGE_COMPONENTS[page] || MainPage;
 
     return (
         <div
@@ -809,7 +795,16 @@ export default function SettingsDrawer({ user, onClose, onUserUpdated, onLogout 
                 className="sd-panel"
                 onClick={(e) => e.stopPropagation()}
             >
-                {pageNode}
+                <CurrentPage
+                    key={page}
+                    s={s}
+                    user={user}
+                    onNavigate={navigate}
+                    onBack={goBack}
+                    onClose={onClose}
+                    animDir={animDir}
+                    onLogout={onLogout}
+                />
             </aside>
         </div>
     );

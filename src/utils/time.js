@@ -22,3 +22,10 @@ export function formatRelativeTime(value, {
 
     return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
 }
+
+export function formatJoinedDate(value) {
+    if (!value) return "Recently";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Recently";
+    return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(date);
+}

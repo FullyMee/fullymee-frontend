@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CreditCard, Mail, MessageCircle, MessageSquareQuote, Moon, Settings, Shield, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Lock, ShieldCheck, Menu, X, EyeOff } from "lucide-react";
+import { Mail, MessageSquareQuote, Users, LogOut, CheckCircle2, Plus, Sparkles, BarChart3, Bookmark, Grid, Radio, Menu, EyeOff } from "lucide-react";
 import { AmbienceRoomCard } from "../components/common/MobileRoomVisuals.jsx";
 import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
 import DesktopIconStatCard from "../components/common/DesktopIconStatCard.jsx";
@@ -18,35 +18,12 @@ import SettingsDrawer from "../features/profile/components/SettingsDrawer.jsx";
 import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
+import { formatJoinedDate } from "../utils/time.js";
+import { normalizeUsername } from "../features/auth/utils/authHelpers.js";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
 
 const VISIBLE_ROOMS_LIMIT = 6;
-
-function SettingsIcon(props) { return <Settings size={18} strokeWidth={2} {...props} />; }
-
-function ShieldIcon(props) { return <Shield size={18} strokeWidth={2} {...props} />; }
-function QuoteIcon() { return <MessageSquareQuote size={18} strokeWidth={2} />; }
-function EnvelopeIcon(props) { return <Mail size={18} strokeWidth={2} {...props} />; }
-function PeopleIcon() { return <Users size={18} strokeWidth={2} />; }
-function CardIcon() { return <CreditCard size={18} strokeWidth={2} />; }
-function ArrowRightIcon(props) { return <ArrowRight size={18} strokeWidth={2} {...props} />; }
-function MessageIcon() { return <MessageCircle size={18} strokeWidth={2} />; }
-function LogoutIcon(props) { return <LogOut size={18} strokeWidth={2} {...props} />; }
-
-function formatJoinedDate(value) {
-    if (!value) return "Recently";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "Recently";
-    return new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        year: "numeric"
-    }).format(date);
-}
-
-function normalizeUsername(value) {
-    return String(value || "").trim().toLowerCase();
-}
 
 export default function ProfilePage({ user }) {
     const isDesktop = useIsDesktop();
@@ -224,7 +201,7 @@ export default function ProfilePage({ user }) {
                                                 className="desktop-profile-edit-button desktop-profile-edit-button--logout"
                                                 onClick={handleLogout}
                                             >
-                                                <LogoutIcon />
+                                                <LogOut size={18} strokeWidth={2} />
                                                 <span>Logout</span>
                                             </button>
                                         </div>
@@ -233,19 +210,19 @@ export default function ProfilePage({ user }) {
 
                                 <section className="desktop-profile-stats-row">
                                     <DesktopIconStatCard
-                                        icon={<PeopleIcon />}
+                                        icon={<Users size={18} strokeWidth={2} />}
                                         iconTone="blue"
                                         value={joinedRooms.length}
                                         label="Rooms Joined"
                                     />
                                     <DesktopIconStatCard
-                                        icon={<QuoteIcon />}
+                                        icon={<MessageSquareQuote size={18} strokeWidth={2} />}
                                         iconTone="magenta"
                                         value={myConfessions.length}
                                         label="Confessions Posted"
                                     />
                                     <DesktopIconStatCard
-                                        icon={<EnvelopeIcon />}
+                                        icon={<Mail size={18} strokeWidth={2} />}
                                         iconTone="red"
                                         value={messageCount}
                                         label="Messages Sent"

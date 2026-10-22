@@ -684,144 +684,93 @@ export default function useConfessionRoom() {
 
     const handleReact = useCallback(async (targetType, targetId) => {
         if (!activeRoomId || !targetId) return;
+        const targetIdNum = Number(targetId);
+        const isConfession = targetType === "confession";
 
-        try {
-            if (targetType === "confession") {
-                const targetIdNum = Number(targetId);
-                setReactingConfessionIds((prev) => new Set(prev).add(targetIdNum));
-                const previousConfessions = [...confessions];
-                const previousLikedConfessionIds = new Set(likedConfessionIds);
+        const setReacting = isConfession ? setReactingConfessionIds : setReactingReplyIds;
+        const setLiked = isConfession ? setLikedConfessionIds : setLikedReplyIds;
+        const likedSet = isConfession ? likedConfessionIds : likedReplyIds;
+        const currentlyLiked = likedSet.has(targetIdNum);
+        const nextLiked = !currentlyLiked;
 
-                // 1. Optimistic Update
-                setConfessions((prev) => prev.map((row) => {
-                    if (Number(row.confessionId) === targetIdNum) {
-                        const currentlyLiked = likedConfessionIds.has(targetIdNum);
-                        const nextLiked = !currentlyLiked;
-                        return {
-                            ...row,
-                            reactionCount: Math.max(0, (row.reactionCount || 0) + (nextLiked ? 1 : -1)),
-                            likesCount: Math.max(0, (row.likesCount || 0) + (nextLiked ? 1 : -1)),
-                            likedByViewer: nextLiked
-                        };
-                    }
-                    return row;
-                }));
+        setReacting((prev) => new Set(prev).add(targetIdNum));
+        setLiked((prev) => {
+            const next = new Set(prev);
+            if (nextLiked) next.add(targetIdNum);
+            else next.delete(targetIdNum);
+            return next;
+        });
 
-                setLikedConfessionIds((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(targetIdNum)) {
-                        next.delete(targetIdNum);
-                    } else {
-                        next.add(targetIdNum);
-                    }
-                    return next;
-                });
+        const updateItem = (item) => ({
+            ...item,
+            reactionCount: Math.max(0, (item.reactionCount || 0) + (nextLiked ? 1 : -1)),
+            likesCount: Math.max(0, (item.likesCount || 0) + (nextLiked ? 1 : -1)),
+            likedByViewer: nextLiked
+        });
 
-                try {
-                    // 2. Call API
-                    const result = await likeConfession(targetIdNum);
-                    const likesCount = Number(result && result.likesCount);
-                    const liked = !!(result && result.liked);
+        const reconcileItem = (item, likesCount, liked) => ({
+            ...item,
+            reactionCount: likesCount,
+            likesCount,
+            likedByViewer: liked
+        });
 
-                    setConfessions((prev) => prev.map((row) => (
-                        Number(row.confessionId) === targetIdNum
-                            ? { ...row, reactionCount: likesCount, likesCount, likedByViewer: liked }
-                            : row
-                    )));
-
-                    setLikedConfessionIds((prev) => {
-                        const next = new Set(prev);
-                        if (liked) next.add(targetIdNum);
-                        else next.delete(targetIdNum);
-                        return next;
-                    });
-                } catch (err) {
-                    // 3. Rollback
-                    setConfessions(previousConfessions);
-                    setLikedConfessionIds(previousLikedConfessionIds);
-                    showError(err && err.message ? err.message : "Unable to toggle like on confession.");
-                } finally {
-                    setReactingConfessionIds((prev) => {
-                        const next = new Set(prev);
-                        next.delete(targetIdNum);
-                        return next;
-                    });
-                }
-                return;
-            }
-
-            // Otherwise, targetType === "reply"
-            const targetIdNum = Number(targetId);
-            setReactingReplyIds((prev) => new Set(prev).add(targetIdNum));
-            const previousReplies = { ...repliesByConfession };
-            const previousLikedReplyIds = new Set(likedReplyIds);
-
-            // 1. Optimistic Update
-            const currentlyLiked = likedReplyIds.has(targetIdNum);
-            const nextLiked = !currentlyLiked;
-
-            setRepliesByConfession((prev) => {
-                const next = {};
-                for (const key of Object.keys(prev)) {
-                    next[key] = asArray(prev[key]).map((reply) => (
-                        Number(reply.replyId) === targetIdNum
-                            ? {
-                                ...reply,
-                                reactionCount: Math.max(0, (reply.reactionCount || 0) + (nextLiked ? 1 : -1)),
-                                likesCount: Math.max(0, (reply.likesCount || 0) + (nextLiked ? 1 : -1)),
-                                likedByViewer: nextLiked
-                            }
-                            : reply
-                    ));
-                }
-                return next;
-            });
-
-            setLikedReplyIds((prev) => {
-                const next = new Set(prev);
-                if (nextLiked) next.add(targetIdNum);
-                else next.delete(targetIdNum);
-                return next;
-            });
+        if (isConfession) {
+            const previousConfessions = [...confessions];
+            setConfessions((prev) => prev.map((row) => (Number(row.confessionId) === targetIdNum ? updateItem(row) : row)));
 
             try {
-                // 2. Call API
-                const result = await likeReply(targetIdNum);
-                const likesCount = Number(result && result.likesCount);
+                const result = await likeConfession(targetIdNum);
+                const count = Number(result && result.likesCount);
                 const liked = !!(result && result.liked);
-
-                // 3. Reconcile with server truth
-                setRepliesByConfession((prev) => {
-                    const next = {};
-                    for (const key of Object.keys(prev)) {
-                        next[key] = asArray(prev[key]).map((reply) => (
-                            Number(reply.replyId) === targetIdNum
-                                ? { ...reply, reactionCount: likesCount, likesCount, likedByViewer: liked }
-                                : reply
-                        ));
-                    }
-                    return next;
-                });
-                setLikedReplyIds((prev) => {
+                setConfessions((prev) => prev.map((row) => (Number(row.confessionId) === targetIdNum ? reconcileItem(row, count, liked) : row)));
+                setLiked((prev) => {
                     const next = new Set(prev);
                     if (liked) next.add(targetIdNum);
                     else next.delete(targetIdNum);
                     return next;
                 });
             } catch (err) {
-                // 4. Rollback on error
-                setRepliesByConfession(previousReplies);
-                setLikedReplyIds(previousLikedReplyIds);
-                showError(err && err.message ? err.message : "Unable to toggle like on reply.");
+                setConfessions(previousConfessions);
+                setLiked(new Set(likedConfessionIds));
+                showError(err && err.message ? err.message : "Unable to toggle like on confession.");
             } finally {
-                setReactingReplyIds((prev) => {
-                    const next = new Set(prev);
-                    next.delete(targetIdNum);
+                setReacting((prev) => { const next = new Set(prev); next.delete(targetIdNum); return next; });
+            }
+        } else {
+            const previousReplies = { ...repliesByConfession };
+            setRepliesByConfession((prev) => {
+                const next = {};
+                for (const key of Object.keys(prev)) {
+                    next[key] = asArray(prev[key]).map((r) => (Number(r.replyId) === targetIdNum ? updateItem(r) : r));
+                }
+                return next;
+            });
+
+            try {
+                const result = await likeReply(targetIdNum);
+                const count = Number(result && result.likesCount);
+                const liked = !!(result && result.liked);
+                setRepliesByConfession((prev) => {
+                    const next = {};
+                    for (const key of Object.keys(prev)) {
+                        next[key] = asArray(prev[key]).map((r) => (Number(r.replyId) === targetIdNum ? reconcileItem(r, count, liked) : r));
+                    }
                     return next;
                 });
+                setLiked((prev) => {
+                    const next = new Set(prev);
+                    if (liked) next.add(targetIdNum);
+                    else next.delete(targetIdNum);
+                    return next;
+                });
+            } catch (err) {
+                setRepliesByConfession(previousReplies);
+                setLiked(new Set(likedReplyIds));
+                showError(err && err.message ? err.message : "Unable to toggle like on reply.");
+            } finally {
+                setReacting((prev) => { const next = new Set(prev); next.delete(targetIdNum); return next; });
             }
-        } catch (err) {
-            showError(err && err.message ? err.message : "Unable to update this reaction right now.");
         }
     }, [activeRoomId, confessions, likedConfessionIds, likedReplyIds, repliesByConfession, showError]);
 

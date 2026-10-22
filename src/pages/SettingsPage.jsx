@@ -9,8 +9,7 @@ import useAuth from "../hooks/useAuth.js";
 import useIsDesktop from "../hooks/useIsDesktop.js";
 import SettingsDrawer from "../features/profile/components/SettingsDrawer.jsx";
 import useSettingsDrawer, {
-    CHAT_PERMISSION_OPTIONS,
-    AUDIO_EXPIRY_OPTIONS
+    CHAT_PERMISSION_OPTIONS
 } from "../features/profile/hooks/useSettingsDrawer.js";
 import { AVATAR_OPTIONS } from "../constants/avatars.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
@@ -24,14 +23,8 @@ const PREDEFINED_MOOD_TAGS = [
     "Music", "Loneliness", "Self-doubt", "First love"
 ];
 
-const QUIET_HOURS_FROM = [
-    "9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"
-];
-const QUIET_HOURS_UNTIL = [
-    "5:00 AM", "6:00 AM", "7:00 AM", "8:00 AM"
-];
-
-
+const QUIET_HOURS_FROM = ["9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"];
+const QUIET_HOURS_UNTIL = ["5:00 AM", "6:00 AM", "7:00 AM", "8:00 AM"];
 
 const AUDIO_EXPIRY_CARD_OPTIONS = [
     { value: "never", label: "Never", desc: "Audio confessions stay available." },
@@ -40,11 +33,86 @@ const AUDIO_EXPIRY_CARD_OPTIONS = [
     { value: "7d", label: "After 7 days", desc: "Disappears a week after posting." }
 ];
 
-const CHAT_PERMISSION_CARD_OPTIONS = [
-    { value: "anyone", label: "Anyone", desc: "Anyone can send you chat requests, even from outside your rooms." },
-    { value: "rooms", label: "People in my rooms", desc: "Only members of rooms you have joined can reach you." },
-    { value: "nobody", label: "No one", desc: "Requests are turned off. You can still start chats yourself." }
-];
+function AccordionItem({ id, openId, onToggle, iconBubble, title, subtitle, rightContent, badge, children }) {
+    const isExpanded = openId === id;
+    return (
+        <div className={`dt-settings-accordion-item${isExpanded ? " is-expanded" : ""}`}>
+            <button
+                type="button"
+                className="dt-settings-accordion-header"
+                onClick={() => onToggle(id)}
+            >
+                <div className="dt-settings-accordion-left">
+                    {iconBubble}
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <h4 className="dt-settings-accordion-title">{title}</h4>
+                            {badge}
+                        </div>
+                        <p className="dt-settings-accordion-subtitle">{subtitle}</p>
+                    </div>
+                </div>
+                <div className="dt-settings-accordion-right">
+                    {rightContent}
+                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </div>
+            </button>
+            {isExpanded && (
+                <div className="dt-settings-accordion-body">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ToggleSwitchRow({ label, description, checked, onChange, disabled }) {
+    return (
+        <div className={`dt-settings-switch-row${disabled ? " dt-settings-switch-row--card" : ""}`} style={disabled ? { opacity: 0.6, cursor: "not-allowed" } : undefined}>
+            <div>
+                <span className="dt-settings-field-label" style={{ margin: 0 }}>{label}</span>
+                <p className="dt-settings-help-text" style={{ margin: 0 }}>{description}</p>
+            </div>
+            <button
+                type="button"
+                role="switch"
+                aria-checked={checked}
+                disabled={disabled}
+                className={`dt-settings-toggle${checked ? " dt-settings-toggle--on" : ""}`}
+                style={disabled ? { cursor: "not-allowed", opacity: 0.5 } : undefined}
+                onClick={() => !disabled && onChange && onChange(!checked)}
+            >
+                <span className="dt-settings-toggle__thumb" />
+            </button>
+        </div>
+    );
+}
+
+function OptionCardGrid({ className, options, selectedValue, onSelect }) {
+    return (
+        <div className={className}>
+            {options.map((opt) => {
+                const selected = selectedValue === opt.value;
+                return (
+                    <button
+                        key={opt.value}
+                        type="button"
+                        className={`dt-settings-audio-card${selected ? " is-selected" : ""}`}
+                        onClick={() => onSelect(opt.value)}
+                    >
+                        <span className={`dt-settings-audio-radio${selected ? " is-selected" : ""}`}>
+                            {selected && <Check size={10} strokeWidth={3} />}
+                        </span>
+                        <div className="dt-settings-audio-card-copy">
+                            <span className="dt-settings-audio-card-title">{opt.label}</span>
+                            <span className="dt-settings-audio-card-desc">{opt.desc}</span>
+                        </div>
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
 
 export default function SettingsPage({ user: propUser }) {
     const navigate = useNavigate();
@@ -64,11 +132,10 @@ export default function SettingsPage({ user: propUser }) {
             .catch(() => {});
     }, []);
 
-    // Single Accordion Expansion State — Default open: "username-avatar"
     const [openAccordion, setOpenAccordion] = useState("username-avatar");
     const [activeTab, setActiveTab] = useState("identity");
-    const [quietFrom, setQuietFrom] = useState("11:00 PM");
-    const [quietUntil, setQuietUntil] = useState("7:00 AM");
+    const [quietFrom] = useState("11:00 PM");
+    const [quietUntil] = useState("7:00 AM");
 
     const toggleAccordion = (id) => {
         setOpenAccordion((prev) => (prev === id ? null : id));
@@ -108,7 +175,6 @@ export default function SettingsPage({ user: propUser }) {
             hideStageHeader={true}
         >
             <div className="dt-settings-container">
-                {/* Header */}
                 <header className="dt-settings-header">
                     <div>
                         <h1 className="dt-settings-header__title">Settings</h1>
@@ -123,7 +189,6 @@ export default function SettingsPage({ user: propUser }) {
                 </header>
 
                 <div className="dt-settings-grid">
-                    {/* Left Column */}
                     <aside className="dt-settings-left">
                         <nav className="dt-settings-nav-card" aria-label="Settings Categories">
                             <button
@@ -163,7 +228,6 @@ export default function SettingsPage({ user: propUser }) {
                             </button>
                         </nav>
 
-                        {/* Dark Purple Callout Card */}
                         <div className="dt-settings-anon-card">
                             <div className="dt-settings-anon-icon">
                                 <Lock size={16} />
@@ -174,7 +238,6 @@ export default function SettingsPage({ user: propUser }) {
                             </p>
                         </div>
 
-                        {/* Logout Button */}
                         <button
                             type="button"
                             className="dt-settings-logout-btn"
@@ -185,7 +248,6 @@ export default function SettingsPage({ user: propUser }) {
                         </button>
                     </aside>
 
-                    {/* Right Main Content Column */}
                     <main className="dt-settings-right">
                         {/* SECTION 1: IDENTITY */}
                         <section id="identity">
@@ -196,208 +258,169 @@ export default function SettingsPage({ user: propUser }) {
 
                             <div className="dt-settings-accordion-group">
                                 {/* Accordion 1: Username & Avatar */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "username-avatar" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("username-avatar")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble" style={{ overflow: 'hidden', padding: 0, backgroundColor: 'transparent', width: '36px', height: '36px' }}>
-                                                {s.avatarDraft ? (
-                                                    <UserAvatar avatarId={s.avatarDraft} />
-                                                ) : (
-                                                    <div className="dt-settings-icon-bubble dt-settings-icon-bubble--purple"><User size={18} /></div>
-                                                )}
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Username & Emotional Identity</h4>
-                                                <p className="dt-settings-accordion-subtitle">@{s.usernameDraft || "amber.dolphin3279"}</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>@{s.usernameDraft || "amber.dolphin3279"}</span>
-                                            {openAccordion === "username-avatar" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "username-avatar" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <label className="dt-settings-field-label">Anonymous handle</label>
-                                            <div className="dt-settings-input-row">
-                                                <div className="dt-settings-input-wrapper">
-                                                    <span className="dt-settings-input-prefix">@</span>
-                                                    <input
-                                                        type="text"
-                                                        className="dt-settings-input"
-                                                        value={s.usernameDraft}
-                                                        onChange={(e) => s.setUsernameDraft(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <p className="dt-settings-help-text">
-                                                3–20 chars · letters, numbers, dots, underscores
-                                            </p>
-
-                                            <label className="dt-settings-field-label" style={{ marginTop: "1.25rem" }}>Emotional Identity</label>
-                                            <p className="dt-settings-help-text" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
-                                                Choose the symbol that feels closest to you today.
-                                            </p>
-
-                                            <div className="dt-settings-emotional-grid">
-                                                {AVATAR_OPTIONS.map((avatarObj) => {
-                                                    const isSelected = s.avatarDraft === avatarObj.id;
-                                                    return (
-                                                        <button
-                                                            key={avatarObj.id}
-                                                            type="button"
-                                                            className={`dt-settings-emotional-btn${isSelected ? " is-selected" : ""}`}
-                                                            onClick={() => s.setAvatarDraft(avatarObj.id)}
-                                                            aria-label={`Select avatar ${avatarObj.name}`}
-                                                        >
-                                                            <div className="dt-settings-emotional-img-wrapper">
-                                                                <UserAvatar avatarId={avatarObj.id} />
-                                                                {isSelected && (
-                                                                    <div className="dt-settings-emotional-check">
-                                                                        <Check size={12} strokeWidth={3} />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {s.avatarDraft && (() => {
-                                                const sel = AVATAR_OPTIONS.find(a => a.id === s.avatarDraft);
-                                                if (sel) {
-                                                    return (
-                                                        <div className="dt-settings-emotional-desc-box">
-                                                            <h5 className="dt-settings-emotional-desc-title">{sel.name}</h5>
-                                                            <p className="dt-settings-emotional-desc-text">{sel.quote}</p>
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
-
-                                            {s.identityStatus.message && (
-                                                <p className={`dt-settings-help-text dt-settings-help-text--${s.identityStatus.status}`}
-                                                    style={{ marginTop: "0.75rem" }}>
-                                                    {s.identityStatus.message}
-                                                </p>
+                                <AccordionItem
+                                    id="username-avatar"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble" style={{ overflow: 'hidden', padding: 0, backgroundColor: 'transparent', width: '36px', height: '36px' }}>
+                                            {s.avatarDraft ? (
+                                                <UserAvatar avatarId={s.avatarDraft} />
+                                            ) : (
+                                                <div className="dt-settings-icon-bubble dt-settings-icon-bubble--purple"><User size={18} /></div>
                                             )}
-
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: "1.25rem" }}>
-                                                <button
-                                                    type="button"
-                                                    className="dt-settings-save-btn"
-                                                    disabled={s.savingIdentity}
-                                                    onClick={() => s.saveIdentity()}
-                                                    style={{ width: 'auto' }}
-                                                >
-                                                    {s.savingIdentity
-                                                        ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>
-                                                        : <>Save Changes</>
-                                                    }
-                                                </button>
-                                                <span className="dt-settings-help-text" style={{ margin: 0, fontSize: '0.75rem' }}>
-                                                    You can change your Emotional Identity whenever you want.
-                                                </span>
-                                            </div>
+                                        </span>
+                                    }
+                                    title="Username & Emotional Identity"
+                                    subtitle={`@${s.usernameDraft || "amber.dolphin3279"}`}
+                                    rightContent={<span>@{s.usernameDraft || "amber.dolphin3279"}</span>}
+                                >
+                                    <label className="dt-settings-field-label">Anonymous handle</label>
+                                    <div className="dt-settings-input-row">
+                                        <div className="dt-settings-input-wrapper">
+                                            <span className="dt-settings-input-prefix">@</span>
+                                            <input
+                                                type="text"
+                                                className="dt-settings-input"
+                                                value={s.usernameDraft}
+                                                onChange={(e) => s.setUsernameDraft(e.target.value)}
+                                            />
                                         </div>
+                                    </div>
+                                    <p className="dt-settings-help-text">
+                                        3–20 chars · letters, numbers, dots, underscores
+                                    </p>
+
+                                    <label className="dt-settings-field-label" style={{ marginTop: "1.25rem" }}>Emotional Identity</label>
+                                    <p className="dt-settings-help-text" style={{ marginTop: 0, marginBottom: '1.25rem' }}>
+                                        Choose the symbol that feels closest to you today.
+                                    </p>
+
+                                    <div className="dt-settings-emotional-grid">
+                                        {AVATAR_OPTIONS.map((avatarObj) => {
+                                            const isSelected = s.avatarDraft === avatarObj.id;
+                                            return (
+                                                <button
+                                                    key={avatarObj.id}
+                                                    type="button"
+                                                    className={`dt-settings-emotional-btn${isSelected ? " is-selected" : ""}`}
+                                                    onClick={() => s.setAvatarDraft(avatarObj.id)}
+                                                    aria-label={`Select avatar ${avatarObj.name}`}
+                                                >
+                                                    <div className="dt-settings-emotional-img-wrapper">
+                                                        <UserAvatar avatarId={avatarObj.id} />
+                                                        {isSelected && (
+                                                            <div className="dt-settings-emotional-check">
+                                                                <Check size={12} strokeWidth={3} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {s.avatarDraft && (() => {
+                                        const sel = AVATAR_OPTIONS.find(a => a.id === s.avatarDraft);
+                                        return sel ? (
+                                            <div className="dt-settings-emotional-desc-box">
+                                                <h5 className="dt-settings-emotional-desc-title">{sel.name}</h5>
+                                                <p className="dt-settings-emotional-desc-text">{sel.quote}</p>
+                                            </div>
+                                        ) : null;
+                                    })()}
+
+                                    {s.identityStatus.message && (
+                                        <p className={`dt-settings-help-text dt-settings-help-text--${s.identityStatus.status}`}
+                                            style={{ marginTop: "0.75rem" }}>
+                                            {s.identityStatus.message}
+                                        </p>
                                     )}
-                                </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: "1.25rem" }}>
+                                        <button
+                                            type="button"
+                                            className="dt-settings-save-btn"
+                                            disabled={s.savingIdentity}
+                                            onClick={() => s.saveIdentity()}
+                                            style={{ width: 'auto' }}
+                                        >
+                                            {s.savingIdentity
+                                                ? <><Loader2 size={15} className="dt-settings-save-btn__spin" /> Saving…</>
+                                                : <>Save Changes</>
+                                            }
+                                        </button>
+                                        <span className="dt-settings-help-text" style={{ margin: 0, fontSize: '0.75rem' }}>
+                                            You can change your Emotional Identity whenever you want.
+                                        </span>
+                                    </div>
+                                </AccordionItem>
 
                                 {/* Accordion 2: Interests & Mood Tags */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "interests" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("interests")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--pink">
-                                                <Tag size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Interests & Mood Tags</h4>
-                                                <p className="dt-settings-accordion-subtitle">Personalise the rooms and confessions you see</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{s.interests.length > 0 ? `${s.interests.length} tags` : "None"}</span>
-                                            {openAccordion === "interests" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "interests" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <p className="dt-settings-mood-hint">
-                                                Pick the moods you want in your feed. Tags are private - nobody sees them on your profile.
-                                            </p>
-                                            <div className="dt-settings-mood-tags">
-                                                {PREDEFINED_MOOD_TAGS.map((tag) => {
-                                                    const key = tag.toLowerCase();
-                                                    const selected = s.interests.includes(key);
-                                                    return (
-                                                        <button
-                                                            key={tag}
-                                                            type="button"
-                                                            className={`dt-settings-mood-pill${selected ? " is-selected" : ""}`}
-                                                            onClick={() => selected ? s.removeInterest(key) : s.addInterest(key)}
-                                                        >
-                                                            {tag}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="interests"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--pink">
+                                            <Tag size={18} />
+                                        </span>
+                                    }
+                                    title="Interests & Mood Tags"
+                                    subtitle="Personalise the rooms and confessions you see"
+                                    rightContent={<span>{s.interests.length > 0 ? `${s.interests.length} tags` : "None"}</span>}
+                                >
+                                    <p className="dt-settings-mood-hint">
+                                        Pick the moods you want in your feed. Tags are private - nobody sees them on your profile.
+                                    </p>
+                                    <div className="dt-settings-mood-tags">
+                                        {PREDEFINED_MOOD_TAGS.map((tag) => {
+                                            const key = tag.toLowerCase();
+                                            const selected = s.interests.includes(key);
+                                            return (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    className={`dt-settings-mood-pill${selected ? " is-selected" : ""}`}
+                                                    onClick={() => selected ? s.removeInterest(key) : s.addInterest(key)}
+                                                >
+                                                    {tag}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </AccordionItem>
 
                                 {/* Accordion 3: Email */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "email" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("email")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--rose">
-                                                <Mail size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Email</h4>
-                                                <p className="dt-settings-accordion-subtitle">Your registered email, used only for account recovery</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{currentUser?.email || "ayush.khanna@gmail.com"}</span>
-                                            {openAccordion === "email" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "email" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-email-label-row">
-                                                <span className="dt-settings-field-label" style={{ margin: 0 }}>Registered email</span>
-                                                <span className="dt-settings-verified-badge">Verified</span>
-                                            </div>
-                                            <div className="dt-settings-input-wrapper" style={{ marginTop: "0.5rem", maxWidth: "380px" }}>
-                                                <input
-                                                    type="email"
-                                                    className="dt-settings-input"
-                                                    value={currentUser?.email || "ayush.khanna@gmail.com"}
-                                                    readOnly
-                                                />
-                                            </div>
-                                            <p className="dt-settings-help-text" style={{ marginTop: "0.5rem" }}>
-                                                Never shown publicly and never linked to your confessions.
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="email"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--rose">
+                                            <Mail size={18} />
+                                        </span>
+                                    }
+                                    title="Email"
+                                    subtitle="Your registered email, used only for account recovery"
+                                    rightContent={<span>{currentUser?.email || "ayush.khanna@gmail.com"}</span>}
+                                >
+                                    <div className="dt-settings-email-label-row">
+                                        <span className="dt-settings-field-label" style={{ margin: 0 }}>Registered email</span>
+                                        <span className="dt-settings-verified-badge">Verified</span>
+                                    </div>
+                                    <div className="dt-settings-input-wrapper" style={{ marginTop: "0.5rem", maxWidth: "380px" }}>
+                                        <input
+                                            type="email"
+                                            className="dt-settings-input"
+                                            value={currentUser?.email || "ayush.khanna@gmail.com"}
+                                            readOnly
+                                        />
+                                    </div>
+                                    <p className="dt-settings-help-text" style={{ marginTop: "0.5rem" }}>
+                                        Never shown publicly and never linked to your confessions.
+                                    </p>
+                                </AccordionItem>
                             </div>
                         </section>
 
@@ -410,139 +433,88 @@ export default function SettingsPage({ user: propUser }) {
 
                             <div className="dt-settings-accordion-group">
                                 {/* Accordion 4: Chat Request Permissions */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "chat-permissions" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("chat-permissions")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--green">
-                                                <MessageCircle size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Chat Request Permissions</h4>
-                                                <p className="dt-settings-accordion-subtitle">Who can send you requests</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{CHAT_PERMISSION_CARD_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "Anyone"}</span>
-                                            {openAccordion === "chat-permissions" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "chat-permissions" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-chat-permission-grid">
-                                                {CHAT_PERMISSION_CARD_OPTIONS.map((opt) => {
-                                                    const selected = s.chatPermission === opt.value;
-                                                    return (
-                                                        <button
-                                                            key={opt.value}
-                                                            type="button"
-                                                            className={`dt-settings-audio-card${selected ? " is-selected" : ""}`}
-                                                            onClick={() => s.handleChatPermission(opt.value)}
-                                                        >
-                                                            <span className={`dt-settings-audio-radio${selected ? " is-selected" : ""}`}>
-                                                                {selected && <Check size={10} strokeWidth={3} />}
-                                                            </span>
-                                                            <div className="dt-settings-audio-card-copy">
-                                                                <span className="dt-settings-audio-card-title">{opt.label}</span>
-                                                                <span className="dt-settings-audio-card-desc">{opt.desc}</span>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="chat-permissions"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--green">
+                                            <MessageCircle size={18} />
+                                        </span>
+                                    }
+                                    title="Chat Request Permissions"
+                                    subtitle="Who can send you requests"
+                                    rightContent={<span>{CHAT_PERMISSION_OPTIONS.find((o) => o.value === s.chatPermission)?.label || "Anyone"}</span>}
+                                >
+                                    <OptionCardGrid
+                                        className="dt-settings-chat-permission-grid"
+                                        options={CHAT_PERMISSION_OPTIONS}
+                                        selectedValue={s.chatPermission}
+                                        onSelect={s.handleChatPermission}
+                                    />
+                                </AccordionItem>
 
                                 {/* Accordion 5: Limit Night-time Requests (Disabled for future implementation) */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "nighttime" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("nighttime")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--indigo" style={{ opacity: 0.7 }}>
-                                                <Moon size={18} />
-                                            </span>
-                                            <div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                                    <h4 className="dt-settings-accordion-title">Limit Night-time Requests</h4>
-                                                    <span style={{
-                                                        fontSize: "0.68rem",
-                                                        fontWeight: 700,
-                                                        textTransform: "uppercase",
-                                                        letterSpacing: "0.04em",
-                                                        background: "rgba(99, 102, 241, 0.12)",
-                                                        color: "#6366F1",
-                                                        padding: "0.15rem 0.5rem",
-                                                        borderRadius: "999px"
-                                                    }}>
-                                                        Coming Soon
-                                                    </span>
-                                                </div>
-                                                <p className="dt-settings-accordion-subtitle">Quiet hours: 11:00 PM – 7:00 AM</p>
-                                            </div>
+                                <AccordionItem
+                                    id="nighttime"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--indigo" style={{ opacity: 0.7 }}>
+                                            <Moon size={18} />
+                                        </span>
+                                    }
+                                    badge={
+                                        <span style={{
+                                            fontSize: "0.68rem",
+                                            fontWeight: 700,
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.04em",
+                                            background: "rgba(99, 102, 241, 0.12)",
+                                            color: "#6366F1",
+                                            padding: "0.15rem 0.5rem",
+                                            borderRadius: "999px"
+                                        }}>
+                                            Coming Soon
+                                        </span>
+                                    }
+                                    title="Limit Night-time Requests"
+                                    subtitle="Quiet hours: 11:00 PM – 7:00 AM"
+                                    rightContent={<span style={{ color: "#9c829e", fontSize: "0.85rem", fontWeight: 600 }}>Disabled</span>}
+                                >
+                                    <ToggleSwitchRow
+                                        label="Mute requests during quiet hours"
+                                        description="This feature is preserved for future implementation and is currently disabled."
+                                        checked={false}
+                                        disabled={true}
+                                    />
+                                    <div className="dt-settings-quiet-hours-row is-disabled" style={{ opacity: 0.5 }}>
+                                        <div className="dt-settings-quiet-hours-field">
+                                            <label className="dt-settings-quiet-hours-label">From</label>
+                                            <select
+                                                className="dt-settings-select dt-settings-select--time"
+                                                value={quietFrom}
+                                                disabled={true}
+                                            >
+                                                {QUIET_HOURS_FROM.map((t) => (
+                                                    <option key={t} value={t}>{t}</option>
+                                                ))}
+                                            </select>
                                         </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span style={{ color: "#9c829e", fontSize: "0.85rem", fontWeight: 600 }}>Disabled</span>
-                                            {openAccordion === "nighttime" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        <div className="dt-settings-quiet-hours-field">
+                                            <label className="dt-settings-quiet-hours-label">Until</label>
+                                            <select
+                                                className="dt-settings-select dt-settings-select--time"
+                                                value={quietUntil}
+                                                disabled={true}
+                                            >
+                                                {QUIET_HOURS_UNTIL.map((t) => (
+                                                    <option key={t} value={t}>{t}</option>
+                                                ))}
+                                            </select>
                                         </div>
-                                    </button>
-
-                                    {openAccordion === "nighttime" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-switch-row dt-settings-switch-row--card" style={{ opacity: 0.6, cursor: "not-allowed" }}>
-                                                <div>
-                                                    <span className="dt-settings-field-label" style={{ margin: 0 }}>Mute requests during quiet hours</span>
-                                                    <p className="dt-settings-help-text" style={{ margin: 0 }}>
-                                                        This feature is preserved for future implementation and is currently disabled.
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    role="switch"
-                                                    aria-checked={false}
-                                                    disabled={true}
-                                                    className="dt-settings-toggle"
-                                                    style={{ cursor: "not-allowed", opacity: 0.5 }}
-                                                >
-                                                    <span className="dt-settings-toggle__thumb" />
-                                                </button>
-                                            </div>
-                                            <div className="dt-settings-quiet-hours-row is-disabled" style={{ opacity: 0.5 }}>
-                                                <div className="dt-settings-quiet-hours-field">
-                                                    <label className="dt-settings-quiet-hours-label">From</label>
-                                                    <select
-                                                        className="dt-settings-select dt-settings-select--time"
-                                                        value={quietFrom}
-                                                        disabled={true}
-                                                    >
-                                                        {QUIET_HOURS_FROM.map((t) => (
-                                                            <option key={t} value={t}>{t}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                <div className="dt-settings-quiet-hours-field">
-                                                    <label className="dt-settings-quiet-hours-label">Until</label>
-                                                    <select
-                                                        className="dt-settings-select dt-settings-select--time"
-                                                        value={quietUntil}
-                                                        disabled={true}
-                                                    >
-                                                        {QUIET_HOURS_UNTIL.map((t) => (
-                                                            <option key={t} value={t}>{t}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                </AccordionItem>
                             </div>
                         </section>
 
@@ -555,143 +527,70 @@ export default function SettingsPage({ user: propUser }) {
 
                             <div className="dt-settings-accordion-group">
                                 {/* Accordion 6: Hide Joined Rooms */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "hide-rooms" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("hide-rooms")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--amber">
-                                                <EyeOff size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Hide Joined Rooms</h4>
-                                                <p className="dt-settings-accordion-subtitle">Never show room history on your profile</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{s.hideRooms ? "On" : "Off"}</span>
-                                            {openAccordion === "hide-rooms" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "hide-rooms" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-switch-row">
-                                                <div>
-                                                    <span className="dt-settings-field-label" style={{ margin: 0 }}>Hide Room History</span>
-                                                    <p className="dt-settings-help-text" style={{ margin: 0 }}>
-                                                        Rooms you join will not be listed publicly on your user profile.
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    role="switch"
-                                                    aria-checked={s.hideRooms}
-                                                    className={`dt-settings-toggle${s.hideRooms ? " dt-settings-toggle--on" : ""}`}
-                                                    onClick={() => s.handleHideRooms(!s.hideRooms)}
-                                                >
-                                                    <span className="dt-settings-toggle__thumb" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="hide-rooms"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--amber">
+                                            <EyeOff size={18} />
+                                        </span>
+                                    }
+                                    title="Hide Joined Rooms"
+                                    subtitle="Never show room history on your profile"
+                                    rightContent={<span>{s.hideRooms ? "On" : "Off"}</span>}
+                                >
+                                    <ToggleSwitchRow
+                                        label="Hide Room History"
+                                        description="Rooms you join will not be listed publicly on your user profile."
+                                        checked={s.hideRooms}
+                                        onChange={s.handleHideRooms}
+                                    />
+                                </AccordionItem>
 
                                 {/* Accordion 7: Hide My Profile */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "hide-profile" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("hide-profile")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--purple">
-                                                <Lock size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Hide My Profile</h4>
-                                                <p className="dt-settings-accordion-subtitle">Choose how discoverable you are to other users</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{s.hideProfileGlobal ? "Hidden" : "Visible"}</span>
-                                            {openAccordion === "hide-profile" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "hide-profile" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-switch-row">
-                                                <div>
-                                                    <span className="dt-settings-field-label" style={{ margin: 0 }}>Private Profile</span>
-                                                    <p className="dt-settings-help-text" style={{ margin: 0 }}>
-                                                        When hidden, your profile cannot be found through global search.
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    role="switch"
-                                                    aria-checked={s.hideProfileGlobal}
-                                                    className={`dt-settings-toggle${s.hideProfileGlobal ? " dt-settings-toggle--on" : ""}`}
-                                                    onClick={() => s.handleHideProfileGlobal(!s.hideProfileGlobal)}
-                                                >
-                                                    <span className="dt-settings-toggle__thumb" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="hide-profile"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--purple">
+                                            <Lock size={18} />
+                                        </span>
+                                    }
+                                    title="Hide My Profile"
+                                    subtitle="Choose how discoverable you are to other users"
+                                    rightContent={<span>{s.hideProfileGlobal ? "Hidden" : "Visible"}</span>}
+                                >
+                                    <ToggleSwitchRow
+                                        label="Private Profile"
+                                        description="When hidden, your profile cannot be found through global search."
+                                        checked={s.hideProfileGlobal}
+                                        onChange={s.handleHideProfileGlobal}
+                                    />
+                                </AccordionItem>
 
                                 {/* Accordion 8: Played Audio Expiry */}
-                                <div className={`dt-settings-accordion-item${openAccordion === "audio-expiry" ? " is-expanded" : ""}`}>
-                                    <button
-                                        type="button"
-                                        className="dt-settings-accordion-header"
-                                        onClick={() => toggleAccordion("audio-expiry")}
-                                    >
-                                        <div className="dt-settings-accordion-left">
-                                            <span className="dt-settings-icon-bubble dt-settings-icon-bubble--rose">
-                                                <Clock size={18} />
-                                            </span>
-                                            <div>
-                                                <h4 className="dt-settings-accordion-title">Played Audio Expiry</h4>
-                                                <p className="dt-settings-accordion-subtitle">When your audio confessions disappear</p>
-                                            </div>
-                                        </div>
-                                        <div className="dt-settings-accordion-right">
-                                            <span>{AUDIO_EXPIRY_CARD_OPTIONS.find((o) => o.value === s.audioExpiry)?.label || "Never"}</span>
-                                            {openAccordion === "audio-expiry" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                        </div>
-                                    </button>
-
-                                    {openAccordion === "audio-expiry" && (
-                                        <div className="dt-settings-accordion-body">
-                                            <div className="dt-settings-audio-expiry-grid">
-                                                {AUDIO_EXPIRY_CARD_OPTIONS.map((opt) => {
-                                                    const selected = s.audioExpiry === opt.value;
-                                                    return (
-                                                        <button
-                                                            key={opt.value}
-                                                            type="button"
-                                                            className={`dt-settings-audio-card${selected ? " is-selected" : ""}`}
-                                                            onClick={() => s.handleAudioExpiry(opt.value)}
-                                                        >
-                                                            <span className={`dt-settings-audio-radio${selected ? " is-selected" : ""}`}>
-                                                                {selected && <Check size={10} strokeWidth={3} />}
-                                                            </span>
-                                                            <div className="dt-settings-audio-card-copy">
-                                                                <span className="dt-settings-audio-card-title">{opt.label}</span>
-                                                                <span className="dt-settings-audio-card-desc">{opt.desc}</span>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                <AccordionItem
+                                    id="audio-expiry"
+                                    openId={openAccordion}
+                                    onToggle={toggleAccordion}
+                                    iconBubble={
+                                        <span className="dt-settings-icon-bubble dt-settings-icon-bubble--rose">
+                                            <Clock size={18} />
+                                        </span>
+                                    }
+                                    title="Played Audio Expiry"
+                                    subtitle="When your audio confessions disappear"
+                                    rightContent={<span>{AUDIO_EXPIRY_CARD_OPTIONS.find((o) => o.value === s.audioExpiry)?.label || "Never"}</span>}
+                                >
+                                    <OptionCardGrid
+                                        className="dt-settings-audio-expiry-grid"
+                                        options={AUDIO_EXPIRY_CARD_OPTIONS}
+                                        selectedValue={s.audioExpiry}
+                                        onSelect={s.handleAudioExpiry}
+                                    />
+                                </AccordionItem>
                             </div>
                         </section>
                     </main>
