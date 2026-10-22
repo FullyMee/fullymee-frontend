@@ -76,7 +76,8 @@ export function getAllUsers(options = {}) {
 
     return apiRequest(`/users?${params.toString()}`, {
         method: "GET",
-        skipErrorLog: true
+        skipErrorLog: true,
+        skipCache: true
     });
 }
 
