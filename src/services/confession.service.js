@@ -2,28 +2,15 @@ import { apiRequest } from "./api";
 import { getSocket } from "./socket";
 
 export function getRecommendedRooms({ limit = 3, roomType = "public" } = {}) {
-    const params = new URLSearchParams({ limit: String(limit), roomType });
-    return apiRequest(`/confessions/rooms/recommendations?${params.toString()}`, {
-        method: "GET"
-    });
+    return apiRequest(`/confessions/rooms/recommendations?limit=${limit}&roomType=${roomType}`, { method: "GET" });
 }
 
 export function getPublicRooms({ limit = 100, offset = 0, sortBy = "discover", search = "", paginate = false } = {}) {
-    const params = new URLSearchParams({
-        limit: String(limit),
-        sortBy,
-        offset: String(Math.max(0, Math.floor(Number(offset) || 0)))
-    });
-    if (String(search || "").trim()) {
-        params.set("search", String(search).trim());
-    }
-    if (paginate) {
-        params.set("paginate", "1");
-    }
-
-    return apiRequest(`/confessions/rooms/public?${params.toString()}`, {
-        method: "GET"
-    });
+    const params = new URLSearchParams({ limit: String(limit), sortBy, offset: String(Math.max(0, Math.floor(Number(offset) || 0))) });
+    const q = String(search || "").trim();
+    if (q) params.set("search", q);
+    if (paginate) params.set("paginate", "1");
+    return apiRequest(`/confessions/rooms/public?${params.toString()}`, { method: "GET" });
 }
 
 export function getJoinedRooms() {
@@ -35,98 +22,60 @@ export function getRoomMembers(roomId) {
 }
 
 export function getMyConfessions({ limit = 50 } = {}) {
-    const params = new URLSearchParams({ limit: String(limit) });
-    return apiRequest(`/confessions/posts/my?${params.toString()}`, { method: "GET" });
+    return apiRequest(`/confessions/posts/my?limit=${limit}`, { method: "GET" });
 }
 
 export function joinConfessionRoom(payload) {
-    return apiRequest("/confessions/rooms/join", {
-        method: "POST",
-        body: JSON.stringify(payload || {})
-    });
+    return apiRequest("/confessions/rooms/join", { method: "POST", body: JSON.stringify(payload || {}) });
 }
 
-
 export function createConfessionRoom(payload) {
-    return apiRequest("/confessions/rooms", {
-        method: "POST",
-        body: JSON.stringify(payload || {})
-    });
+    return apiRequest("/confessions/rooms", { method: "POST", body: JSON.stringify(payload || {}) });
 }
 
 export function joinConfessionRoomByCode(code, joinSource = "room_code") {
-    return apiRequest("/confessions/rooms/join-by-code", {
-        method: "POST",
-        body: JSON.stringify({
-            code,
-            joinSource
-        })
-    });
+    return apiRequest("/confessions/rooms/join-by-code", { method: "POST", body: JSON.stringify({ code, joinSource }) });
 }
 
 export function leaveConfessionRoom(roomId) {
-    return apiRequest(`/confessions/rooms/${roomId}/leave`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/leave`, { method: "POST" });
 }
 
 export function listConfessions(roomId, { limit = 50, sortBy = "latest" } = {}) {
-    const params = new URLSearchParams({ limit: String(limit), sortBy });
-    return apiRequest(`/confessions/rooms/${roomId}/confessions?${params.toString()}`, {
-        method: "GET"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/confessions?limit=${limit}&sortBy=${sortBy}`, { method: "GET" });
 }
 
 export function getAudioUploadToken(roomId) {
     return apiRequest(`/confessions/rooms/${roomId}/audio-token`, {
-        method: "GET",
-        skipCache: true,
-        skipErrorLog: true,
-        retryOptions: { retries: 0 }
+        method: "GET", skipCache: true, skipErrorLog: true, retryOptions: { retries: 0 }
     });
 }
 
 export function getConfessionAudioUrl(roomId, confessionId) {
     return apiRequest(`/confessions/rooms/${roomId}/confessions/${confessionId}/audio-url`, {
-        method: "GET",
-        skipCache: true,
-        skipErrorLog: true,
-        retryOptions: { retries: 0 }
+        method: "GET", skipCache: true, skipErrorLog: true, retryOptions: { retries: 0 }
     });
 }
 
 export function postConfession(roomId, content, options = null) {
-    const scheduledAt = options && typeof options === "object" && !Array.isArray(options)
-        ? options.scheduledAt
-        : options;
-    const audioPublicId = options && typeof options === "object" && !Array.isArray(options)
-        ? options.audioPublicId
-        : null;
-    const audioDuration = options && typeof options === "object" && !Array.isArray(options)
-        ? options.audioDuration
-        : null;
+    const { scheduledAt, audioPublicId, audioDuration } = (options && typeof options === "object" && !Array.isArray(options))
+        ? options
+        : { scheduledAt: options, audioPublicId: null, audioDuration: null };
+
     const body = { content };
     if (scheduledAt) body.scheduledAt = new Date(scheduledAt).toISOString();
     if (audioPublicId) body.audioPublicId = audioPublicId;
     if (audioDuration) body.audioDuration = Math.max(1, Math.min(30, Math.round(Number(audioDuration) || 0)));
-    return apiRequest(`/confessions/rooms/${roomId}/confessions`, {
-        method: "POST",
-        body: JSON.stringify(body)
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/confessions`, { method: "POST", body: JSON.stringify(body) });
 }
 
 export function deleteConfession(roomId, confessionId) {
-    const rId = Number(roomId);
-    const cId = Number(confessionId);
-    return apiRequest(`/confessions/rooms/${rId}/confessions/${cId}`, {
-        method: "DELETE"
-    });
+    return apiRequest(`/confessions/rooms/${Number(roomId)}/confessions/${Number(confessionId)}`, { method: "DELETE" });
 }
 
 export function listReplies(roomId, confessionId, { limit = 50 } = {}) {
-    const params = new URLSearchParams({ limit: String(limit) });
     return apiRequest(
-        `/confessions/rooms/${roomId}/confessions/${confessionId}/replies?${params.toString()}`,
+        `/confessions/rooms/${roomId}/confessions/${confessionId}/replies?limit=${limit}`,
         { method: "GET" }
     );
 }
@@ -143,29 +92,24 @@ export function postReply(roomId, confessionId, content, parentReplyId = null, p
 }
 
 export function sendConfessionChatRequest(roomId, confessionId) {
-    return apiRequest(`/confessions/rooms/${roomId}/confessions/${confessionId}/chat-request`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/confessions/${confessionId}/chat-request`, { method: "POST" });
 }
 
 export function reactToConfessionTarget(roomId, targetType, targetId, reactionType) {
     return apiRequest(`/confessions/rooms/${roomId}/reactions`, {
-        method: "POST",
-        body: JSON.stringify({ targetType, targetId, reactionType })
+        method: "POST", body: JSON.stringify({ targetType, targetId, reactionType })
     });
 }
 
 export function reportConfessionTarget(roomId, targetType, targetId, reason) {
     return apiRequest(`/confessions/rooms/${roomId}/reports`, {
-        method: "POST",
-        body: JSON.stringify({ targetType, targetId, reason })
+        method: "POST", body: JSON.stringify({ targetType, targetId, reason })
     });
 }
 
 export function subscribeConfessionRoom(roomId) {
     const socket = getSocket();
     if (!socket) return Promise.resolve({ ok: false, error: "Socket unavailable" });
-
     return new Promise((resolve) => {
         socket.emit("confession_subscribe", { roomId }, (ack) => resolve(ack || { ok: false }));
     });
@@ -174,83 +118,47 @@ export function subscribeConfessionRoom(roomId) {
 export function unsubscribeConfessionRoom(roomId) {
     const socket = getSocket();
     if (!socket) return Promise.resolve({ ok: false, error: "Socket unavailable" });
-
     return new Promise((resolve) => {
         socket.emit("confession_unsubscribe", { roomId }, (ack) => resolve(ack || { ok: false }));
     });
 }
 
 export function sendConfessionPresencePing(roomId) {
-    const socket = getSocket();
-    if (!socket) return;
-    socket.emit("confession_presence_ping", { roomId });
+    getSocket()?.emit("confession_presence_ping", { roomId });
 }
 
-export function getModerationQueue({
-    status = "pending",
-    severity = "all",
-    targetType = "all",
-    limit = 50
-} = {}) {
-    const params = new URLSearchParams({
-        status,
-        severity,
-        targetType,
-        limit: String(limit)
-    });
-
-    return apiRequest(`/confessions/moderation/queue?${params.toString()}`, {
-        method: "GET"
-    });
+export function getModerationQueue({ status = "pending", severity = "all", targetType = "all", limit = 50 } = {}) {
+    const params = new URLSearchParams({ status, severity, targetType, limit: String(limit) });
+    return apiRequest(`/confessions/moderation/queue?${params.toString()}`, { method: "GET" });
 }
 
 export function resolveModerationQueueItem(queueId, { action, reason } = {}) {
     const payload = { action };
-    const trimmedReason = String(reason || "").trim();
-    if (trimmedReason.length >= 3) {
-        payload.reason = trimmedReason;
-    }
-
+    const r = String(reason || "").trim();
+    if (r.length >= 3) payload.reason = r;
     return apiRequest(`/confessions/moderation/queue/${queueId}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload)
+        method: "PATCH", body: JSON.stringify(payload)
     });
 }
 
 export function likeConfession(confessionId) {
-    return apiRequest(`/confessions/${confessionId}/like`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/${confessionId}/like`, { method: "POST" });
 }
 
 export function likeReply(replyId) {
-    return apiRequest(`/confessions/replies/${replyId}/like`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/replies/${replyId}/like`, { method: "POST" });
 }
 
 export function getConfessionsFeed({ limit = 20, offset = 0, useAggregation = false } = {}) {
-    const params = new URLSearchParams({
-        limit: String(limit),
-        offset: String(offset),
-        useAggregation: useAggregation ? "true" : "false"
-    });
-    return apiRequest(`/confessions?${params.toString()}`, {
-        method: "GET"
-    });
+    return apiRequest(`/confessions?limit=${limit}&offset=${offset}&useAggregation=${useAggregation ? "true" : "false"}`, { method: "GET" });
 }
 
 export function createConfession(content) {
-    return apiRequest("/confessions", {
-        method: "POST",
-        body: JSON.stringify({ content })
-    });
+    return apiRequest("/confessions", { method: "POST", body: JSON.stringify({ content }) });
 }
 
 export function shuffleRoomAlias(roomId) {
-    return apiRequest(`/confessions/rooms/${roomId}/shuffle`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/shuffle`, { method: "POST" });
 }
 
 export function getMyScheduledConfessions(roomId) {
@@ -258,13 +166,9 @@ export function getMyScheduledConfessions(roomId) {
 }
 
 export function confirmScheduledConfession(roomId, confessionId) {
-    return apiRequest(`/confessions/rooms/${roomId}/scheduled/${confessionId}/confirm`, {
-        method: "POST"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/scheduled/${confessionId}/confirm`, { method: "POST" });
 }
 
 export function cancelScheduledConfession(roomId, confessionId) {
-    return apiRequest(`/confessions/rooms/${roomId}/scheduled/${confessionId}`, {
-        method: "DELETE"
-    });
+    return apiRequest(`/confessions/rooms/${roomId}/scheduled/${confessionId}`, { method: "DELETE" });
 }

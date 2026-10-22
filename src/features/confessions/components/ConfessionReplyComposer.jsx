@@ -1,6 +1,5 @@
 import React from "react";
 import { InlineSpinner } from "../../../components/loaders";
-import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { Send, X, CornerDownRight } from "lucide-react";
 

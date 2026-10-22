@@ -1,17 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { RoomSkeleton } from "../../../components/loaders";
-import {
-    AmbienceRoomCard,
-    formatCompactMemberCount,
-    getRoomBadgeLabel,
-    getRoomTone,
-    RoomGlyphIcon
-} from "../../../components/common/MobileRoomVisuals.jsx";
-import { ChevronRight, Compass, Sparkles } from "lucide-react";
-
-function formatRoomAccess(room) {
-    return room && room.roomType === "private" ? "Inner Circle" : "Fume Circle";
-}
+import { AmbienceRoomCard } from "../../../components/common/MobileRoomVisuals.jsx";
+import { Compass, Sparkles } from "lucide-react";
 
 /* ── Desktop no-rooms empty state ── */
 function DesktopNoRooms() {

@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import { formatRelativeTime } from "../../../utils/time.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 

@@ -1,0 +1,21 @@
+export const ROOM_CATEGORIES = [
+    "Late Night",
+    "Heartbreak",
+    "Anxiety",
+    "Relationships",
+    "Family",
+    "College",
+    "Career",
+    "Tech and Coding",
+    "Casual Chats",
+    "Confessions",
+    "Gaming",
+    "Entertainment",
+    "Fitness",
+    "Finance",
+    "Politics",
+    "Startup",
+    "Travel",
+    "Books",
+    "Advice"
+];

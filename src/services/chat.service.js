@@ -4,8 +4,8 @@ export function listConversations({ view = "active", conversationId } = {}) {
     const params = new URLSearchParams();
     if (view) params.set("view", view);
     if (conversationId) params.set("conversationId", String(conversationId));
-    const suffix = params.toString() ? `?${params.toString()}` : "";
-    return apiRequest(`/conversations${suffix}`, { method: "GET" });
+    const qs = params.toString();
+    return apiRequest(`/conversations${qs ? `?${qs}` : ""}`, { method: "GET" });
 }
 
 export function getConversation(conversationId) {
@@ -14,17 +14,12 @@ export function getConversation(conversationId) {
 
 export function listConversationMessages(conversationId, { limit, before, after } = {}) {
     const params = new URLSearchParams();
-    if (Number.isFinite(Number(limit)) && Number(limit) > 0) {
-        params.set("limit", String(Math.min(100, Math.floor(Number(limit)))));
-    }
-    if (before !== undefined && before !== null && before !== "") {
-        params.set("before", String(before));
-    }
-    if (after !== undefined && after !== null && after !== "") {
-        params.set("after", String(after));
-    }
-    const suffix = params.toString() ? `?${params.toString()}` : "";
-    return apiRequest(`/messages/${conversationId}${suffix}`, { method: "GET" });
+    const n = Number(limit);
+    if (Number.isFinite(n) && n > 0) params.set("limit", String(Math.min(100, Math.floor(n))));
+    if (before != null && before !== "") params.set("before", String(before));
+    if (after != null && after !== "") params.set("after", String(after));
+    const qs = params.toString();
+    return apiRequest(`/messages/${conversationId}${qs ? `?${qs}` : ""}`, { method: "GET" });
 }
 
 export function listConversationUnreadCounts() {
@@ -36,14 +31,9 @@ export function listUsers({ limit = 10, offset = 0, search = "", paginate = fals
         limit: String(limit),
         offset: String(Math.max(0, Math.floor(Number(offset) || 0)))
     });
-    if (String(search || "").trim()) {
-        params.set("search", String(search).trim());
-        params.set("q", String(search).trim());
-    }
-    if (paginate) {
-        params.set("paginate", "1");
-    }
-
+    const q = String(search || "").trim();
+    if (q) params.set("search", q);
+    if (paginate) params.set("paginate", "1");
     return apiRequest(`/users?${params.toString()}`, { method: "GET" });
 }
 
@@ -84,31 +74,19 @@ export function endConnection(conversationId, { closingNoteId = null } = {}) {
 }
 
 export function pauseConnection(conversationId) {
-    return apiRequest(`/conversations/${conversationId}/pause`, {
-        method: "POST",
-        body: JSON.stringify({})
-    });
+    return apiRequest(`/conversations/${conversationId}/pause`, { method: "POST" });
 }
 
 export function resumeConnection(conversationId) {
-    return apiRequest(`/conversations/${conversationId}/resume`, {
-        method: "POST",
-        body: JSON.stringify({})
-    });
+    return apiRequest(`/conversations/${conversationId}/resume`, { method: "POST" });
 }
 
 export function archiveConnection(conversationId) {
-    return apiRequest(`/conversations/${conversationId}/archive`, {
-        method: "POST",
-        body: JSON.stringify({})
-    });
+    return apiRequest(`/conversations/${conversationId}/archive`, { method: "POST" });
 }
 
 export function unarchiveConnection(conversationId) {
-    return apiRequest(`/conversations/${conversationId}/unarchive`, {
-        method: "POST",
-        body: JSON.stringify({})
-    });
+    return apiRequest(`/conversations/${conversationId}/unarchive`, { method: "POST" });
 }
 
 export function reportConnection(conversationId, { reason = "" } = {}) {
@@ -119,7 +97,5 @@ export function reportConnection(conversationId, { reason = "" } = {}) {
 }
 
 export function deleteConnection(conversationId) {
-    return apiRequest(`/conversations/${conversationId}`, {
-        method: "DELETE"
-    });
+    return apiRequest(`/conversations/${conversationId}`, { method: "DELETE" });
 }

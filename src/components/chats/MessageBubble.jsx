@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { getInitial } from '../../utils/presentation.js';
 import UserAvatar from '../common/UserAvatar.jsx';
 
 function formatMessageTime(value) {

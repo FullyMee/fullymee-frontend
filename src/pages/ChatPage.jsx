@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import DesktopEmptyState from "../components/common/DesktopEmptyState.jsx";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getChatAvatarGlyph } from "../components/common/MobileRoomVisuals.jsx";
-import { ChatListSkeleton, ChatThreadSkeleton, ScrollLoader, InlineSpinner } from "../components/loaders";
+import { ChatListSkeleton, ChatThreadSkeleton, InlineSpinner } from "../components/loaders";
 import VirtualChatFeed from "../components/common/VirtualChatFeed.jsx";
 import MemoizedMessageBubble from "../components/chats/MessageBubble.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
@@ -41,11 +40,7 @@ import {
     MoreIcon,
     SendIcon,
     SearchIcon,
-    SmileIcon,
-    RequestsIcon,
     MessageRequestIcon,
-    CheckIcon,
-    CloseIcon,
     ChatBubbleIcon
 } from "../components/common/Icons.jsx";
 import {
@@ -63,8 +58,7 @@ import {
     createClientMessageId
 } from "../features/chats/utils/messageHelpers.js";
 import { useUnread } from "../context/UnreadContext.jsx";
-
-import { Search, Sparkles, MessageSquare, Pause, Archive, Trash2, Star, ChevronRight, SlidersHorizontal, Leaf } from "lucide-react";
+import { Search, Sparkles, MessageSquare, Pause, Archive, ChevronRight, SlidersHorizontal, Leaf } from "lucide-react";
 
 const MESSAGE_PAGE_SIZE = 30;
 
@@ -105,6 +99,120 @@ function ChatRequestsEmptyState() {
     );
 }
 
+function ChatTabEmptyCard({ tab }) {
+    return (
+        <div className="chat-tab-empty-card">
+            <div className="chat-tab-empty-card__icon">
+                <Leaf size={24} />
+            </div>
+            <h2>{tab === "archived" ? "Archive is empty" : tab === "past" ? "No past conversations" : "No active conversations"}</h2>
+            <p>
+                {tab === "archived"
+                    ? "Anything you archive lands here - always private to you."
+                    : tab === "past"
+                    ? "Ended conversations will appear here."
+                    : "Start a conversation from confessions or search."}
+            </p>
+        </div>
+    );
+}
+
+function ChatInboxTabs({ tab, setTab, activeCount, pastCount, archivedCount, style }) {
+    return (
+        <nav className="chat-inbox-tabs" style={style} aria-label="Conversation filters">
+            <button
+                type="button"
+                className={`chat-inbox-tab${tab === "active" ? " is-active" : ""}`}
+                onClick={() => setTab("active")}
+            >
+                Active
+                {activeCount > 0 && <span className="chat-inbox-tab__badge">{activeCount}</span>}
+            </button>
+            <button
+                type="button"
+                className={`chat-inbox-tab${tab === "past" ? " is-active" : ""}`}
+                onClick={() => setTab("past")}
+            >
+                Past
+                {pastCount > 0 && <span className="chat-inbox-tab__badge">{pastCount}</span>}
+            </button>
+            <button
+                type="button"
+                className={`chat-inbox-tab${tab === "archived" ? " is-active" : ""}`}
+                onClick={() => setTab("archived")}
+            >
+                Archived
+                {archivedCount > 0 && <span className="chat-inbox-tab__badge">{archivedCount}</span>}
+            </button>
+        </nav>
+    );
+}
+
+function ChatInboxTabNotice({ tab, isDesktop }) {
+    if (tab === "past") {
+        return (
+            <div className="chat-inbox-tab-notice" style={isDesktop ? { margin: "0 1rem 0.85rem" } : undefined}>
+                Conversations that have come to an end. Visible only to you - the other person never learns who closed it.
+            </div>
+        );
+    }
+    if (tab === "archived") {
+        return (
+            <div className="chat-inbox-tab-notice" style={isDesktop ? { margin: "0 1rem 0.85rem" } : undefined}>
+                Your private shelf. Archiving only affects your inbox - the other person&apos;s copy stays exactly where it was.
+            </div>
+        );
+    }
+    return null;
+}
+
+function ChatTabbedCard({ conversation, isArchivedTab, onOpen, onArchive, onUnarchive }) {
+    const isEnded = conversation.status === "ENDED";
+    const subtitleText = isArchivedTab ? (isEnded ? "Conversation ended" : "Archived while active") : "Conversation ended";
+
+    return (
+        <div className="chat-tabbed-card">
+            <button
+                type="button"
+                className="chat-tabbed-card__head"
+                onClick={() => onOpen(conversation.id)}
+            >
+                <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
+                <div className="chat-tabbed-card__body">
+                    <h2>{conversation.title}</h2>
+                    <p>{subtitleText}</p>
+                </div>
+                <div className="chat-tabbed-card__meta">
+                    <span>{conversation.timeLabel}</span>
+                    <ChevronRight size={16} />
+                </div>
+            </button>
+
+            <div className="chat-tabbed-card__actions" style={!isArchivedTab ? { justifyContent: "center" } : undefined}>
+                {isArchivedTab ? (
+                    <button
+                        type="button"
+                        className="chat-tabbed-card__btn"
+                        onClick={() => onUnarchive(conversation.id)}
+                    >
+                        <Archive size={15} />
+                        <span>Unarchive</span>
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        className="chat-tabbed-card__btn"
+                        style={{ width: "100%", justifyContent: "center" }}
+                        onClick={() => onArchive(conversation.id)}
+                    >
+                        <Archive size={15} />
+                        <span>Archive</span>
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function ChatPage({ user }) {
     const isDesktop = useIsDesktop();
@@ -152,14 +260,12 @@ export default function ChatPage({ user }) {
         const distanceToBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
         isNearBottomRef.current = distanceToBottom < 120;
     }, []);
-    // Connection management sheet state
+
     const [manageSheetOpen, setManageSheetOpen] = useState(false);
     const [endSheetOpen, setEndSheetOpen] = useState(false);
     const [connectionBusyAction, setConnectionBusyAction] = useState(null);
     const [endingConversation, setEndingConversation] = useState(false);
-    // Inbox view tab state: "active" | "past" | "archived"
     const [inboxTab, setInboxTab] = useState("active");
-    // Local overrides for conversation status (optimistic / socket-pushed updates)
     const [conversationStatusOverrides, setConversationStatusOverrides] = useState({});
     const [closingNoteOverrides, setClosingNoteOverrides] = useState({});
 
@@ -224,7 +330,7 @@ export default function ChatPage({ user }) {
         } finally {
             setLoadingIndex(false);
         }
-    }, [dismissError, showError]);
+    }, [activeConversationId, dismissError, showError]);
 
     useEffect(() => {
         loadConversationIndex();
@@ -237,6 +343,7 @@ export default function ChatPage({ user }) {
         }
         return map;
     }, [users]);
+
     const pendingRequests = useMemo(
         () => (Array.isArray(chatRequests.pending) ? chatRequests.pending : []),
         [chatRequests.pending]
@@ -298,25 +405,24 @@ export default function ChatPage({ user }) {
         });
     }, [acceptedRequestLabelsByConversation, connected, contextUnread, conversationStatusOverrides, conversations, onlineUsers, previewByConversation, unreadByConversation, userId, usersById]);
 
-    const activeConversationsCount = useMemo(() => {
-        return conversationItems.filter((c) => c.status !== "ENDED" && !c.isArchivedForMe).length;
-    }, [conversationItems]);
+    const activeConversationsCount = useMemo(
+        () => conversationItems.filter((c) => c.status !== "ENDED" && !c.isArchivedForMe).length,
+        [conversationItems]
+    );
 
-    const pastConversationsCount = useMemo(() => {
-        return conversationItems.filter((c) => c.status === "ENDED" && !c.isArchivedForMe).length;
-    }, [conversationItems]);
+    const pastConversationsCount = useMemo(
+        () => conversationItems.filter((c) => c.status === "ENDED" && !c.isArchivedForMe).length,
+        [conversationItems]
+    );
 
-    const archivedConversationsCount = useMemo(() => {
-        return conversationItems.filter((c) => c.isArchivedForMe).length;
-    }, [conversationItems]);
+    const archivedConversationsCount = useMemo(
+        () => conversationItems.filter((c) => c.isArchivedForMe).length,
+        [conversationItems]
+    );
 
     const activeTabItems = useMemo(() => {
-        if (inboxTab === "past") {
-            return conversationItems.filter((c) => c.status === "ENDED" && !c.isArchivedForMe);
-        }
-        if (inboxTab === "archived") {
-            return conversationItems.filter((c) => c.isArchivedForMe);
-        }
+        if (inboxTab === "past") return conversationItems.filter((c) => c.status === "ENDED" && !c.isArchivedForMe);
+        if (inboxTab === "archived") return conversationItems.filter((c) => c.isArchivedForMe);
         return conversationItems.filter((c) => c.status !== "ENDED" && !c.isArchivedForMe);
     }, [conversationItems, inboxTab]);
 
@@ -335,14 +441,9 @@ export default function ChatPage({ user }) {
         [activeConversationId, conversationItems]
     );
 
-    // Automatically switch inboxTab to "past" or "archived" when viewing an ended conversation
     useEffect(() => {
         if (activeConversation && activeConversation.status === "ENDED") {
-            if (activeConversation.isArchivedForMe) {
-                setInboxTab("archived");
-            } else {
-                setInboxTab("past");
-            }
+            setInboxTab(activeConversation.isArchivedForMe ? "archived" : "past");
         }
     }, [activeConversation]);
 
@@ -350,6 +451,38 @@ export default function ChatPage({ user }) {
         if (!activeConversation) return "";
         return activeConversation.presenceLabel || (connected ? "Offline" : "Reconnecting...");
     }, [activeConversation, connected]);
+
+    // Single source of truth for active conversation status
+    const activeConversationInfo = useMemo(() => {
+        if (!activeConversation) return null;
+        const convStatus = conversationStatusOverrides[activeConversationId] || activeConversation.status;
+        const isPaused = convStatus === "PAUSED";
+        const isEnded = convStatus === "ENDED";
+        const closingNote = closingNoteOverrides[activeConversationId] || getClosingNoteDisplay(activeConversation);
+        const currentPausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
+            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
+            : activeConversation.pausedBy;
+        const isPausedByMe = Number(currentPausedBy) === Number(userId);
+        const otherName = activeConversation.title || "Other user";
+        const pausedSubtitle = isPausedByMe
+            ? "• You paused this conversation"
+            : `• ${otherName} paused this conversation`;
+        const pausedBannerText = isPausedByMe || !currentPausedBy
+            ? "You paused this conversation. Nothing was ended."
+            : `${otherName} paused this conversation. Nothing was ended.`;
+        const statusText = isPaused ? pausedSubtitle : (isEnded ? "Conversation ended" : activeConversationStatus);
+
+        return {
+            status: convStatus,
+            isPaused,
+            isEnded,
+            closingNote,
+            currentPausedBy,
+            isPausedByMe,
+            pausedBannerText,
+            statusText
+        };
+    }, [activeConversation, activeConversationId, activeConversationStatus, closingNoteOverrides, conversationStatusOverrides, userId]);
 
     const markConversationRead = useCallback((conversationId, rows) => {
         if (!conversationId) return;
@@ -441,7 +574,6 @@ export default function ChatPage({ user }) {
         };
     }, [activeConversationId, setGlobalActiveConversationId]);
 
-
     useEffect(() => {
         if (isDesktop || !activeConversationId || !threadContentRef.current) return;
         const node = threadContentRef.current;
@@ -460,18 +592,7 @@ export default function ChatPage({ user }) {
                 }
             });
         }
-    }, [activeConversationId, isDesktop, loadingMessages, messages]);
-
-    useEffect(() => {
-        if (isDesktop || !activeConversationId || !threadContentRef.current) return;
-        if (isNearBottomRef.current) {
-            requestAnimationFrame(() => {
-                if (threadContentRef.current) {
-                    threadContentRef.current.scrollTop = threadContentRef.current.scrollHeight;
-                }
-            });
-        }
-    }, [activeConversationId, isDesktop, mobileViewportFrame]);
+    }, [activeConversationId, isDesktop, loadingMessages, messages, mobileViewportFrame]);
 
     useEffect(() => {
         if (!socket || !connected || !activeConversationId) return;
@@ -484,13 +605,11 @@ export default function ChatPage({ user }) {
         function handlePresenceSnapshot(payload) {
             const ids = Array.isArray(payload && payload.userIds) ? payload.userIds : [];
             const next = {};
-
             for (const value of ids) {
                 const id = Number(value);
                 if (!id || id === userId) continue;
                 next[id] = true;
             }
-
             setOnlineUsers(next);
         }
 
@@ -544,7 +663,6 @@ export default function ChatPage({ user }) {
             });
 
             if (Number(normalizedMessage.senderId) !== userId) {
-                // Acknowledge receipt to server so sender sees DELIVERED status
                 socket.emit("message_delivered", {
                     conversationId,
                     messageId: Number(normalizedMessage.id)
@@ -574,12 +692,8 @@ export default function ChatPage({ user }) {
                 const itemId = Number(item && item.id);
                 if (!itemId) return item;
 
-                if (upToMessageId && itemId <= upToMessageId) {
-                    return { ...item, status: nextStatus };
-                }
-                if (messageId && itemId === messageId) {
-                    return { ...item, status: nextStatus };
-                }
+                if (upToMessageId && itemId <= upToMessageId) return { ...item, status: nextStatus };
+                if (messageId && itemId === messageId) return { ...item, status: nextStatus };
                 return item;
             }));
         }
@@ -593,13 +707,8 @@ export default function ChatPage({ user }) {
             setMessages((prev) => dedupeMessages([...prev, ...incoming]));
         }
 
-        function handleDmCreated() {
-            loadConversationIndex();
-        }
-
-        function handleChatRequestEvent() {
-            loadConversationIndex();
-        }
+        function handleDmCreated() { loadConversationIndex(); }
+        function handleChatRequestEvent() { loadConversationIndex(); }
 
         function handleUnreadUpdate(payload) {
             const conversationId = Number(payload && payload.conversationId);
@@ -686,9 +795,8 @@ export default function ChatPage({ user }) {
             socket.off("conversation_paused", handleConversationPaused);
             socket.off("conversation_resumed", handleConversationResumed);
         };
-    }, [activeConversationId, loadConversationIndex, markConversationRead, socket, userId]);
+    }, [activeConversationId, conversations, loadConversationIndex, markConversationRead, socket, userId, setNotice]);
 
-    // Network reconnection & Wake-from-sleep state synchronization
     useEffect(() => {
         const handleSyncState = () => {
             loadConversationIndex();
@@ -720,7 +828,7 @@ export default function ChatPage({ user }) {
                 socket.off("connect", handleSyncState);
             }
         };
-    }, [loadConversationIndex, socket]);
+    }, [activeConversationId, loadConversationIndex, socket]);
 
     function openConversation(conversationId) {
         setSearchParams({ conversationId: String(conversationId) });
@@ -731,7 +839,6 @@ export default function ChatPage({ user }) {
             setSearchParams({});
             return;
         }
-
         setSearchParams({ requests: "1" });
     }
 
@@ -756,15 +863,10 @@ export default function ChatPage({ user }) {
             return;
         }
         setManageSheetOpen(false);
-        if (action === "pause") {
-            handlePauseConnection();
-        } else if (action === "archive") {
-            handleArchiveConnection();
-        } else if (action === "unarchive") {
-            handleUnarchiveConnection();
-        } else if (action === "report") {
-            handleReportConnection();
-        }
+        if (action === "pause") handlePauseConnection();
+        else if (action === "archive") handleArchiveConnection();
+        else if (action === "unarchive") handleUnarchiveConnection();
+        else if (action === "report") handleReportConnection();
     }
 
     async function handleEndConnection({ closingNoteId } = {}) {
@@ -772,17 +874,12 @@ export default function ChatPage({ user }) {
         try {
             setEndingConversation(true);
             await endConnection(activeConversationId, { closingNoteId });
-            // Optimistically mark ended for initiator
             setConversationStatusOverrides((prev) => ({ ...prev, [activeConversationId]: "ENDED" }));
             setEndSheetOpen(false);
-            // Remove from active list after brief delay for smooth UX
             setTimeout(() => {
                 setConversations((prev) =>
-                    prev.map((c) =>
-                        Number(c.id) === activeConversationId ? { ...c, status: "ENDED" } : c
-                    )
+                    prev.map((c) => (Number(c.id) === activeConversationId ? { ...c, status: "ENDED" } : c))
                 );
-                // Navigate back to list
                 setSearchParams({});
             }, 400);
             setNotice("Conversation ended.");
@@ -977,6 +1074,28 @@ export default function ChatPage({ user }) {
         });
     }
 
+    const modalElements = (
+        <>
+            <ManageConnectionSheet
+                open={manageSheetOpen}
+                onClose={() => setManageSheetOpen(false)}
+                onSelect={handleManageSheetSelect}
+                busyAction={connectionBusyAction}
+                isPaused={activeConversationInfo?.isPaused}
+                isPausedByMe={activeConversationInfo?.isPausedByMe}
+                isArchived={Boolean(activeConversation && activeConversation.isArchivedForMe)}
+                isEnded={activeConversationInfo?.isEnded}
+            />
+
+            <EndConnectionSheet
+                open={endSheetOpen}
+                onClose={() => setEndSheetOpen(false)}
+                onConfirm={handleEndConnection}
+                submitting={endingConversation}
+            />
+        </>
+    );
+
     if (isDesktop) {
         return (
             <div className="chat-mobile-page chat-mobile-page--desktop">
@@ -1015,50 +1134,16 @@ export default function ChatPage({ user }) {
                                 />
                             </div>
 
-                            <nav className="chat-inbox-tabs" style={{ margin: "0.75rem 1rem" }} aria-label="Conversation filters">
-                                <button
-                                    type="button"
-                                    className={`chat-inbox-tab${inboxTab === "active" ? " is-active" : ""}`}
-                                    onClick={() => setInboxTab("active")}
-                                >
-                                    Active
-                                    {activeConversationsCount > 0 && (
-                                        <span className="chat-inbox-tab__badge">{activeConversationsCount}</span>
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`chat-inbox-tab${inboxTab === "past" ? " is-active" : ""}`}
-                                    onClick={() => setInboxTab("past")}
-                                >
-                                    Past
-                                    {pastConversationsCount > 0 && (
-                                        <span className="chat-inbox-tab__badge">{pastConversationsCount}</span>
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`chat-inbox-tab${inboxTab === "archived" ? " is-active" : ""}`}
-                                    onClick={() => setInboxTab("archived")}
-                                >
-                                    Archived
-                                    {archivedConversationsCount > 0 && (
-                                        <span className="chat-inbox-tab__badge">{archivedConversationsCount}</span>
-                                    )}
-                                </button>
-                            </nav>
+                            <ChatInboxTabs
+                                tab={inboxTab}
+                                setTab={setInboxTab}
+                                activeCount={activeConversationsCount}
+                                pastCount={pastConversationsCount}
+                                archivedCount={archivedConversationsCount}
+                                style={{ margin: "0.75rem 1rem" }}
+                            />
 
-                            {inboxTab === "past" && (
-                                <div className="chat-inbox-tab-notice" style={{ margin: "0 1rem 0.85rem" }}>
-                                    Conversations that have come to an end. Visible only to you - the other person never learns who closed it.
-                                </div>
-                            )}
-
-                            {inboxTab === "archived" && (
-                                <div className="chat-inbox-tab-notice" style={{ margin: "0 1rem 0.85rem" }}>
-                                    Your private shelf. Archiving only affects your inbox - the other person&apos;s copy stays exactly where it was.
-                                </div>
-                            )}
+                            <ChatInboxTabNotice tab={inboxTab} isDesktop={true} />
 
                             <div className="desktop-chat-list-wrap">
                                 {loadingIndex && <ChatListSkeleton count={5} />}
@@ -1074,19 +1159,7 @@ export default function ChatPage({ user }) {
                                 )}
 
                                 {!loadingIndex && !isRequestsView && filteredConversationItems.length === 0 && (
-                                    <div className="chat-tab-empty-card">
-                                        <div className="chat-tab-empty-card__icon">
-                                            <Leaf size={24} />
-                                        </div>
-                                        <h2>{inboxTab === "archived" ? "Archive is empty" : inboxTab === "past" ? "No past conversations" : "No active conversations"}</h2>
-                                        <p>
-                                            {inboxTab === "archived"
-                                                ? "Anything you archive lands here - always private to you."
-                                                : inboxTab === "past"
-                                                ? "Ended conversations will appear here."
-                                                : "Start a conversation from confessions or search."}
-                                        </p>
-                                    </div>
+                                    <ChatTabEmptyCard tab={inboxTab} />
                                 )}
 
                                 {!loadingIndex && !isRequestsView && filteredConversationItems.length > 0 && inboxTab === "active" && (
@@ -1116,78 +1189,18 @@ export default function ChatPage({ user }) {
                                     </div>
                                 )}
 
-                                {!loadingIndex && !isRequestsView && filteredConversationItems.length > 0 && inboxTab === "past" && (
+                                {!loadingIndex && !isRequestsView && filteredConversationItems.length > 0 && inboxTab !== "active" && (
                                     <div className="desktop-chat-list" style={{ padding: "0 1rem" }}>
                                         {filteredConversationItems.map((conversation) => (
-                                            <div key={conversation.id} className="chat-tabbed-card">
-                                                <button
-                                                    type="button"
-                                                    className="chat-tabbed-card__head"
-                                                    onClick={() => openConversation(conversation.id)}
-                                                >
-                                                    <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
-                                                    <div className="chat-tabbed-card__body">
-                                                        <h2>{conversation.title}</h2>
-                                                        <p>Conversation ended</p>
-                                                    </div>
-                                                    <div className="chat-tabbed-card__meta">
-                                                        <span>{conversation.timeLabel}</span>
-                                                        <ChevronRight size={16} />
-                                                    </div>
-                                                </button>
-
-                                                <div className="chat-tabbed-card__actions" style={{ justifyContent: "center" }}>
-                                                    <button
-                                                        type="button"
-                                                        className="chat-tabbed-card__btn"
-                                                        style={{ width: "100%", justifyContent: "center" }}
-                                                        onClick={() => handleArchiveConnection(conversation.id)}
-                                                    >
-                                                        <Archive size={15} />
-                                                        <span>Archive</span>
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <ChatTabbedCard
+                                                key={conversation.id}
+                                                conversation={conversation}
+                                                isArchivedTab={inboxTab === "archived"}
+                                                onOpen={openConversation}
+                                                onArchive={handleArchiveConnection}
+                                                onUnarchive={handleUnarchiveConnection}
+                                            />
                                         ))}
-                                    </div>
-                                )}
-
-                                {!loadingIndex && !isRequestsView && filteredConversationItems.length > 0 && inboxTab === "archived" && (
-                                    <div className="desktop-chat-list" style={{ padding: "0 1rem" }}>
-                                        {filteredConversationItems.map((conversation) => {
-                                            const isEnded = conversation.status === "ENDED";
-                                            const subtitleText = isEnded ? "Conversation ended" : "Archived while active";
-                                            return (
-                                                <div key={conversation.id} className="chat-tabbed-card">
-                                                    <button
-                                                        type="button"
-                                                        className="chat-tabbed-card__head"
-                                                        onClick={() => openConversation(conversation.id)}
-                                                    >
-                                                        <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
-                                                        <div className="chat-tabbed-card__body">
-                                                            <h2>{conversation.title}</h2>
-                                                            <p>{subtitleText}</p>
-                                                        </div>
-                                                        <div className="chat-tabbed-card__meta">
-                                                            <span>{conversation.timeLabel}</span>
-                                                            <ChevronRight size={16} />
-                                                        </div>
-                                                    </button>
-
-                                                     <div className="chat-tabbed-card__actions">
-                                                        <button
-                                                            type="button"
-                                                            className="chat-tabbed-card__btn"
-                                                            onClick={() => handleUnarchiveConnection(conversation.id)}
-                                                        >
-                                                            <Archive size={15} />
-                                                            <span>Unarchive</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
                                     </div>
                                 )}
                             </div>
@@ -1202,166 +1215,120 @@ export default function ChatPage({ user }) {
                                 </div>
                             )}
 
-                            {activeConversation && (
+                            {activeConversation && activeConversationInfo && (
                                 <>
-                                    {(() => {
-                                        const convStatus = conversationStatusOverrides[activeConversationId] || activeConversation.status;
-                                        const isPaused = convStatus === "PAUSED";
-                                        const isEnded = convStatus === "ENDED";
-                                        const closingNote = closingNoteOverrides[activeConversationId] || getClosingNoteDisplay(activeConversation);
-                                        const currentPausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
-                                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
-                                            : activeConversation.pausedBy;
-                                        const isPausedByMe = Number(currentPausedBy) === Number(userId);
-                                        const otherName = activeConversation.title || "Other user";
-                                        const pausedSubtitle = isPausedByMe
-                                            ? "• You paused this conversation"
-                                            : `• ${otherName} paused this conversation`;
-                                        const pausedBannerText = isPausedByMe || !currentPausedBy
-                                            ? "You paused this conversation. Nothing was ended."
-                                            : `${otherName} paused this conversation. Nothing was ended.`;
-                                        const statusText = isPaused ? pausedSubtitle : activeConversationStatus;
+                                    <header className="desktop-chat-column__header desktop-chat-column__header--thread">
+                                        <div
+                                            className="desktop-chat-thread__identity"
+                                            onClick={() => {
+                                                const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
+                                                if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
+                                            }}
+                                            style={{ cursor: "pointer" }}
+                                            role="button"
+                                            tabIndex={0}
+                                        >
+                                            <UserAvatar avatarId={activeConversation.avatar} className="desktop-chat-avatar" />
+                                            <div>
+                                                <strong>{activeConversation.title}</strong>
+                                                <small style={activeConversationInfo.isPaused ? { color: "#806b78" } : undefined}>
+                                                    {activeConversationInfo.statusText}
+                                                </small>
+                                            </div>
+                                        </div>
 
-                                        return (
+                                        <button
+                                            type="button"
+                                            className="desktop-chat-header__manage-btn"
+                                            onClick={handleOpenManageSheet}
+                                            aria-label="Manage connection"
+                                        >
+                                            <SlidersHorizontal size={15} />
+                                            <span>Manage connection</span>
+                                        </button>
+                                    </header>
+
+                                    {activeConversationInfo.isPaused && (
+                                        <div className="chat-thread-paused-banner" role="status">
+                                            <Pause size={16} strokeWidth={2} />
+                                            <span>{activeConversationInfo.pausedBannerText}</span>
+                                        </div>
+                                    )}
+
+                                    <main className="desktop-chat-thread__messages desktop-chat-thread__messages--reference" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        {loadingMessages && messages.length === 0 && <ChatThreadSkeleton count={5} />}
+
+                                        {!loadingMessages && (
                                             <>
-                                                <header className="desktop-chat-column__header desktop-chat-column__header--thread">
-                                                    <div
-                                                        className="desktop-chat-thread__identity"
-                                                        onClick={() => {
-                                                            const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
-                                                            if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
-                                                        }}
-                                                        style={{ cursor: "pointer" }}
-                                                        role="button"
-                                                        tabIndex={0}
-                                                    >
-                                                        <UserAvatar avatarId={activeConversation.avatar} className="desktop-chat-avatar" />
-                                                        <div>
-                                                            <strong>{activeConversation.title}</strong>
-                                                            <small style={isPaused ? { color: "#806b78" } : undefined}>
-                                                                {statusText}
-                                                            </small>
-                                                        </div>
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        className="desktop-chat-header__manage-btn"
-                                                        onClick={handleOpenManageSheet}
-                                                        aria-label="Manage connection"
-                                                    >
-                                                        <SlidersHorizontal size={15} />
-                                                        <span>Manage connection</span>
-                                                    </button>
-                                                </header>
-
-                                                {isPaused && (
-                                                    <div className="chat-thread-paused-banner" role="status">
-                                                        <Pause size={16} strokeWidth={2} />
-                                                        <span>{pausedBannerText}</span>
-                                                    </div>
-                                                )}
-
-                                                <main className="desktop-chat-thread__messages desktop-chat-thread__messages--reference" style={{ display: 'flex', flexDirection: 'column' }}>
-                                                    {loadingMessages && messages.length === 0 && <ChatThreadSkeleton count={5} />}
-
-                                                    {!loadingMessages && (
-                                                        <>
-                                                            <VirtualChatFeed
-                                                                messages={messages}
-                                                                isLoadingOlder={loadingOlderMessages}
-                                                                onLoadMore={() => {
-                                                                    if (loadingMessages || loadingOlderMessages || !hasMoreMessages) return;
-                                                                    olderMessagesLoadRef.current = true;
-                                                                    setMessageLimit((prev) => prev + MESSAGE_PAGE_SIZE);
-                                                                }}
-                                                                itemContent={(index, message) => {
-                                                                    const isMine = Number(message && message.senderId) === userId;
-                                                                    return (
-                                                                        <MemoizedMessageBubble
-                                                                            key={message.id}
-                                                                            message={message}
-                                                                            isMine={isMine}
-                                                                            title={activeConversation.title}
-                                                                            avatar={activeConversation.avatar}
-                                                                            isDesktop={true}
-                                                                        />
-                                                                    );
-                                                                }}
+                                                <VirtualChatFeed
+                                                    messages={messages}
+                                                    isLoadingOlder={loadingOlderMessages}
+                                                    onLoadMore={() => {
+                                                        if (loadingMessages || loadingOlderMessages || !hasMoreMessages) return;
+                                                        olderMessagesLoadRef.current = true;
+                                                        setMessageLimit((prev) => prev + MESSAGE_PAGE_SIZE);
+                                                    }}
+                                                    itemContent={(index, message) => {
+                                                        const isMine = Number(message && message.senderId) === userId;
+                                                        return (
+                                                            <MemoizedMessageBubble
+                                                                key={message.id}
+                                                                message={message}
+                                                                isMine={isMine}
+                                                                title={activeConversation.title}
+                                                                avatar={activeConversation.avatar}
+                                                                isDesktop={true}
                                                             />
+                                                        );
+                                                    }}
+                                                />
 
-                                                            {isEnded && (
-                                                                <ConversationEndedPanel
-                                                                    closingNoteText={closingNote}
-                                                                    onArchive={handleArchiveEndedConversation}
-                                                                    isInitiator={true}
-                                                                />
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </main>
-
-                                                {!isEnded && (
-                                                    <form className="desktop-chat-thread__composer desktop-chat-thread__composer--reference" onSubmit={handleDraftSubmit}>
-                                                        <div className="desktop-chat-thread__composer-shell">
-                                                            <input
-                                                                type="text"
-                                                                value={isPaused ? "" : draft}
-                                                                onChange={(event) => setDraft(event.target.value)}
-                                                                placeholder={isPaused ? "Conversation paused" : "Type a message..."}
-                                                                maxLength={1500}
-                                                                disabled={!connected || isPaused}
-                                                            />
-                                                        </div>
-                                                        <button
-                                                            type="submit"
-                                                            className="desktop-chat-thread__send"
-                                                            disabled={!connected || isPaused || !String(draft || "").trim() || sendingMessage}
-                                                            aria-label="Send message"
-                                                        >
-                                                            {sendingMessage ? <InlineSpinner size="sm" tone="light" label="Sending message" /> : <SendIcon />}
-                                                        </button>
-                                                    </form>
-                                                )}
-
-                                                {isEnded && (
-                                                    <div className="conversation-ended-footer-bar">
-                                                        <Leaf size={13} strokeWidth={1.8} />
-                                                        <span>Conversation closed — messages can no longer be sent</span>
-                                                    </div>
+                                                {activeConversationInfo.isEnded && (
+                                                    <ConversationEndedPanel
+                                                        closingNoteText={activeConversationInfo.closingNote}
+                                                        onArchive={handleArchiveEndedConversation}
+                                                        isInitiator={true}
+                                                    />
                                                 )}
                                             </>
-                                        );
-                                    })()}
+                                        )}
+                                    </main>
+
+                                    {!activeConversationInfo.isEnded && (
+                                        <form className="desktop-chat-thread__composer desktop-chat-thread__composer--reference" onSubmit={handleDraftSubmit}>
+                                            <div className="desktop-chat-thread__composer-shell">
+                                                <input
+                                                    type="text"
+                                                    value={activeConversationInfo.isPaused ? "" : draft}
+                                                    onChange={(event) => setDraft(event.target.value)}
+                                                    placeholder={activeConversationInfo.isPaused ? "Conversation paused" : "Type a message..."}
+                                                    maxLength={1500}
+                                                    disabled={!connected || activeConversationInfo.isPaused}
+                                                />
+                                            </div>
+                                            <button
+                                                type="submit"
+                                                className="desktop-chat-thread__send"
+                                                disabled={!connected || activeConversationInfo.isPaused || !String(draft || "").trim() || sendingMessage}
+                                                aria-label="Send message"
+                                            >
+                                                {sendingMessage ? <InlineSpinner size="sm" tone="light" label="Sending message" /> : <SendIcon />}
+                                            </button>
+                                        </form>
+                                    )}
+
+                                    {activeConversationInfo.isEnded && (
+                                        <div className="conversation-ended-footer-bar">
+                                            <Leaf size={13} strokeWidth={1.8} />
+                                            <span>Conversation closed — messages can no longer be sent</span>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </section>
                     </div>
                 </DesktopAppShell>
-                {/* ── Manage Connection Sheet / Modal ── */}
-                <ManageConnectionSheet
-                    open={manageSheetOpen}
-                    onClose={() => setManageSheetOpen(false)}
-                    onSelect={handleManageSheetSelect}
-                    busyAction={connectionBusyAction}
-                    isPaused={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "PAUSED"}
-                    isPausedByMe={(() => {
-                        const activePausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
-                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
-                            : (activeConversation && activeConversation.pausedBy);
-                        return Number(activePausedBy || 0) === Number(userId);
-                    })()}
-                    isArchived={Boolean(activeConversation && activeConversation.isArchivedForMe)}
-                    isEnded={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "ENDED"}
-                />
-
-                {/* ── End Connection Sheet / Modal ── */}
-                <EndConnectionSheet
-                    open={endSheetOpen}
-                    onClose={() => setEndSheetOpen(false)}
-                    onConfirm={handleEndConnection}
-                    submitting={endingConversation}
-                />
+                {modalElements}
             </div>
         );
     }
@@ -1381,47 +1348,15 @@ export default function ChatPage({ user }) {
 
             {!activeConversation && !isRequestsView && (
                 <>
-                    <nav className="chat-inbox-tabs" aria-label="Conversation filters">
-                        <button
-                            type="button"
-                            className={`chat-inbox-tab${inboxTab === "active" ? " is-active" : ""}`}
-                            onClick={() => setInboxTab("active")}
-                        >
-                            Active
-                        </button>
-                        <button
-                            type="button"
-                            className={`chat-inbox-tab${inboxTab === "past" ? " is-active" : ""}`}
-                            onClick={() => setInboxTab("past")}
-                        >
-                            Past
-                            {pastConversationsCount > 0 && (
-                                <span className="chat-inbox-tab__badge">{pastConversationsCount}</span>
-                            )}
-                        </button>
-                        <button
-                            type="button"
-                            className={`chat-inbox-tab${inboxTab === "archived" ? " is-active" : ""}`}
-                            onClick={() => setInboxTab("archived")}
-                        >
-                            Archived
-                            {archivedConversationsCount > 0 && (
-                                <span className="chat-inbox-tab__badge">{archivedConversationsCount}</span>
-                            )}
-                        </button>
-                    </nav>
+                    <ChatInboxTabs
+                        tab={inboxTab}
+                        setTab={setInboxTab}
+                        activeCount={activeConversationsCount}
+                        pastCount={pastConversationsCount}
+                        archivedCount={archivedConversationsCount}
+                    />
 
-                    {inboxTab === "past" && (
-                        <div className="chat-inbox-tab-notice">
-                            Conversations that have come to an end. Visible only to you - the other person never learns who closed it.
-                        </div>
-                    )}
-
-                    {inboxTab === "archived" && (
-                        <div className="chat-inbox-tab-notice">
-                            Your private shelf. Archiving only affects your inbox - the other person&apos;s copy stays exactly where it was.
-                        </div>
-                    )}
+                    <ChatInboxTabNotice tab={inboxTab} isDesktop={false} />
 
                     <section className="chat-search" style={{ padding: "0 1.25rem 1rem" }}>
                         <div className="chat-search__field">
@@ -1469,77 +1404,18 @@ export default function ChatPage({ user }) {
                             </div>
                         )}
 
-                        {!loadingIndex && filteredConversationItems.length > 0 && inboxTab === "past" && (
+                        {!loadingIndex && filteredConversationItems.length > 0 && inboxTab !== "active" && (
                             <div className="chat-conversation-list">
                                 {filteredConversationItems.map((conversation) => (
-                                    <div key={conversation.id} className="chat-tabbed-card">
-                                        <button
-                                            type="button"
-                                            className="chat-tabbed-card__head"
-                                            onClick={() => openConversation(conversation.id)}
-                                        >
-                                            <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
-                                            <div className="chat-tabbed-card__body">
-                                                <h2>{conversation.title}</h2>
-                                                <p>Conversation ended</p>
-                                            </div>
-                                            <div className="chat-tabbed-card__meta">
-                                                <span>{conversation.timeLabel}</span>
-                                                <ChevronRight size={16} />
-                                            </div>
-                                        </button>
-
-                                        <div className="chat-tabbed-card__actions">
-                                            <button
-                                                type="button"
-                                                className="chat-tabbed-card__btn"
-                                                onClick={() => handleArchiveConnection(conversation.id)}
-                                            >
-                                                <Archive size={15} />
-                                                <span>Archive</span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <ChatTabbedCard
+                                        key={conversation.id}
+                                        conversation={conversation}
+                                        isArchivedTab={inboxTab === "archived"}
+                                        onOpen={openConversation}
+                                        onArchive={handleArchiveConnection}
+                                        onUnarchive={handleUnarchiveConnection}
+                                    />
                                 ))}
-                            </div>
-                        )}
-
-                        {!loadingIndex && filteredConversationItems.length > 0 && inboxTab === "archived" && (
-                            <div className="chat-conversation-list">
-                                {filteredConversationItems.map((conversation) => {
-                                    const isEnded = conversation.status === "ENDED";
-                                    const subtitleText = isEnded ? "Conversation ended" : "Archived while active";
-                                    return (
-                                        <div key={conversation.id} className="chat-tabbed-card">
-                                            <button
-                                                type="button"
-                                                className="chat-tabbed-card__head"
-                                                onClick={() => openConversation(conversation.id)}
-                                            >
-                                                <UserAvatar avatarId={conversation.avatar} className="chat-tabbed-card__avatar" />
-                                                <div className="chat-tabbed-card__body">
-                                                    <h2>{conversation.title}</h2>
-                                                    <p>{subtitleText}</p>
-                                                </div>
-                                                <div className="chat-tabbed-card__meta">
-                                                    <span>{conversation.timeLabel}</span>
-                                                    <ChevronRight size={16} />
-                                                </div>
-                                            </button>
-
-                                            <div className="chat-tabbed-card__actions">
-                                                <button
-                                                    type="button"
-                                                    className="chat-tabbed-card__btn"
-                                                    onClick={() => handleUnarchiveConnection(conversation.id)}
-                                                >
-                                                    <Archive size={15} />
-                                                    <span>Unarchive</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
                             </div>
                         )}
                     </main>
@@ -1603,223 +1479,163 @@ export default function ChatPage({ user }) {
                             </ul>
                         </section>
                     </main>
-
                 </>
             )}
 
-            {activeConversation && (
+            {activeConversation && activeConversationInfo && (
                 <>
-                    {(() => {
-                        const convStatus = conversationStatusOverrides[activeConversationId] || activeConversation.status;
-                        const isPaused = convStatus === "PAUSED";
-                        const isEnded = convStatus === "ENDED";
-                        const currentPausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
-                            ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
-                            : activeConversation.pausedBy;
-                        const isPausedByMe = Number(currentPausedBy) === Number(userId);
-                        const otherName = activeConversation.title || "Other user";
-                        const pausedSubtitle = isPausedByMe
-                            ? "• You paused this conversation"
-                            : `• ${otherName} paused this conversation`;
-                        const pausedBannerText = isPausedByMe || !currentPausedBy
-                            ? "You paused this conversation. Nothing was ended."
-                            : `${otherName} paused this conversation. Nothing was ended.`;
-                        const statusText = isPaused
-                            ? pausedSubtitle
-                            : isEnded
-                            ? "Conversation ended"
-                            : activeConversationStatus;
+                    <header className="chat-thread-header">
+                        <button type="button" className="chat-thread-header__back" onClick={closeConversation}>
+                            <ArrowLeftIcon />
+                        </button>
 
-                        return (
-                            <>
-                                <header className="chat-thread-header">
-                                    <button type="button" className="chat-thread-header__back" onClick={closeConversation}>
-                                        <ArrowLeftIcon />
-                                    </button>
+                        <button
+                            type="button"
+                            className="chat-thread-header__identity"
+                            onClick={() => {
+                                const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
+                                if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
+                            }}
+                        >
+                            <UserAvatar avatarId={activeConversation.avatar} className="chat-conversation-card__avatar" />
+                            <div className="chat-mobile-header__titles">
+                                <strong>{activeConversation.title}</strong>
+                                <small style={activeConversationInfo.isPaused ? { color: "#806b78" } : undefined}>
+                                    {activeConversationInfo.statusText}
+                                </small>
+                            </div>
+                        </button>
+                        <button
+                            type="button"
+                            className="chat-thread-header__more"
+                            onClick={handleOpenManageSheet}
+                            aria-label="Manage connection"
+                        >
+                            <MoreIcon />
+                        </button>
+                    </header>
 
+                    {activeConversationInfo.isPaused && (
+                        <div className="chat-thread-paused-banner" role="status">
+                            <Pause size={16} strokeWidth={2} />
+                            <span>{activeConversationInfo.pausedBannerText}</span>
+                        </div>
+                    )}
+
+                    <main className="chat-thread-content" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+                        {loadingMessages && messages.length === 0 && <div style={{ padding: '1rem' }}><ChatThreadSkeleton count={5} /></div>}
+
+                        {!loadingMessages && messages.length === 0 && !activeConversationInfo.isEnded && (
+                            <div className="chat-thread-empty">
+                                <p>Say hi to start the <em>conversation</em></p>
+                            </div>
+                        )}
+
+                        {!loadingMessages && messages.length > 0 && (
+                            <div
+                                ref={threadContentRef}
+                                className="chat-thread-messages"
+                                onScroll={handleMessagesScroll}
+                                style={{ flex: 1, minHeight: 0, padding: "1rem 1rem 0.5rem", overflowY: "auto" }}
+                            >
+                                {hasMoreMessages && (
                                     <button
                                         type="button"
-                                        className="chat-thread-header__identity"
+                                        className="chat-thread-load-more"
                                         onClick={() => {
-                                            const targetParam = activeConversation.otherUsername || activeConversation.title || activeConversation.otherUserId;
-                                            if (targetParam) navigate(`/user/${targetParam}`, { state: { profileUser: { id: activeConversation.otherUserId, username: activeConversation.title } } });
+                                            if (loadingMessages || loadingOlderMessages || !hasMoreMessages) return;
+                                            olderMessagesLoadRef.current = true;
+                                            setMessageLimit((prev) => prev + MESSAGE_PAGE_SIZE);
                                         }}
+                                        disabled={loadingOlderMessages}
                                     >
-                                        <UserAvatar avatarId={activeConversation.avatar} className="chat-conversation-card__avatar" />
-                                        <div className="chat-mobile-header__titles">
-                                            <strong>{activeConversation.title}</strong>
-                                            <small style={isPaused ? { color: "#806b78" } : undefined}>
-                                                {statusText}
-                                            </small>
-                                        </div>
+                                        {loadingOlderMessages ? "Loading earlier messages..." : "Load earlier messages"}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="chat-thread-header__more"
-                                        onClick={handleOpenManageSheet}
-                                        aria-label="Manage connection"
-                                    >
-                                        <MoreIcon />
-                                    </button>
-                                </header>
-
-                                {isPaused && (
-                                    <div className="chat-thread-paused-banner" role="status">
-                                        <Pause size={16} strokeWidth={2} />
-                                        <span>{pausedBannerText}</span>
-                                    </div>
                                 )}
-                            </>
-                        );
-                    })()}
 
-                    {(() => {
-                        const convStatus = conversationStatusOverrides[activeConversationId] || activeConversation.status;
-                        const isPaused = convStatus === "PAUSED";
-                        const isEnded = convStatus === "ENDED";
-                        const closingNote = closingNoteOverrides[activeConversationId] || getClosingNoteDisplay(activeConversation);
-                        return (
-                            <>
-                                <main className="chat-thread-content" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
-                                    {loadingMessages && messages.length === 0 && <div style={{ padding: '1rem' }}><ChatThreadSkeleton count={5} /></div>}
-
-                                    {!loadingMessages && messages.length === 0 && !isEnded && (
-                                        <div className="chat-thread-empty">
-                                            <p>Say hi to start the <em>conversation</em></p>
-                                        </div>
-                                    )}
-
-                                    {!loadingMessages && messages.length > 0 && (
-                                        <div
-                                            ref={threadContentRef}
-                                            className="chat-thread-messages"
-                                            onScroll={handleMessagesScroll}
-                                            style={{ flex: 1, minHeight: 0, padding: "1rem 1rem 0.5rem", overflowY: "auto" }}
-                                        >
-                                            {hasMoreMessages && (
-                                                <button
-                                                    type="button"
-                                                    className="chat-thread-load-more"
-                                                    onClick={() => {
-                                                        if (loadingMessages || loadingOlderMessages || !hasMoreMessages) return;
-                                                        olderMessagesLoadRef.current = true;
-                                                        setMessageLimit((prev) => prev + MESSAGE_PAGE_SIZE);
-                                                    }}
-                                                    disabled={loadingOlderMessages}
-                                                >
-                                                    {loadingOlderMessages ? "Loading earlier messages..." : "Load earlier messages"}
-                                                </button>
-                                            )}
-
-                                            {messages.map((message) => {
-                                                const isMine = Number(message && message.senderId) === userId;
-                                                return (
-                                                    <MemoizedMessageBubble
-                                                        key={message.id}
-                                                        message={message}
-                                                        isMine={isMine}
-                                                        title={activeConversation.title}
-                                                        avatar={activeConversation.avatar}
-                                                        isDesktop={false}
-                                                    />
-                                                );
-                                            })}
-
-                                            {isEnded && (
-                                                <ConversationEndedPanel
-                                                    closingNoteText={closingNote}
-                                                    onArchive={handleArchiveEndedConversation}
-                                                    isInitiator={true}
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {!loadingMessages && messages.length === 0 && isEnded && (
-                                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-                                            <ConversationEndedPanel
-                                                closingNoteText={closingNote}
-                                                onArchive={handleArchiveEndedConversation}
-                                                isInitiator={true}
-                                            />
-                                        </div>
-                                    )}
-                                </main>
-
-                                {!isEnded && (
-                                    <form className="chat-thread-composer" autoComplete="off" onSubmit={handleDraftSubmit}>
-                                        <textarea
-                                            ref={mobileTextareaRef}
-                                            name="chat_message"
-                                            value={isPaused ? "" : draft}
-                                            onChange={(event) => {
-                                                setDraft(event.target.value);
-                                                if (event.target) {
-                                                    event.target.style.height = "auto";
-                                                    event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
-                                                }
-                                            }}
-                                            onKeyDown={(event) => {
-                                                if (event.key === "Enter" && !event.shiftKey) {
-                                                    event.preventDefault();
-                                                    handleDraftSubmit(event);
-                                                    if (mobileTextareaRef.current) {
-                                                        mobileTextareaRef.current.style.height = "auto";
-                                                    }
-                                                }
-                                            }}
-                                            placeholder={isPaused ? "Conversation paused" : "Type a message..."}
-                                            maxLength={1500}
-                                            disabled={!connected || isPaused}
-                                            autoComplete="off"
-                                            autoCorrect="off"
-                                            autoCapitalize="off"
-                                            spellCheck={false}
-                                            rows={1}
-                                            enterKeyHint="send"
+                                {messages.map((message) => {
+                                    const isMine = Number(message && message.senderId) === userId;
+                                    return (
+                                        <MemoizedMessageBubble
+                                            key={message.id}
+                                            message={message}
+                                            isMine={isMine}
+                                            title={activeConversation.title}
+                                            avatar={activeConversation.avatar}
+                                            isDesktop={false}
                                         />
-                                        <button type="submit" disabled={!connected || isPaused || !String(draft || "").trim() || sendingMessage} aria-label="Send message">
-                                            {sendingMessage ? <InlineSpinner size="sm" tone="dark" label="Sending message" /> : <SendIcon />}
-                                        </button>
-                                    </form>
-                                )}
+                                    );
+                                })}
 
-                                {isEnded && (
-                                    <div className="conversation-ended-footer-bar">
-                                        <Leaf size={13} strokeWidth={1.8} />
-                                        <span>Conversation closed — messages can no longer be sent</span>
-                                    </div>
+                                {activeConversationInfo.isEnded && (
+                                    <ConversationEndedPanel
+                                        closingNoteText={activeConversationInfo.closingNote}
+                                        onArchive={handleArchiveEndedConversation}
+                                        isInitiator={true}
+                                    />
                                 )}
-                            </>
-                        );
-                    })()}
+                            </div>
+                        )}
+
+                        {!loadingMessages && messages.length === 0 && activeConversationInfo.isEnded && (
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                                <ConversationEndedPanel
+                                    closingNoteText={activeConversationInfo.closingNote}
+                                    onArchive={handleArchiveEndedConversation}
+                                    isInitiator={true}
+                                />
+                            </div>
+                        )}
+                    </main>
+
+                    {!activeConversationInfo.isEnded && (
+                        <form className="chat-thread-composer" autoComplete="off" onSubmit={handleDraftSubmit}>
+                            <textarea
+                                ref={mobileTextareaRef}
+                                name="chat_message"
+                                value={activeConversationInfo.isPaused ? "" : draft}
+                                onChange={(event) => {
+                                    setDraft(event.target.value);
+                                    if (event.target) {
+                                        event.target.style.height = "auto";
+                                        event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
+                                    }
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" && !event.shiftKey) {
+                                        event.preventDefault();
+                                        handleDraftSubmit(event);
+                                        if (mobileTextareaRef.current) {
+                                            mobileTextareaRef.current.style.height = "auto";
+                                        }
+                                    }
+                                }}
+                                placeholder={activeConversationInfo.isPaused ? "Conversation paused" : "Type a message..."}
+                                maxLength={1500}
+                                disabled={!connected || activeConversationInfo.isPaused}
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                spellCheck={false}
+                                rows={1}
+                                enterKeyHint="send"
+                            />
+                            <button type="submit" disabled={!connected || activeConversationInfo.isPaused || !String(draft || "").trim() || sendingMessage} aria-label="Send message">
+                                {sendingMessage ? <InlineSpinner size="sm" tone="dark" label="Sending message" /> : <SendIcon />}
+                            </button>
+                        </form>
+                    )}
+
+                    {activeConversationInfo.isEnded && (
+                        <div className="conversation-ended-footer-bar">
+                            <Leaf size={13} strokeWidth={1.8} />
+                            <span>Conversation closed — messages can no longer be sent</span>
+                        </div>
+                    )}
                 </>
             )}
 
-            {/* ── Manage Connection Sheet ── */}
-            <ManageConnectionSheet
-                open={manageSheetOpen}
-                onClose={() => setManageSheetOpen(false)}
-                onSelect={handleManageSheetSelect}
-                busyAction={connectionBusyAction}
-                isPaused={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "PAUSED"}
-                isPausedByMe={(() => {
-                    const activePausedBy = conversationStatusOverrides[activeConversationId + "_pausedBy"] !== undefined
-                        ? conversationStatusOverrides[activeConversationId + "_pausedBy"]
-                        : (activeConversation && activeConversation.pausedBy);
-                    return Number(activePausedBy || 0) === Number(userId);
-                })()}
-                isArchived={Boolean(activeConversation && activeConversation.isArchivedForMe)}
-                isEnded={(conversationStatusOverrides[activeConversationId] || (activeConversation && activeConversation.status)) === "ENDED"}
-            />
-
-            {/* ── End Connection Sheet ── */}
-            <EndConnectionSheet
-                open={endSheetOpen}
-                onClose={() => setEndSheetOpen(false)}
-                onConfirm={handleEndConnection}
-                submitting={endingConversation}
-            />
+            {modalElements}
         </div>
     );
 }

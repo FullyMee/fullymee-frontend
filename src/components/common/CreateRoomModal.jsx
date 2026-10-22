@@ -4,28 +4,7 @@ import InlineError from "./InlineError.jsx";
 import { InlineSpinner } from "../loaders";
 import { ArrowLeft, Check, ChevronDown, Globe, Lock, RefreshCcw, ImageIcon } from "lucide-react";
 import { getAmbiencesForCategory } from "../../config/ambienceLibrary.js";
-
-const ROOM_CATEGORIES = [
-    "Late Night",
-    "Heartbreak",
-    "Anxiety",
-    "Relationships",
-    "Family",
-    "College",
-    "Career",
-    "Tech and Coding",
-    "Casual Chats",
-    "Confessions",
-    "Gaming",
-    "Entertainment",
-    "Fitness",
-    "Finance",
-    "Politics",
-    "Startup",
-    "Travel",
-    "Books",
-    "Advice"
-];
+import { ROOM_CATEGORIES } from "../../constants/categories.js";
 
 export default function CreateRoomModal({
     open,
@@ -261,43 +240,33 @@ export default function CreateRoomModal({
                             <h3>Privacy</h3>
                         </div>
                         <div className="discover-create-screen__privacy-list">
-                            <button
-                                type="button"
-                                className={`discover-create-screen__option${roomType === "public" ? " is-selected" : ""}`}
-                                onClick={() => onRoomTypeChange("public")}
-                            >
-                                <span className="discover-create-screen__option-icon">
-                                    <Globe size={20} strokeWidth={2} />
-                                </span>
-                                <span className="discover-create-screen__option-copy">
-                                    <strong>Fume Circle</strong>
-                                    <small>Anyone can join.</small>
-                                </span>
-                                {roomType === "public" && (
-                                    <span className="discover-create-screen__option-check">
-                                        <Check size={18} strokeWidth={2.5} />
-                                    </span>
-                                )}
-                            </button>
-
-                            <button
-                                type="button"
-                                className={`discover-create-screen__option${roomType === "private" ? " is-selected" : ""}`}
-                                onClick={() => onRoomTypeChange("private")}
-                            >
-                                <span className="discover-create-screen__option-icon">
-                                    <Lock size={20} strokeWidth={2} />
-                                </span>
-                                <span className="discover-create-screen__option-copy">
-                                    <strong>Inner Circle</strong>
-                                    <small>Join with a code.</small>
-                                </span>
-                                {roomType === "private" && (
-                                    <span className="discover-create-screen__option-check">
-                                        <Check size={18} strokeWidth={2.5} />
-                                    </span>
-                                )}
-                            </button>
+                            {[
+                                { type: "public", title: "Fume Circle", desc: "Anyone can join.", Icon: Globe },
+                                { type: "private", title: "Inner Circle", desc: "Join with a code.", Icon: Lock }
+                            ].map(({ type, title, desc, Icon }) => {
+                                const isSelected = roomType === type;
+                                return (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        className={`discover-create-screen__option${isSelected ? " is-selected" : ""}`}
+                                        onClick={() => onRoomTypeChange(type)}
+                                    >
+                                        <span className="discover-create-screen__option-icon">
+                                            <Icon size={20} strokeWidth={2} />
+                                        </span>
+                                        <span className="discover-create-screen__option-copy">
+                                            <strong>{title}</strong>
+                                            <small>{desc}</small>
+                                        </span>
+                                        {isSelected && (
+                                            <span className="discover-create-screen__option-check">
+                                                <Check size={18} strokeWidth={2.5} />
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </section>
 

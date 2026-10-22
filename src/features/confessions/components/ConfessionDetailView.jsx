@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DesktopEmptyState from "../../../components/common/DesktopEmptyState.jsx";
 import { ConfessionSkeleton, ScrollLoader } from "../../../components/loaders";
-import { getAliasTone, getInitial } from "../../../utils/presentation.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 import { formatRelativeTime } from "../../../utils/time.js";
 
@@ -10,7 +9,7 @@ import ConfessionReplyComposer from "./ConfessionReplyComposer.jsx";
 import ConfessionReplyList from "./ConfessionReplyList.jsx";
 import AudioPlayer from "./AudioPlayer.jsx";
 import ConfessionMoreMenu from "./ConfessionMoreMenu.jsx";
-import { ArrowLeftIcon, CommentIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
+import { CommentIcon, ShareIcon, UpvoteIcon, SendIcon } from "./ConfessionIcons.jsx";
 
 export default function ConfessionDetailView({
     isDesktop = false,
@@ -166,6 +165,10 @@ export default function ConfessionDetailView({
         setDragY(0);
     }, [dragY, isDragging, onBack]);
 
+    const confId = Number(selectedConfession.confessionId);
+    const isLiked = likedConfessionIds ? likedConfessionIds.has(confId) : false;
+    const isSent = sentChatRequestIds ? sentChatRequestIds.has(confId) : false;
+
     const detailCard = (
         <article className="confession-detail-card">
             <div
@@ -208,10 +211,10 @@ export default function ConfessionDetailView({
             <div className="confession-detail-card__actions">
                 <button
                     type="button"
-                    className={`room-confession-card__stat${likedConfessionIds.has(Number(selectedConfession.confessionId)) ? " is-liked" : ""}`}
+                    className={`room-confession-card__stat${isLiked ? " is-liked" : ""}`}
                     onClick={() => onReact("confession", selectedConfession.confessionId)}
                 >
-                    <UpvoteIcon active={likedConfessionIds.has(Number(selectedConfession.confessionId))} />
+                    <UpvoteIcon active={isLiked} />
                     <span>{selectedConfession.reactionCount || 0}</span>
                 </button>
                 <div className="room-confession-card__stat">
@@ -220,11 +223,11 @@ export default function ConfessionDetailView({
                 </div>
                 <button
                     type="button"
-                    className={`room-confession-card__request${sentChatRequestIds.has(Number(selectedConfession.confessionId)) ? " is-sent" : ""}`}
+                    className={`room-confession-card__request${isSent ? " is-sent" : ""}`}
                     onClick={() => onChatRequest(selectedConfession)}
-                    aria-label={sentChatRequestIds.has(Number(selectedConfession.confessionId)) ? "Request sent" : `Send chat request to ${selectedConfession.alias}`}
+                    aria-label={isSent ? "Request sent" : `Send chat request to ${selectedConfession.alias}`}
                 >
-                    <SendIcon filled={sentChatRequestIds.has(Number(selectedConfession.confessionId))} />
+                    <SendIcon filled={isSent} />
                 </button>
             </div>
         </article>

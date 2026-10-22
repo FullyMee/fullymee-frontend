@@ -1,7 +1,5 @@
 import React, { memo } from 'react';
 import { useNavigate } from "react-router-dom";
-import { InlineSpinner } from '../loaders';
-import { getAliasTone, getInitial } from '../../utils/presentation.js';
 import UserAvatar from './UserAvatar.jsx';
 import { formatRelativeTime } from '../../utils/time.js';
 import { Heart, MessageSquare, Send } from "lucide-react";

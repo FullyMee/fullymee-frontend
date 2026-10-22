@@ -130,6 +130,29 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
         }
     };
 
+    const audioElement = (
+        <audio
+            ref={audioRef}
+            preload="none"
+            controls={false}
+            controlsList="nodownload"
+            onLoadedMetadata={(event) => {
+                const duration = Number(event.currentTarget.duration || 0);
+                if (Number.isFinite(duration) && duration > 0) setResolvedDuration(duration);
+                applyPitchShift();
+            }}
+            onPlay={applyPitchShift}
+            onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
+            onEnded={() => {
+                setPlaying(false);
+                setCurrentTime(0);
+            }}
+            onPause={() => setPlaying(false)}
+        />
+    );
+
+    const formattedTime = `${formatDuration(currentTime)} / ${formatDuration(resolvedDuration || audio.duration)}`;
+
     if (variant === "mobile") {
         return (
             <div className="room-mobile-redesign-audio" onClick={(event) => event.stopPropagation()}>
@@ -139,7 +162,7 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
                 <div className="room-mobile-redesign-audio__main">
                     <div className="room-mobile-redesign-audio__head">
                         <strong>Voice note</strong>
-                        <span>{formatDuration(currentTime)} / {formatDuration(resolvedDuration || audio.duration)}</span>
+                        <span>{formattedTime}</span>
                     </div>
                     <div className="room-mobile-redesign-audio__waveform">
                         {[4,8,5,10,14,18,12,8,15,20,16,10,6,12,18,14,8,4,6,10].map((h, i) => (
@@ -148,24 +171,7 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
                     </div>
                     {error && <span className="audio-player__error">{error}</span>}
                 </div>
-                <audio
-                    ref={audioRef}
-                    preload="none"
-                    controls={false}
-                    controlsList="nodownload"
-                    onLoadedMetadata={(event) => {
-                        const duration = Number(event.currentTarget.duration || 0);
-                        if (Number.isFinite(duration) && duration > 0) setResolvedDuration(duration);
-                        applyPitchShift();
-                    }}
-                    onPlay={applyPitchShift}
-                    onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
-                    onEnded={() => {
-                        setPlaying(false);
-                        setCurrentTime(0);
-                    }}
-                    onPause={() => setPlaying(false)}
-                />
+                {audioElement}
             </div>
         );
     }
@@ -175,28 +181,9 @@ export default function AudioPlayer({ roomId, confessionId, audio, variant = "de
             <button type="button" className="audio-player__button" onClick={handleToggle} disabled={loading}>
                 {loading ? <RotateCw className="audio-player__spin" size={15} /> : playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
             </button>
-            <span className="audio-player__duration">
-                {formatDuration(currentTime)} / {formatDuration(resolvedDuration || audio.duration)}
-            </span>
+            <span className="audio-player__duration">{formattedTime}</span>
             {error && <span className="audio-player__error">{error}</span>}
-            <audio
-                ref={audioRef}
-                preload="none"
-                controls={false}
-                controlsList="nodownload"
-                onLoadedMetadata={(event) => {
-                    const duration = Number(event.currentTarget.duration || 0);
-                    if (Number.isFinite(duration) && duration > 0) setResolvedDuration(duration);
-                    applyPitchShift();
-                }}
-                onPlay={applyPitchShift}
-                onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
-                onEnded={() => {
-                    setPlaying(false);
-                    setCurrentTime(0);
-                }}
-                onPause={() => setPlaying(false)}
-            />
+            {audioElement}
         </div>
     );
 }
