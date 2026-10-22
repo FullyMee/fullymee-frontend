@@ -6,6 +6,7 @@ import { RoomSkeleton, FeedSkeleton, InlineSpinner, ScrollLoader } from "../comp
 import UnifiedSidebar from "../components/layout/UnifiedSidebar.jsx";
 import UnifiedTopBar from "../components/layout/UnifiedTopBar.jsx";
 import { ROOM_CATEGORIES } from "../constants/categories.js";
+import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
 import {
     AmbienceRoomCard,
     getRoomTone,

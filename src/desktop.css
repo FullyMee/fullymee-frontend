@@ -2283,9 +2283,9 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MOBILE HOME PAGE — matches JS breakpoint (useIsDesktop: 1100px)
+   MOBILE HOME PAGE — matches JS breakpoint (useIsDesktop: 900px)
    ═══════════════════════════════════════════════════════════ */
-@media (max-width: 1099px) {
+@media (max-width: 899px) {
 
     /* ── Page shell ── */
     .home-mobile-page {
