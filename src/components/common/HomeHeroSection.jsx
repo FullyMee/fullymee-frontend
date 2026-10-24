@@ -1,11 +1,19 @@
 import React from "react";
 import { PenSquare, ArrowRight } from "lucide-react";
 import heroSunset from "../../assets/hero-sunset.png";
-import heroAvatar1 from "../../assets/hero-avatar-1.png";
-import heroAvatar2 from "../../assets/hero-avatar-2.png";
-import heroAvatar3 from "../../assets/hero-avatar-3.png";
+import UserAvatar from "./UserAvatar.jsx";
 
-export default function HomeHeroSection({ pulsePeople = 28, onShare }) {
+const DEFAULT_HERO_USERS = [
+    { avatarId: "flowing_waterfall", name: "User" },
+    { avatarId: "silent_forest", name: "User" },
+    { avatarId: "broken_constellation", name: "User" }
+];
+
+export default function HomeHeroSection({ pulsePeople = 28, users = [], onShare }) {
+    const displayUsers = Array.isArray(users) && users.length > 0
+        ? users.slice(0, 3)
+        : DEFAULT_HERO_USERS;
+
     return (
         <section className="home-hero" aria-label="Welcome banner">
             <div className="home-hero__bg">
@@ -37,10 +45,21 @@ export default function HomeHeroSection({ pulsePeople = 28, onShare }) {
 
             <div className="home-hero__content">
                 <div className="home-hero__badge">
-                    <div className="home-hero__badge-avatars" aria-hidden="true">
-                        <img src={heroAvatar1} alt="" className="home-hero__avatar" />
-                        <img src={heroAvatar2} alt="" className="home-hero__avatar" />
-                        <img src={heroAvatar3} alt="" className="home-hero__avatar" />
+                    <div className="home-hero__badge-avatars">
+                        {displayUsers.map((user, idx) => {
+                            const avatarId = typeof user === "string" ? user : user?.avatarId;
+                            const seed = typeof user === "string" ? user : (user?.seed || user?.alias || user?.name || idx);
+                            const name = typeof user === "string" ? user : (user?.name || "Sharing user");
+                            return (
+                                <UserAvatar
+                                    key={user?.id || avatarId || seed || idx}
+                                    avatarId={avatarId}
+                                    seed={seed}
+                                    alt={name}
+                                    className="home-hero__avatar"
+                                />
+                            );
+                        })}
                     </div>
                     <span className="home-hero__badge-dot" aria-hidden="true" />
                     <span className="home-hero__badge-text">{pulsePeople} people are sharing right now</span>

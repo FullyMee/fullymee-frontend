@@ -479,6 +479,34 @@ export default function HomeDiscoverPage() {
         [feedCardsSorted, homeSearchTerm]
     );
 
+    const heroSharingUsers = useMemo(() => {
+        const list = [];
+        const seen = new Set();
+        for (const actor of pulseActivityActors || []) {
+            const key = actor.avatar || actor.alias || actor.id;
+            if (key && !seen.has(key)) {
+                seen.add(key);
+                list.push({
+                    avatarId: actor.avatar,
+                    seed: actor.alias || actor.id,
+                    name: actor.alias || "Sharing user"
+                });
+            }
+        }
+        for (const card of feedCards || []) {
+            const key = card.author || card.alias || card.confessionId;
+            if (key && !seen.has(key)) {
+                seen.add(key);
+                list.push({
+                    avatarId: card.avatar || card.authorAvatar,
+                    seed: card.alias || card.author || card.confessionId,
+                    name: card.alias || "Sharing user"
+                });
+            }
+        }
+        return list;
+    }, [pulseActivityActors, feedCards]);
+
     const hasFeedItems = filteredFeedCardsSorted.length > 0;
     const mobilePulsePeople = desktopStats.peopleSharing;
     const mobilePulseConfessions = formatCompactPulseCount(desktopStats.confessionsToday);
@@ -824,6 +852,7 @@ export default function HomeDiscoverPage() {
                             <main className="home-feed-column">
                                 <HomeHeroSection
                                     pulsePeople={pulsePeople}
+                                    users={heroSharingUsers}
                                     onShare={() => navigate('/confessions')}
                                 />
 
