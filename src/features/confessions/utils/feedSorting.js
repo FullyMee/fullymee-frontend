@@ -26,8 +26,8 @@ export function matchesHomeSearch(room, term) {
     const title = String(room?.title || "").toLowerCase();
     const desc = String(room?.description || "").toLowerCase();
     const category = String(room?.category || "").toLowerCase();
-    const cleanQuery = value.replace(/[\s_\-]+/g, "");
-    const cleanCategory = category.replace(/[\s_\-]+/g, "");
+    const cleanQuery = value.replace(/[\s_-]+/g, "");
+    const cleanCategory = category.replace(/[\s_-]+/g, "");
     const categorySpaced = category.replace(/_/g, " ");
 
     return (

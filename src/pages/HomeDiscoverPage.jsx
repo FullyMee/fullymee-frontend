@@ -130,7 +130,7 @@ export default function HomeDiscoverPage() {
     const [pulseRoomCounts, setPulseRoomCounts] = useState(new Map());
     const [pulseActivityActors, setPulseActivityActors] = useState([]);
     const [likedFeedConfessionIds, setLikedFeedConfessionIds] = useState(() => new Set());
-    const [reactingFeedConfessionIds, setReactingFeedConfessionIds] = useState(() => new Set());
+    const [reactingFeedConfessionIds] = useState(() => new Set());
     const [sentFeedChatRequestIds, setSentFeedChatRequestIds] = useState(() => new Set());
     const [sendingFeedChatRequestIds, setSendingFeedChatRequestIds] = useState(() => new Set());
     const isCreateRoomRoute = location.pathname === "/create-room";
@@ -377,6 +377,7 @@ export default function HomeDiscoverPage() {
             socket.off("confession:likesUpdated", handleLikesUpdated);
             clearInterval(cleanupTimer);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [connected, homeRooms, socket]);
 
     const desktopStats = useMemo(() => {

@@ -37,12 +37,6 @@ export default function ConfessionDetailView({
 }) {
     const navigate = useNavigate();
 
-    if (!activeRoom || !selectedConfession) return null;
-
-    const isAuthor = (activeRoom?.alias && selectedConfession.alias === activeRoom.alias) || (user && Number(selectedConfession.author) === Number(user.id || user.userId));
-    const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
-    const replyDisabled = isPostingReply || !String(replyDraft || "").trim();
-
     // References
     const inputRef = useRef(null);
     const scrollContentRef = useRef(null);
@@ -164,6 +158,12 @@ export default function ConfessionDetailView({
         }
         setDragY(0);
     }, [dragY, isDragging, onBack]);
+
+    if (!activeRoom || !selectedConfession) return null;
+
+    const isAuthor = (activeRoom?.alias && selectedConfession.alias === activeRoom.alias) || (user && Number(selectedConfession.author) === Number(user.id || user.userId));
+    const isPostingReply = postingReplyId === Number(selectedConfession.confessionId);
+    const replyDisabled = isPostingReply || !String(replyDraft || "").trim();
 
     const confId = Number(selectedConfession.confessionId);
     const isLiked = likedConfessionIds ? likedConfessionIds.has(confId) : false;

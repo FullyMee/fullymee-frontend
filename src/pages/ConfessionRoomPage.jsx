@@ -35,7 +35,7 @@ export default function ConfessionRoomPage({ user }) {
     const location = useLocation();
     const [desktopSearch, setDesktopSearch] = useState("");
     const [desktopRoomFilter, setDesktopRoomFilter] = useState("All");
-    const [mobileSearch, setMobileSearch] = useState("");
+    const mobileSearch = "";
     const [mobileRoomFilter, setMobileRoomFilter] = useState("All");
     const [confessionMode, setConfessionMode] = useState("text");
     const [audioToken, setAudioToken] = useState(null);

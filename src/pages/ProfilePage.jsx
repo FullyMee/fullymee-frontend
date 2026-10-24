@@ -31,7 +31,6 @@ export default function ProfilePage({ user }) {
     const { showError, dismissError } = useGlobalError();
     const [profileUser, setProfileUser] = useState(user || null);
     const [notice, setNotice] = useTimedNotice("", 2600);
-    const [expandedRooms, setExpandedRooms] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [usernameDraft, setUsernameDraft] = useState(user && user.username ? user.username : "");
     const [usernameStatus, setUsernameStatus] = useState({ status: "idle", message: "" });
@@ -72,16 +71,10 @@ export default function ProfilePage({ user }) {
         }
     }, [user]);
 
-    const joinedRooms = profileData?.joinedRooms || [];
-    const myConfessions = profileData?.myConfessions || [];
+    const joinedRooms = useMemo(() => profileData?.joinedRooms || [], [profileData?.joinedRooms]);
+    const myConfessions = useMemo(() => profileData?.myConfessions || [], [profileData?.myConfessions]);
 
     useBodyClass("confessions-scroll-unlocked");
-
-    const visibleRooms = useMemo(() => (
-        expandedRooms ? joinedRooms : joinedRooms.slice(0, VISIBLE_ROOMS_LIMIT)
-    ), [expandedRooms, joinedRooms]);
-
-    const hasMoreRooms = joinedRooms.length > VISIBLE_ROOMS_LIMIT;
     const messageCount = Number(
         (profileUser && (profileUser.messageCount || profileUser.messagesCount || profileUser.messagesSent)) || 0
     );
@@ -148,10 +141,6 @@ export default function ProfilePage({ user }) {
         } finally {
             setSavingUsername(false);
         }
-    }
-
-    function handleMenuClick(item) {
-        setNotice(item.description);
     }
 
     async function handleLogout() {

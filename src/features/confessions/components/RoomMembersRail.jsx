@@ -4,11 +4,11 @@ import { formatRelativeTime } from "../../../utils/time.js";
 import UserAvatar from "../../../components/common/UserAvatar.jsx";
 
 export default function RoomMembersRail({ activeRoom, roomMembers }) {
+    const navigate = useNavigate();
+
     if (!activeRoom) return null;
 
     const members = Array.isArray(roomMembers) ? roomMembers : [];
-
-    const navigate = useNavigate();
 
     return (
         <aside className="confession-room-rail" aria-label="Room details">

@@ -51,7 +51,7 @@ function HiddenProfileSplash({ username, onBack }) {
 }
 
 /* ─── Main Page ──────────────────────────────────────────────────────────────── */
-export default function UserProfilePage({ user: currentUser }) {
+export default function UserProfilePage() {
     const { userId: rawUserId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
@@ -126,7 +126,7 @@ export default function UserProfilePage({ user: currentUser }) {
                 } else {
                     setProfileUser(null);
                 }
-            } catch (err) {
+            } catch {
                 if (!cancelled) {
                     setProfileUser(null);
                 }
