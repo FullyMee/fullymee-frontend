@@ -7,6 +7,7 @@ import useTimedNotice from "../../../hooks/useTimedNotice.js";
 import { safeUnicodeSlice } from "../../../utils/unicode.js";
 import {
     getJoinedRooms,
+    joinConfessionRoom,
     leaveConfessionRoom,
     getRoomMembers,
     listConfessions,
