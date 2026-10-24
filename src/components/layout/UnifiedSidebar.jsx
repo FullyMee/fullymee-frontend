@@ -89,11 +89,12 @@ export default function UnifiedSidebar({
                 <div className="home-room-stack">
                     {rooms.length > 0 ? rooms.map((room) => {
                         const tone = getRoomTone(room);
+                        const isSelected = Number(selectedRoomId) === Number(room.roomId);
                         return (
                             <button
                                 key={room.roomId}
                                 type="button"
-                                className="home-room-pill"
+                                className={`home-room-pill${isSelected ? " is-active" : ""}`}
                                 onClick={() => typeof onSelectRoom === "function" && onSelectRoom(room)}
                             >
                                 <RoomAvatar
@@ -123,7 +124,7 @@ export default function UnifiedSidebar({
                 <span className="home-identity-card__copy">
                     <span className="home-identity-card__eyebrow">{browsingAsLabel}</span>
                     <strong title={displayName}>{displayName}</strong>
-
+                    {identityActionLabel ? <span className="home-identity-card__action">{identityActionLabel}</span> : null}
                 </span>
             </button>
         </aside>

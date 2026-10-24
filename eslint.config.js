@@ -23,7 +23,15 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^[A-Z_]',
+          argsIgnorePattern: '^[A-Z_]',
+          destructuredArrayIgnorePattern: '^[A-Z_]',
+          ignoreRestSiblings: true,
+        },
+      ],
       'no-empty': 'warn',
       'no-useless-escape': 'warn',
       'react-hooks/rules-of-hooks': 'warn',
