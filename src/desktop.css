@@ -2697,62 +2697,278 @@
         background: rgba(0, 0, 0, 0.06);
     }
 
-    /* ── Live people badge ── */
-    .home-mobile-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        width: fit-content;
-        padding: 0.4rem 0.72rem;
-        border-radius: 999px;
-        background: #f6dfd1;
-        color: #5f3b44;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
+    /* ── Responsive Hero Banner (< 900px) ── */
+    .home-hero {
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        min-height: 235px;
+        height: auto;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #FAF5EE;
+        border: 1px solid rgba(228, 218, 208, 0.75);
+        box-shadow: 0 4px 18px -2px rgba(60, 30, 45, 0.05);
+        margin: 0.15rem 0 0.5rem 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
-    .home-mobile-badge span:first-child,
-    .home-mobile-badge-dot {
-        width: 0.45rem;
-        height: 0.45rem;
+    .home-hero__bg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .home-hero__bg-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: right center;
+        mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.15) 15%, rgba(0, 0, 0, 0.8) 50%, black 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.15) 15%, rgba(0, 0, 0, 0.8) 50%, black 100%);
+    }
+
+    .home-hero__bg-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, #FAF5EE 0%, rgba(250, 245, 238, 0.95) 42%, rgba(250, 245, 238, 0.65) 72%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .home-hero__quote {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: 'Caveat', cursive, sans-serif;
+        color: #8c473c;
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: 0.01em;
+        transform: rotate(-3deg);
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.75);
+        user-select: none;
+        pointer-events: none;
+        z-index: 3;
+    }
+
+    .home-hero__quote-line {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .home-hero__quote-heart {
+        margin-top: 0.1rem;
+        width: 15px;
+        height: 15px;
+        color: #8c473c;
+        transform: rotate(6deg);
+        filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.7));
+    }
+
+    .home-hero__content {
+        position: relative;
+        z-index: 2;
+        padding: 1.15rem 1rem 1.25rem;
+        width: 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        box-sizing: border-box;
+    }
+
+    .home-hero__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-height: 1.6rem;
+        padding: 0.15rem 0.65rem 0.15rem 0.25rem;
         border-radius: 999px;
-        background: #eb8a5a;
+        background: rgba(229, 115, 78, 0.14);
+        border: 1px solid rgba(229, 115, 78, 0.24);
+        color: #923a27;
+        font-size: 0.72rem;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(229, 115, 78, 0.08);
+        margin-bottom: 0.45rem;
+        max-width: calc(100% - 85px);
+        flex-shrink: 0;
+    }
+
+    .home-hero__badge-avatars {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .home-hero__avatar {
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 999px;
+        border: 1.5px solid #FAF5EE;
+        object-fit: cover;
+        margin-left: -0.38rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .home-hero__avatar:first-child {
+        margin-left: 0;
+    }
+
+    .home-hero__badge-dot {
+        width: 0.42rem;
+        height: 0.42rem;
+        border-radius: 999px;
+        background: #10b981;
         flex: 0 0 auto;
         display: inline-block;
         animation: livePulseDot 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
-    /* ── Hero section ── */
-    .home-mobile-hero {
-        display: flex;
-        flex-direction: column;
-        gap: 0.55rem;
+    .home-hero__badge-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .home-mobile-hero h1 {
-        font-family: var(--font-display);
-        font-size: 1.65rem;
-        line-height: 1.0;
-        letter-spacing: -0.04em;
-        color: #4a2449;
+    .home-hero h1 {
+        margin: 0;
+        font-family: var(--font-display, 'Playfair Display', serif);
+        font-size: 1.52rem;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
         font-weight: 600;
-        margin: 0;
+        color: #2b1728;
     }
 
-    .home-mobile-hero h1 em {
-        font-style: italic;
-        font-weight: 400;
+    .home-hero__title-line {
         display: block;
-        margin-top: 0.15rem;
     }
 
-    .home-mobile-hero p {
+    .home-hero h1 em {
+        font-style: italic;
+        font-weight: 600;
+        color: #d96338;
+        display: inline;
+        margin-left: 0.22rem;
+    }
+
+    .home-hero p {
+        margin: 0.35rem 0 0.85rem 0;
+        color: #72636c;
+        font-size: 0.81rem;
+        line-height: 1.42;
         max-width: 32ch;
-        color: #7d6b76;
-        font-size: 0.84rem;
-        line-height: 1.5;
-        margin: 0;
+    }
+
+    .home-hero__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: linear-gradient(135deg, #e4663d 0%, #d65529 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 9999px;
+        padding: 0.58rem 1.25rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        box-shadow: 0 4px 14px -2px rgba(214, 85, 41, 0.35);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .home-hero__cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px -2px rgba(214, 85, 41, 0.45);
+    }
+
+    .home-hero__cta:active {
+        transform: translateY(0);
+    }
+
+    /* ── Tablet View Adjustments (640px to 899px) ── */
+    @media (min-width: 640px) {
+        .home-hero {
+            min-height: 255px;
+        }
+
+        .home-hero__bg {
+            width: 62%;
+        }
+
+        .home-hero__bg-img {
+            object-position: 70% center;
+            mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.15) 15%, rgba(0, 0, 0, 0.85) 45%, black 80%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.15) 15%, rgba(0, 0, 0, 0.85) 45%, black 80%);
+        }
+
+        .home-hero__bg-gradient {
+            background: linear-gradient(to right, #FAF5EE 0%, rgba(250, 245, 238, 0.95) 25%, rgba(250, 245, 238, 0.5) 60%, transparent 100%);
+        }
+
+        .home-hero__content {
+            padding: 1.35rem 1.6rem;
+            max-width: 64%;
+        }
+
+        .home-hero h1 {
+            font-size: 1.78rem;
+        }
+
+        .home-hero p {
+            max-width: 38ch;
+            font-size: 0.84rem;
+        }
+
+        .home-hero__quote {
+            top: 0.85rem;
+            right: 1.15rem;
+            font-size: 0.88rem;
+        }
+
+        .home-hero__quote-heart {
+            width: 18px;
+            height: 18px;
+        }
+
+        .home-hero__badge {
+            max-width: none;
+        }
+    }
+
+    /* ── Extra small screens (< 360px) ── */
+    @media (max-width: 360px) {
+        .home-hero__content {
+            padding: 1rem 0.8rem;
+        }
+
+        .home-hero h1 {
+            font-size: 1.32rem;
+        }
+
+        .home-hero p {
+            font-size: 0.76rem;
+        }
+
+        .home-hero__badge {
+            font-size: 0.68rem;
+            max-width: 100%;
+        }
+
+        .home-hero__quote {
+            display: none;
+        }
     }
 
     /* ── Create Room CTA ── */

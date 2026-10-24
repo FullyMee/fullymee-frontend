@@ -509,8 +509,6 @@ export default function HomeDiscoverPage() {
 
     const hasFeedItems = filteredFeedCardsSorted.length > 0;
     const mobilePulsePeople = desktopStats.peopleSharing;
-    const mobilePulseConfessions = formatCompactPulseCount(desktopStats.confessionsToday);
-    const mobilePulseSupport = formatCompactPulseCount(desktopStats.supportGiven);
 
     const createDisabled = submitting || String(roomTitle || "").trim().length < 3 || !String(roomCategory || "").trim();
 
@@ -1028,18 +1026,11 @@ export default function HomeDiscoverPage() {
         <div className="home-mobile-page" {...swipeNavigationHandlers}>
             <div className="home-mobile-shell">
                 <main className="home-mobile-content">
-                    <div className="home-mobile-badge">
-                        <span aria-hidden="true" />
-                        <span>{mobilePulsePeople} people are sharing right now</span>
-                    </div>
-
-                    <section className="home-mobile-hero">
-                        <h1>
-                            Tonight, somebody needs to
-                            <em>hear what you have to say.</em>
-                        </h1>
-                        <p>Find your community. Share your truth. Stay completely anonymous.</p>
-                    </section>
+                    <HomeHeroSection
+                        pulsePeople={formatCompactPulseCount(mobilePulsePeople)}
+                        users={heroSharingUsers}
+                        onShare={() => navigate('/confessions')}
+                    />
 
                     <section className="home-mobile-filters" aria-label="Conversation filters">
                         {HOME_FEED_FILTERS.map((filter) => (
