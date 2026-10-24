@@ -48,8 +48,6 @@ export default function ConfessionActiveRoomDesktop({
     onReplyDraftChange,
     onPostReply,
     onShare,
-    onShuffleAlias,
-    shufflingAlias,
     scheduledConfessions = [],
     onCancelScheduled
 }) {

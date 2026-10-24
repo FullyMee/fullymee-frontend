@@ -23,7 +23,7 @@ export function safeUnicodeSlice(str, maxChars) {
             if (segments.length <= num) return String(str);
             return segments.slice(0, num).join("");
         }
-    } catch (e) {
+    } catch {
         // Fallback to code point array
     }
 
@@ -44,7 +44,7 @@ export function getUnicodeLength(str) {
             const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
             return Array.from(segmenter.segment(String(str))).length;
         }
-    } catch (e) {
+    } catch {
         // Fallback to code point array length
     }
     return Array.from(String(str)).length;

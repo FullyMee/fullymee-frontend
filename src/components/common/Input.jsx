@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import './Input.css';
 
 /**
@@ -21,7 +21,8 @@ export default function Input({
     id,
     ...props
 }) {
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     let statusClass = '';
     if (error) statusClass = 'shared-input--error';

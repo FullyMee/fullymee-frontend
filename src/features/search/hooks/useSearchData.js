@@ -177,13 +177,13 @@ export function useSearchData(user, query) {
                 const publicOnlyRooms = (roomsPage.items || []).filter(room => String(room && room.roomType || "").toLowerCase() === "public");
                 const uniqueR = uniqueRooms(publicOnlyRooms);
                 setRoomResults(uniqueR);
-                try { sessionStorage.setItem("fm_cached_search_rooms", JSON.stringify(uniqueR)); } catch {}
+                try { sessionStorage.setItem("fm_cached_search_rooms", JSON.stringify(uniqueR)); } catch { /* ignore */ }
                 setRoomHasMore(roomsPage.hasMore);
                 
                 const peoplePage = normalizePagedResult(peoplePayload, PAGE_SIZE);
                 const peopleList = peoplePage.items || [];
                 setPeopleResults(peopleList);
-                try { sessionStorage.setItem("fm_cached_search_people", JSON.stringify(peopleList)); } catch {}
+                try { sessionStorage.setItem("fm_cached_search_people", JSON.stringify(peopleList)); } catch { /* ignore */ }
                 setPeopleHasMore(peoplePage.hasMore);
             } catch (err) {
                 if (cancelled || activeQueryRef.current !== term) return;
@@ -203,7 +203,7 @@ export function useSearchData(user, query) {
         return () => {
             cancelled = true;
         };
-    }, [debouncedQuery]);
+    }, [debouncedQuery, user]);
 
     const joinedRoomIds = useMemo(
         () => new Set((joinedRooms || []).map((room) => Number(room && room.roomId))),

@@ -140,7 +140,7 @@ export default function useConfessionRoom() {
                 setJoinedRooms(unique);
                 try {
                     localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique));
-                } catch { }
+                } catch { /* ignore */ }
                 dismissError();
             } catch (err) {
                 if (!cancelled) {
@@ -268,7 +268,7 @@ export default function useConfessionRoom() {
                 if (joined) {
                     setJoinedRooms((prev) => {
                         const next = uniqueByNumericId([joined, ...prev], (r) => r && r.roomId);
-                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { }
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { /* ignore */ }
                         return next;
                     });
                 }
@@ -278,9 +278,9 @@ export default function useConfessionRoom() {
                     if (!isCancelled && Array.isArray(rooms)) {
                         const unique = uniqueByNumericId(rooms, (r) => r && r.roomId);
                         setJoinedRooms(unique);
-                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique)); } catch { }
+                        try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(unique)); } catch { /* ignore */ }
                     }
-                } catch { }
+                } catch { /* ignore */ }
             }
         }
 
@@ -562,7 +562,7 @@ export default function useConfessionRoom() {
 
             setJoinedRooms((prev) => {
                 const next = prev.filter((entry) => Number(entry && entry.roomId) !== roomId);
-                try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { }
+                try { localStorage.setItem("fm_cached_joined_rooms", JSON.stringify(next)); } catch { /* ignore */ }
                 return next;
             });
 

@@ -3,8 +3,7 @@ import { Clock, Mic, Type, X } from "lucide-react";
 import { InlineSpinner } from "../../../components/loaders";
 import AudioConfessionRecorder from "./AudioConfessionRecorder.jsx";
 import {
-    formatCompactMemberCount,
-    getRoomTone
+    formatCompactMemberCount
 } from "../../../components/common/MobileRoomVisuals.jsx";
 import RoomAvatar from "../../../components/common/RoomAvatar.jsx";
 import { ArrowLeftIcon, ShieldIcon } from "./ConfessionIcons.jsx";
@@ -47,8 +46,6 @@ export default function ConfessionComposerModal({
     onAudioTitleChange,
     onClose,
     onSubmit,
-    onShuffle,
-    shufflingAlias,
     selectedScheduledAt,
     onScheduleSelect,
     confessionMode = "text",

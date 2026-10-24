@@ -48,7 +48,7 @@ export default function ConfessionReplyComposer({
                 {replyingBanner}
 
                 <form className="desktop-reply-composer" autoComplete="off" onSubmit={handleFormSubmit} role="group" aria-label="Write a comment">
-                    <UserAvatar avatarId={avatar} className="confession-reply-bar__avatar" />
+                    <UserAvatar avatarId={avatar} alt={userLabel || "Your avatar"} className="confession-reply-bar__avatar" />
 
                     <div className="desktop-reply-input-box">
                         <input
@@ -96,7 +96,7 @@ export default function ConfessionReplyComposer({
 
             {/* Clean Input Bar */}
             <form className="confession-reply-bar" autoComplete="off" onSubmit={handleFormSubmit}>
-                <UserAvatar avatarId={avatar} className="confession-reply-bar__avatar" />
+                <UserAvatar avatarId={avatar} alt={userLabel || "Your avatar"} className="confession-reply-bar__avatar" />
 
                 <div className="confession-reply-input-wrapper">
                     <input
