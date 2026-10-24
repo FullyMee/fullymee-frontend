@@ -9,9 +9,9 @@ import { ROOM_CATEGORIES } from "../constants/categories.js";
 import SearchRoomsSheet from "../components/common/SearchRoomsSheet.jsx";
 import {
     AmbienceRoomCard,
-    getRoomTone,
-    RoomGlyphIcon
+    getRoomTone
 } from "../components/common/MobileRoomVisuals.jsx";
+import UserAvatar from "../components/common/UserAvatar.jsx";
 import { useGlobalError } from "../context/ErrorContext.jsx";
 import usePrimaryTabSwipeNavigation from "../hooks/usePrimaryTabSwipeNavigation.js";
 import useIsDesktop from "../hooks/useIsDesktop";
@@ -918,7 +918,12 @@ export default function HomeDiscoverPage() {
                                                 >
                                                     <div className="home-feed-card__header">
                                                         <div className={`home-feed-card__avatar home-feed-card__avatar--${getAliasTone(card.alias || card.roomTitle || tone)}`}>
-                                                            <RoomGlyphIcon tone={tone} />
+                                                            <UserAvatar
+                                                                avatarId={card.avatar || card.authorAvatar}
+                                                                seed={card.alias || card.author || card.confessionId}
+                                                                alt={`${card.alias || "User"}'s avatar`}
+                                                                className="home-feed-card__avatar-img"
+                                                            />
                                                         </div>
                                                         <div className="home-feed-card__author">
                                                             <strong>{card.alias || "Wandering Soul"}</strong>
