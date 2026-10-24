@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Activity, Heart, Shield, Sparkles, Users } from "lucide-react";
+import { Activity, Heart, Shield, Users } from "lucide-react";
+import RoomAvatar from "./RoomAvatar.jsx";
 
 function formatCompactPulseCount(value) {
     return new Intl.NumberFormat("en-US", {
@@ -68,9 +69,11 @@ export default function CommunityHubRail({
                 <div className="home-suggestion-list">
                     {suggestions.length > 0 ? suggestions.map((room, index) => (
                         <div key={room.roomId || `${room.title}-${index}`} className="home-suggestion-item">
-                            <div className="home-suggestion-item__icon home-suggestion-item__icon--general" aria-hidden="true">
-                                <Sparkles size={18} strokeWidth={2} />
-                            </div>
+                            <RoomAvatar
+                                room={room}
+                                alt={room.title || "Room"}
+                                className="home-suggestion-item__icon"
+                            />
                             <div className="home-suggestion-item__copy">
                                 <strong>{room.title || "Untitled room"}</strong>
                                 <span>{`${(Number(room && room.currentUserCount) || 0).toLocaleString()} members`}</span>

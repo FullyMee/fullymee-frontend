@@ -4,9 +4,9 @@ import { InlineSpinner } from "../../../components/loaders";
 import AudioConfessionRecorder from "./AudioConfessionRecorder.jsx";
 import {
     formatCompactMemberCount,
-    getRoomTone,
-    RoomGlyphIcon
+    getRoomTone
 } from "../../../components/common/MobileRoomVisuals.jsx";
+import RoomAvatar from "../../../components/common/RoomAvatar.jsx";
 import { ArrowLeftIcon, ShieldIcon } from "./ConfessionIcons.jsx";
 import { safeUnicodeSlice, getUnicodeLength } from "../../../utils/unicode.js";
 
@@ -119,9 +119,10 @@ export default function ConfessionComposerModal({
                         <section className="room-mobile-redesign-composer__section">
                             <h2>Post in circle</h2>
                             <article className="room-mobile-redesign-composer__room-card">
-                                <div className={`room-mobile-redesign-composer__room-icon room-mobile-redesign-composer__room-icon--${getRoomTone(room)}`}>
-                                    <RoomGlyphIcon tone={getRoomTone(room)} />
-                                </div>
+                                <RoomAvatar
+                                    room={room}
+                                    className="room-mobile-redesign-composer__room-icon"
+                                />
                                 <div className="room-mobile-redesign-composer__room-copy">
                                     <strong>{room.title}</strong>
                                     <span>{formatCompactMemberCount(room.currentUserCount)} members</span>
@@ -276,9 +277,10 @@ export default function ConfessionComposerModal({
                     <section className="room-post-modal__section">
                         <h2 id="room-post-title">Post in circle</h2>
                         <article className="room-post-modal__room-card">
-                            <div className={`room-post-modal__room-icon room-post-modal__room-icon--${getRoomTone(room)}`}>
-                                <RoomGlyphIcon tone={getRoomTone(room)} />
-                            </div>
+                            <RoomAvatar
+                                room={room}
+                                className="room-post-modal__room-icon"
+                            />
                             <div className="room-post-modal__room-copy">
                                 <strong>{room.title}</strong>
                                 <span>{formatCompactMemberCount(room.currentUserCount)}</span>

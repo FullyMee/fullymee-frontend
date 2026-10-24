@@ -38,6 +38,9 @@ describe("<CommunityHubRail />", () => {
         expect(screen.getByText("Healing Waves")).toBeInTheDocument();
         expect(screen.getByText("42 members")).toBeInTheDocument();
 
+        const avatarImages = screen.getAllByRole("img");
+        expect(avatarImages.length).toBe(2);
+
         const joinButtons = screen.getAllByRole("button", { name: /join/i });
         expect(joinButtons).toHaveLength(2);
 

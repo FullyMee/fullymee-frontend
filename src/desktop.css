@@ -219,6 +219,21 @@
         place-items: center;
         color: #fff7f2;
         flex: 0 0 auto;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .home-room-pill__icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 999px;
+        display: block;
+        transition: transform 180ms ease;
+    }
+
+    .home-room-pill:hover .home-room-pill__icon img {
+        transform: scale(1.08);
     }
 
     .home-room-pill__icon svg {
@@ -1639,6 +1654,22 @@
         border-radius: 999px;
         color: #fffaf7;
         box-shadow: 0 8px 18px rgba(76, 45, 68, 0.12);
+        overflow: hidden;
+        flex: 0 0 auto;
+        position: relative;
+    }
+
+    .home-suggestion-item__icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 999px;
+        display: block;
+        transition: transform 180ms ease;
+    }
+
+    .home-suggestion-item:hover .home-suggestion-item__icon img {
+        transform: scale(1.08);
     }
 
     .home-suggestion-item__icon svg {
@@ -3143,6 +3174,16 @@
         flex-shrink: 0;
         color: #fffaf7;
         box-shadow: 0 6px 14px rgba(76, 45, 68, 0.1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .home-mobile-rail-card .home-suggestion-item__icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 999px;
+        display: block;
     }
 
     .home-mobile-rail-card .home-suggestion-item__icon--daily {
@@ -4026,6 +4067,16 @@
         background: #3b82f6;
         color: #ffffff;
         flex-shrink: 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .fullymee-active-room-item__icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 999px;
+        display: block;
     }
 
     .fullymee-active-room-item__icon svg {
