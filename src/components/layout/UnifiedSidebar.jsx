@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.js";
-import { RoomGlyphIcon, getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
+import { getRoomTone } from "../../components/common/MobileRoomVisuals.jsx";
 import UserAvatar from "../common/UserAvatar.jsx";
+import RoomAvatar from "../common/RoomAvatar.jsx";
 import { CircleUser, Home, MessageCircle, MessageSquareQuote, Search, Settings } from "lucide-react";
 import fullymeLogo from "../../assets/fullyme-logo.png";
 
@@ -95,9 +96,12 @@ export default function UnifiedSidebar({
                                 className="home-room-pill"
                                 onClick={() => typeof onSelectRoom === "function" && onSelectRoom(room)}
                             >
-                                <span className={`home-room-pill__icon home-room-pill__icon--${tone}`} aria-hidden="true">
-                                    <RoomGlyphIcon tone={tone} />
-                                </span>
+                                <RoomAvatar
+                                    room={room}
+                                    tone={tone}
+                                    alt={room.title || "Circle"}
+                                    className="home-room-pill__icon"
+                                />
                                 <span className="home-room-pill__copy">{room.title || "Untitled circle"}</span>
                                 <span className="home-room-pill__dot" aria-hidden="true" />
                             </button>

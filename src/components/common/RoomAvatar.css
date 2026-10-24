@@ -1,0 +1,43 @@
+.room-avatar {
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+.room-avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 999px;
+    display: block;
+    box-sizing: border-box;
+    border: 1px solid rgba(80, 50, 70, 0.1);
+    transition: transform 180ms ease;
+}
+
+.room-avatar--fallback {
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+}
+
+.room-avatar--daily {
+    background: linear-gradient(135deg, #ff9c6d, #ef6d5a);
+}
+
+.room-avatar--advice {
+    background: linear-gradient(135deg, #8f5cf6, #5f4ae0);
+}
+
+.room-avatar--chill {
+    background: linear-gradient(135deg, #ffb36f, #ff7d67);
+}
+
+.room-avatar--general {
+    background: linear-gradient(135deg, #4b6bff, #2b8cf8);
+}

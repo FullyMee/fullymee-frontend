@@ -1,5 +1,5 @@
 import { Circle, Lightbulb, Smile, Sparkles } from "lucide-react";
-import { getImageForAmbienceId } from "../../config/ambienceLibrary.js";
+import { getImageForAmbienceId, getAmbiencesForCategory } from "../../config/ambienceLibrary.js";
 
 function normalizeSource(roomLike) {
     return `${roomLike && roomLike.category ? roomLike.category : ""} ${roomLike && roomLike.roomCategory ? roomLike.roomCategory : ""} ${roomLike && roomLike.title ? roomLike.title : ""} ${roomLike && roomLike.roomTitle ? roomLike.roomTitle : ""} ${roomLike && roomLike.description ? roomLike.description : ""}`
@@ -68,9 +68,51 @@ export function RoomGlyphIcon({ tone }) {
 }
 
 
-export function getRoomAmbienceUrl(room) {
+export function getRoomImageUrl(room) {
     if (!room) return '/ambience/late_night/moonlit_window.png';
-    return getImageForAmbienceId(room.ambienceId);
+    if (typeof room === 'string') return room;
+    if (room.image) return room.image;
+    if (room.coverImage) return room.coverImage;
+    if (room.ambienceImage) return room.ambienceImage;
+    if (room.imageUrl) return room.imageUrl;
+
+    if (room.ambienceId) {
+        const direct = getImageForAmbienceId(room.ambienceId, null);
+        if (direct) return direct;
+    }
+
+    const cat = room.category || room.roomCategory;
+    if (cat) {
+        const pool = getAmbiencesForCategory(cat);
+        if (Array.isArray(pool) && pool.length > 0 && pool[0].image) {
+            return pool[0].image;
+        }
+    }
+
+    const title = String(room.title || room.roomTitle || "").toLowerCase();
+    if (title.includes("cloud")) return "/ambience/anxiety/floating_clouds.png";
+    if (title.includes("lake")) return "/ambience/anxiety/calm_lake.png";
+    if (title.includes("rose")) return "/ambience/heartbreak/wilted_roses.png";
+    if (title.includes("sunset")) return "/ambience/heartbreak/sunset_memories.png";
+    if (title.includes("letter")) return "/ambience/relationships/love_letters.png";
+    if (title.includes("goodbye")) return "/ambience/heartbreak/broken_letter.png";
+    if (title.includes("dawn") || title.includes("mountain")) return "/ambience/anxiety/mountain_dawn.png";
+    if (title.includes("northern") || title.includes("aurora")) return "/ambience/anxiety/northern_sky.png";
+    if (title.includes("neon") || title.includes("pulse")) return "/ambience/late_night/neon_skyline.png";
+    if (title.includes("rain")) return "/ambience/late_night/rainy_midnight.png";
+    if (title.includes("window") || title.includes("moon")) return "/ambience/late_night/moonlit_window.png";
+    if (title.includes("forest")) return "/ambience/anxiety/misty_forest.png";
+    if (title.includes("beach")) return "/ambience/relationships/sunset_beach.png";
+    if (title.includes("cherry") || title.includes("blossom") || title.includes("relationship")) return "/ambience/relationships/cherry_blossoms.png";
+    if (title.includes("cafe")) return "/ambience/relationships/couples_cafe.png";
+    if (title.includes("bridge")) return "/ambience/relationships/golden_bridge.png";
+    if (title.includes("frustrat")) return "/ambience/anxiety/calm_lake.png";
+
+    return '/ambience/late_night/moonlit_window.png';
+}
+
+export function getRoomAmbienceUrl(room) {
+    return getRoomImageUrl(room);
 }
 
 export function AmbienceRoomCard({

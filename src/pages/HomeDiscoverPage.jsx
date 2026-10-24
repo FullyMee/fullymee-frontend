@@ -42,6 +42,7 @@ import {
     MoreIcon
 } from "../components/common/Icons.jsx";
 import HomeHeroSection from "../components/common/HomeHeroSection.jsx";
+import RoomAvatar from "../components/common/RoomAvatar.jsx";
 import {
     uniqueByRoomId,
     matchesHomeSearch,
@@ -1047,9 +1048,11 @@ export default function HomeDiscoverPage() {
                             <div className="home-suggestion-list">
                                 {homeSuggestionRooms.length > 0 ? homeSuggestionRooms.map((room, index) => (
                                     <div key={room.roomId || `${room.title}-${index}`} className="home-suggestion-item">
-                                        <div className="home-suggestion-item__icon home-suggestion-item__icon--general" aria-hidden="true">
-                                            <SparkIcon />
-                                        </div>
+                                        <RoomAvatar
+                                            room={room}
+                                            alt={room.title || "Room"}
+                                            className="home-suggestion-item__icon"
+                                        />
                                         <div className="home-suggestion-item__copy">
                                             <strong>{room.title || "Untitled room"}</strong>
                                             <span>{`${(Number(room && room.currentUserCount) || 0).toLocaleString()} members`}</span>
