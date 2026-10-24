@@ -336,7 +336,7 @@
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
         min-width: 0;
-        padding: 1.45rem 1.05rem 1.9rem;
+        padding: 1.45rem 1.05rem 0;
         gap: 0.65rem;
         min-height: 0;
         overflow: hidden;
@@ -461,6 +461,7 @@
         flex-direction: column;
         gap: 0.8rem;
         overflow-y: auto;
+        overflow-x: hidden;
         padding: 0.05rem 0.35rem 0.4rem 0.05rem;
         min-height: 0;
         height: 100%;
@@ -616,10 +617,10 @@
         flex-wrap: nowrap;
         gap: 1.1rem;
         overflow-x: auto;
-        padding-bottom: 0.8rem;
-        margin-bottom: -0.4rem;
+        padding-bottom: 0.35rem;
+        margin-bottom: 0;
         scrollbar-width: thin;
-        scrollbar-color: rgba(78, 39, 72, 0.25) transparent;
+        scrollbar-color: rgba(78, 39, 72, 0.2) transparent;
         -webkit-overflow-scrolling: touch;
     }
 
@@ -628,16 +629,15 @@
     }
 
     .home-trending-grid::-webkit-scrollbar {
-        height: 6px;
+        height: 4px;
     }
 
     .home-trending-grid::-webkit-scrollbar-track {
-        background: rgba(84, 53, 67, 0.05);
-        border-radius: 999px;
+        background: transparent;
     }
 
     .home-trending-grid::-webkit-scrollbar-thumb {
-        background: rgba(78, 39, 72, 0.25);
+        background: rgba(78, 39, 72, 0.2);
         border-radius: 999px;
     }
 
@@ -1362,6 +1362,7 @@
         align-content: start;
         min-width: 0;
         overflow-y: auto;
+        overflow-x: hidden;
         min-height: 0;
         height: 100%;
         padding-right: 0.90rem;
@@ -5421,9 +5422,10 @@
     .desktop-stage__content {
         display: flex;
         gap: 0.55rem;
-        padding: 1.45rem 1.05rem 1.9rem;
+        padding: 1.45rem 1.05rem 0;
         flex: 1 1 auto;
         overflow-y: auto;
+        overflow-x: hidden;
         min-height: 0;
     }
 
@@ -5608,7 +5610,7 @@
     }
 
     .my-confessions-page--desktop .desktop-stage__content.my-confessions-page__lobby-stage {
-        padding: 1.45rem 1.05rem 1.9rem;
+        padding: 1.45rem 1.05rem 0;
     }
 
     .my-confessions-page--desktop .desktop-stage__content.has-rail {
@@ -5692,7 +5694,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 0.85rem;
-        padding-bottom: 2rem;
+        padding-bottom: 0.75rem;
     }
 
     .desktop-room-grid .ambience-room-card {
