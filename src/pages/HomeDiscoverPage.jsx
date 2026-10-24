@@ -41,6 +41,7 @@ import {
     SparkIcon,
     MoreIcon
 } from "../components/common/Icons.jsx";
+import HomeHeroSection from "../components/common/HomeHeroSection.jsx";
 import {
     uniqueByRoomId,
     matchesHomeSearch,
@@ -820,17 +821,10 @@ export default function HomeDiscoverPage() {
 
                         <div className="home-content-grid">
                             <main className="home-feed-column">
-                                <section className="home-hero">
-                                    <div className="home-hero__badge">
-                                        <span aria-hidden="true" />
-                                        <span>{pulsePeople} people are sharing right now</span>
-                                    </div>
-                                    <h1>
-                                        Tonight, somebody needs to
-                                        <em>hear what you have to say.</em>
-                                    </h1>
-                                    <p>Find your community. Share your truth. Stay completely anonymous.</p>
-                                </section>
+                                <HomeHeroSection
+                                    pulsePeople={pulsePeople}
+                                    onShare={() => navigate('/confessions')}
+                                />
 
                                 <section className="home-filter-bar" aria-label="Conversation filters">
                                     {HOME_FEED_FILTERS.map((filter) => (
