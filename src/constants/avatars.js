@@ -58,7 +58,22 @@ export const AVATAR_OPTIONS = [
     }
 ];
 
+export const getDeterministicAvatarId = (seed) => {
+    if (!seed) return 'flowing_waterfall';
+    const str = String(seed);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    }
+    const index = Math.abs(hash) % AVATAR_OPTIONS.length;
+    return AVATAR_OPTIONS[index].id;
+};
+
 export const getAvatarById = (id) => {
+    if (typeof id === 'string' && (id.startsWith('http') || id.startsWith('data:') || id.startsWith('/'))) {
+        return id;
+    }
     const avatar = AVATAR_OPTIONS.find(a => a.id === id);
     return avatar ? avatar.image : flowingWaterfallImg; // Default fallback
 };
+
