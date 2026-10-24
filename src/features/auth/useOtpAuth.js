@@ -103,6 +103,7 @@ export default function useOtpAuth(initialMode = "signin") {
             }
         }, 320);
         return () => { cancelled = true; clearTimeout(timer); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [needsUsername, username]);
 
     function clearFeedback() {

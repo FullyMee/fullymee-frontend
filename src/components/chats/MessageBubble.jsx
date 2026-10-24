@@ -58,12 +58,12 @@ function MessageStatusIcon({ status }) {
     );
 }
 
-const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, avatar, isDesktop }) => {
+const MemoizedMessageBubble = memo(({ message, isMine, title, avatar, isDesktop }) => {
     if (isDesktop) {
         return (
             <article className={`desktop-chat-message${isMine ? " is-mine" : ""}`}>
                 {!isMine && (
-                    <UserAvatar avatarId={avatar} className="desktop-chat-avatar" />
+                    <UserAvatar avatarId={avatar} alt={title || "User avatar"} className="desktop-chat-avatar" />
                 )}
                 <div className="desktop-chat-message__stack">
                     <div className={`desktop-chat-message__bubble${isMine ? " is-mine" : ""}`}>
@@ -84,7 +84,7 @@ const MemoizedMessageBubble = memo(({ message, isMine, title, avatarTone, avatar
             style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}
         >
             {!isMine && (
-                <UserAvatar avatarId={avatar} className="chat-thread-bubble__author-avatar" style={{width: "24px", height: "24px", borderRadius: "50%", marginRight: "8px"}} />
+                <UserAvatar avatarId={avatar} alt={title || "User avatar"} className="chat-thread-bubble__author-avatar" style={{width: "24px", height: "24px", borderRadius: "50%", marginRight: "8px"}} />
             )}
             <p style={{ wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}>{message.content}</p>
             <small>

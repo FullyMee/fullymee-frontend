@@ -72,7 +72,7 @@ export default function ConfessionActiveRoomDesktop({
         <div className="my-confessions-page my-confessions-page--desktop">
             {notice && <p className="my-confessions-alert my-confessions-alert--notice">{notice}</p>}
             <DesktopAppShell
-                sidebarRooms={joinedRooms}
+                sidebarRooms={sidebarRooms || joinedRooms}
                 selectedSidebarRoomId={selectedSidebarRoomId}
                 onSelectSidebarRoom={onSelectSidebarRoom}
                 rightRail={roomRail}
