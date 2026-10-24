@@ -5,7 +5,9 @@ import {
     MessageCircle,
     Shield,
     EyeOff,
-    Users
+    Users,
+    CheckCircle2,
+    Calendar
 } from "lucide-react";
 import DesktopAppShell from "../components/layout/DesktopAppShell.jsx";
 import { ProfileSkeleton } from "../components/loaders";
@@ -18,6 +20,7 @@ import useBodyClass from "../hooks/useBodyClass.js";
 import useTimedNotice from "../hooks/useTimedNotice.js";
 import { getInitial } from "../utils/presentation.js";
 import UserAvatar from "../components/common/UserAvatar.jsx";
+import { formatJoinedDate } from "../utils/time.js";
 
 /* ─── Hidden-Profile Splash ─────────────────────────────────────────────────── */
 function HiddenProfileSplash({ username, onBack }) {
