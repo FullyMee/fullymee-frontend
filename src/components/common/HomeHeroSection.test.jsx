@@ -91,4 +91,49 @@ describe("<HomeHeroSection />", () => {
         expect(screen.getByRole("img", { name: "silent_forest" })).toBeInTheDocument();
         expect(screen.getByRole("img", { name: "broken_constellation" })).toBeInTheDocument();
     });
+
+    it("renders responsively in mobile viewport (375px width)", () => {
+        const originalWidth = window.innerWidth;
+        window.innerWidth = 375;
+        window.dispatchEvent(new Event("resize"));
+
+        const onShareMock = vi.fn();
+        const { container } = render(
+            <div className="home-mobile-content">
+                <HomeHeroSection pulsePeople={18} onShare={onShareMock} />
+            </div>
+        );
+
+        const hero = container.querySelector(".home-hero");
+        expect(hero).toBeInTheDocument();
+        expect(screen.getByText(/18 people are sharing right now/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /share anonymously/i })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: /share anonymously/i }));
+        expect(onShareMock).toHaveBeenCalledTimes(1);
+
+        window.innerWidth = originalWidth;
+        window.dispatchEvent(new Event("resize"));
+    });
+
+    it("renders responsively in tablet viewport (768px width)", () => {
+        const originalWidth = window.innerWidth;
+        window.innerWidth = 768;
+        window.dispatchEvent(new Event("resize"));
+
+        const customUsers = [{ avatarId: "cracked_mirror", name: "TabletUser" }];
+        const { container } = render(
+            <div className="home-mobile-content">
+                <HomeHeroSection pulsePeople="1.2k" users={customUsers} onShare={vi.fn()} />
+            </div>
+        );
+
+        const hero = container.querySelector(".home-hero");
+        expect(hero).toBeInTheDocument();
+        expect(screen.getByText(/1\.2k people are sharing right now/i)).toBeInTheDocument();
+        expect(screen.getByRole("img", { name: "TabletUser" })).toBeInTheDocument();
+
+        window.innerWidth = originalWidth;
+        window.dispatchEvent(new Event("resize"));
+    });
 });
